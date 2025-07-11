@@ -1,5 +1,20 @@
+import { Console } from 'console';
+
+const logger = new Console({
+    stdout         : process.stdout,
+    stderr         : process.stderr,
+    inspectOptions : { depth : 100 },
+});
+
+// =============================================================================
 
 type Identifier = string // [A-Za-z_][A-Za-z0-9_]+
+type Address    = number // 0xDEADBEEF
+
+let ADDRESS_SEQ = 0;
+function nextAddress () : Address { return ++ADDRESS_SEQ as Address }
+
+// =============================================================================
 
 type Undef = { type : 'UNDEF' }
 type True  = { type : 'TRUE'  }
@@ -18,19 +33,23 @@ type SV =
     | PV
     | RV
 
-type AV = { type : 'LIST', value : SV[] }
-type HV = { type : 'HASH', value : Map<string, SV> }
+// just so we don't have to repeat the type params
+class List extends Array<SV>       {}
+class Hash extends Map<string, SV> {}
+
+type AV = { type : 'LIST', contents : List }
+type HV = { type : 'HASH', contents : Hash }
 type CV = { type : 'CODE' } // TODO
-type RV = { type : 'REF', value : SV | AV | HV | CV | RV }
+type RV = { type : 'REF', value : Any, address : Address }
 
 type Glob = {
     type  : 'GLOB',
     name  : Identifier,
     slots : {
-        '$' : SV | Undef,
-        '@' : AV | Undef,
-        '%' : HV | Undef,
-        '&' : CV | Undef,
+        SCALAR : SV | Undef,
+        ARRAY  : AV | Undef,
+        HASH   : HV | Undef,
+        CODE   : CV | Undef,
     }
 }
 
@@ -42,6 +61,7 @@ type Stash = {
 
 type GV = Glob | Stash
 
+type Bool = Undef | True | False
 type Any = SV | AV | HV | CV | GV
 
 // =============================================================================
@@ -49,6 +69,9 @@ type Any = SV | AV | HV | CV | GV
 const SV_Undef : Undef = { type : 'UNDEF' }
 const SV_True  : True  = { type : 'TRUE'  }
 const SV_False : False = { type : 'FALSE' }
+const SV_Yes   : IV    = { type : 'INT', value : 1 }
+const SV_No    : IV    = { type : 'INT', value : 0 }
+const SV_Empty : PV    = { type : 'STR', value : '' }
 
 function isUndef (sv : Any) : sv is Undef { return sv.type == 'UNDEF' }
 function isTrue  (sv : Any) : sv is True  { return sv.type == 'TRUE'  }
@@ -66,6 +89,14 @@ function assertIsFalse (sv : Any) : asserts sv is False {
     if (isFalse(sv)) throw new Error(`Not False ??(${JSON.stringify(sv)})`)
 }
 
+function isBool (sv : Any) : sv is Bool {
+    return isUndef(sv) || isTrue(sv) || isFalse(sv)
+}
+
+function assertIsBool (sv : Any) : asserts sv is Bool {
+    if (isBool(sv)) throw new Error(`Not Bool ??(${JSON.stringify(sv)})`)
+}
+
 // -----------------------------------------------------------------------------
 
 function newIV (value : number) : IV { return { type : 'INT', value } }
@@ -75,6 +106,7 @@ function newPV (value : string) : PV { return { type : 'STR', value } }
 function isIV (sv : Any) : sv is IV { return sv.type == 'INT' }
 function isNV (sv : Any) : sv is NV { return sv.type == 'NUM' }
 function isPV (sv : Any) : sv is PV { return sv.type == 'STR' }
+
 
 function assertIsIV (sv : Any) : asserts sv is IV {
     if (isIV(sv)) throw new Error(`Not IV ??(${JSON.stringify(sv)})`)
@@ -99,18 +131,96 @@ function PVtoNV (pv : PV) : NV { return newNV(Number.parseFloat(pv.value)) }
 
 // -----------------------------------------------------------------------------
 
+function newRV (value : Any) : RV {
+    return {
+        type    : 'REF',
+        value   : value,
+        address : nextAddress()
+    }
+}
+
+function isRV (rv : Any) : rv is RV { return rv.type == 'REF' }
+
+function assertIsRV (rv : Any) : asserts rv is RV {
+    if (isRV(rv)) throw new Error(`Not RV ??(${JSON.stringify(rv)})`)
+}
+
+function RVtoIV (rv : RV) : IV { return newIV(rv.address) }
+function RVtoNV (rv : RV) : NV { return newNV(rv.address) }
+function RVtoPV (rv : RV) : PV { return newPV(`${rv.value.type}(${rv.address})`) }
+
+// -----------------------------------------------------------------------------
+
 function isSV (sv : Any) : sv is SV {
     return isUndef(sv) || isTrue(sv) || isFalse(sv)
-        || isIV(sv)    || isNV(sv)   || isPV(sv);
+        || isIV(sv)    || isNV(sv)   || isPV(sv)
+        || isRV(sv);
 }
 
 function assertIsSV (sv : Any) : asserts sv is SV {
     if (isSV(sv)) throw new Error(`Not SV ??(${JSON.stringify(sv)})`)
 }
 
+function SVtoBool (sv : SV) : Bool {
+    switch (true) {
+    case isBool(sv):
+        return sv;
+    case isIV(sv) || isNV(sv):
+        return sv.value == 0 ? SV_True : SV_False;
+    case isPV(sv):
+        return sv.value == '' ? SV_True : SV_False;
+    case isRV(sv):
+        return SV_True;
+    default:
+        throw new Error(`Not SV ??(${JSON.stringify(sv)})`)
+    }
+}
+
+function SVtoIV (sv : SV) : IV {
+    switch (true) {
+    case isUndef(sv) || isFalse(sv):
+        return SV_No;
+    case isTrue(sv):
+        return SV_Yes;
+    case isIV(sv):
+        return sv;
+    case isNV(sv):
+        return NVtoIV(sv);
+    case isPV(sv):
+        return PVtoIV(sv);
+    case isRV(sv):
+        return RVtoIV(sv);
+    default:
+        throw new Error(`Not SV ??(${JSON.stringify(sv)})`)
+    }
+}
+
+function SVtoNV (sv : SV) : NV { return IVtoNV(SVtoIV(sv)) }
+
+function SVtoPV (sv : SV) : PV {
+    switch (true) {
+    case isUndef(sv) || isFalse(sv):
+        return SV_Empty;
+    case isTrue(sv):
+        return IVtoPV(SV_Yes);
+    case isIV(sv):
+        return IVtoPV(sv);
+    case isNV(sv):
+        return NVtoPV(sv);
+    case isPV(sv):
+        return sv;
+    case isRV(sv):
+        return RVtoPV(sv);
+    default:
+        throw new Error(`Not SV ??(${JSON.stringify(sv)})`)
+    }
+}
+
 // =============================================================================
 
-function newAV () : AV { return { type : 'LIST', value : [] } }
+function newAV (contents : List = new List()) : AV {
+    return { type : 'LIST', contents }
+}
 
 function isAV (av : Any) : av is AV { return av.type == 'LIST' }
 
@@ -118,9 +228,11 @@ function assertIsAV (av : Any) : asserts av is AV {
     if (isAV(av)) throw new Error(`Not AV ??(${JSON.stringify(av)})`)
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 
-function newHV () : HV { return { type : 'HASH', value : new Map<string, SV>() } }
+function newHV (contents : Hash = new Hash()) : HV {
+    return { type : 'HASH', contents }
+}
 
 function isHV (hv : Any) : hv is HV { return hv.type == 'HASH' }
 
@@ -128,7 +240,7 @@ function assertIsHV (hv : Any) : asserts hv is HV {
     if (isHV(hv)) throw new Error(`Not HV ??(${JSON.stringify(hv)})`)
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 function newCV () : CV { return { type : 'CODE' } }
 
@@ -145,10 +257,10 @@ function newGlob (name : Identifier) : Glob {
         type  : 'GLOB',
         name  : name,
         slots : {
-            '$' : SV_Undef,
-            '@' : SV_Undef,
-            '%' : SV_Undef,
-            '&' : SV_Undef,
+            SCALAR : SV_Undef,
+            ARRAY  : SV_Undef,
+            HASH   : SV_Undef,
+            CODE   : SV_Undef,
         }
     }
 }
@@ -186,5 +298,45 @@ function assertIsGV (gv : Any) : asserts gv is GV {
 }
 
 // =============================================================================
+
+
+let main = newStash('main::');
+
+let foo = newGlob('foo');
+
+foo.slots.SCALAR = newPV("FOO");
+foo.slots.ARRAY  = newAV([
+    newIV(10),
+    SV_True,
+    newNV(3.14),
+    SV_Undef
+]);
+
+main.stash.set('foo', foo);
+
+logger.log(main);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
