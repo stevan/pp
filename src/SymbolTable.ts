@@ -141,6 +141,52 @@ function assertIsCV (cv : Any) : asserts cv is CV {
 
 // -----------------------------------------------------------------------------
 
+function newGlob (name : Identifier) : Glob {
+    return {
+        type  : 'GLOB',
+        name  : name,
+        slots : {
+            '$' : SV_Undef,
+            '@' : SV_Undef,
+            '%' : SV_Undef,
+            '&' : SV_Undef,
+        }
+    }
+}
+
+function isGlob (glob : Any) : glob is Glob { return glob.type == 'GLOB' }
+
+function assertIsGlob (glob : Any) : asserts glob is Glob {
+    if (isGlob(glob)) throw new Error(`Not Glob ??(${JSON.stringify(glob)})`)
+}
+
+// -----------------------------------------------------------------------------
+
+function newStash (name : Identifier) : Stash {
+    return {
+        type  : 'STASH',
+        name  : name,
+        stash : new Map<Identifier, GV>(),
+    }
+}
+
+function isStash (stash : Any) : stash is Stash { return stash.type == 'GLOB' }
+
+function assertIsStash (stash : Any) : asserts stash is Stash {
+    if (isStash(stash)) throw new Error(`Not Stash ??(${JSON.stringify(stash)})`)
+}
+
+// -----------------------------------------------------------------------------
+
+function isGV (gv : Any) : gv is GV {
+    return isGlob(gv) || isStash(gv)
+}
+
+function assertIsGV (gv : Any) : asserts gv is GV {
+    if (isGV(gv)) throw new Error(`Not GV ??(${JSON.stringify(gv)})`)
+}
+
+
 
 
 
