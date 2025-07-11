@@ -44,7 +44,7 @@ type GV = Glob | Stash
 
 type Any = SV | AV | HV | CV | GV
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 const SV_Undef : Undef = { type : 'UNDEF' }
 const SV_True  : True  = { type : 'TRUE'  }
@@ -108,7 +108,7 @@ function assertIsSV (sv : Any) : asserts sv is SV {
     if (isSV(sv)) throw new Error(`Not SV ??(${JSON.stringify(sv)})`)
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 function newAV () : AV { return { type : 'LIST', value : [] } }
 
@@ -128,7 +128,6 @@ function assertIsHV (hv : Any) : asserts hv is HV {
     if (isHV(hv)) throw new Error(`Not HV ??(${JSON.stringify(hv)})`)
 }
 
-
 // -----------------------------------------------------------------------------
 
 function newCV () : CV { return { type : 'CODE' } }
@@ -139,7 +138,7 @@ function assertIsCV (cv : Any) : asserts cv is CV {
     if (isCV(cv)) throw new Error(`Not CV ??(${JSON.stringify(cv)})`)
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 function newGlob (name : Identifier) : Glob {
     return {
@@ -186,7 +185,6 @@ function assertIsGV (gv : Any) : asserts gv is GV {
     if (isGV(gv)) throw new Error(`Not GV ??(${JSON.stringify(gv)})`)
 }
 
-
-
+// =============================================================================
 
 
