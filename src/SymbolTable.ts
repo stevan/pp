@@ -9,10 +9,6 @@ const logger = new Console({
 // =============================================================================
 
 type Identifier = string // [A-Za-z_][A-Za-z0-9_]+
-type Address    = number // 0xDEADBEEF
-
-let ADDRESS_SEQ = 0;
-function nextAddress () : Address { return ++ADDRESS_SEQ as Address }
 
 // =============================================================================
 
@@ -40,7 +36,7 @@ class Hash extends Map<string, SV> {}
 type AV = { type : 'LIST', contents : List }
 type HV = { type : 'HASH', contents : Hash }
 type CV = { type : 'CODE' } // TODO
-type RV = { type : 'REF', value : Any, address : Address }
+type RV = { type : 'REF', value : Any }
 
 type Glob = {
     type  : 'GLOB',
@@ -133,9 +129,8 @@ function PVtoNV (pv : PV) : NV { return newNV(Number.parseFloat(pv.value)) }
 
 function newRV (value : Any) : RV {
     return {
-        type    : 'REF',
-        value   : value,
-        address : nextAddress()
+        type  : 'REF',
+        value : value,
     }
 }
 
@@ -145,9 +140,9 @@ function assertIsRV (rv : Any) : asserts rv is RV {
     if (isRV(rv)) throw new Error(`Not RV ??(${JSON.stringify(rv)})`)
 }
 
-function RVtoIV (rv : RV) : IV { return newIV(rv.address) }
-function RVtoNV (rv : RV) : NV { return newNV(rv.address) }
-function RVtoPV (rv : RV) : PV { return newPV(`${rv.value.type}(${rv.address})`) }
+function RVtoIV (_rv : RV) : IV { return newIV(0) } // FIXME
+function RVtoNV (_rv : RV) : NV { return newNV(0) } // FIXME
+function RVtoPV (rv : RV) : PV { return newPV(`${rv.value.type}(0x000000)`) }
 
 // -----------------------------------------------------------------------------
 
@@ -309,7 +304,8 @@ foo.slots.ARRAY  = newAV([
     newIV(10),
     SV_True,
     newNV(3.14),
-    SV_Undef
+    SV_Undef,
+    newRV(foo.slots.SCALAR)
 ]);
 
 main.stash.set('foo', foo);
