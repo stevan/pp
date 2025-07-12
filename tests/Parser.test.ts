@@ -7,6 +7,8 @@ import {
     Add,
 } from '../src/Parser'
 
+import { Interpreter } from '../src/Runtime'
+
 /*
 // my $x = 1;
 // my $y = 1;
@@ -20,3 +22,19 @@ let prog = new Program([
 ]);
 
 console.log(prog.deparse());
+
+function dump(op : any) {
+    //logger.log(op);
+    while (op != undefined) {
+        logger.log(op.name, op.config);
+        op = op.next;
+    }
+}
+
+let op = prog.emit();
+
+dump(op);
+
+let interpreter = new Interpreter();
+
+interpreter.run(op);

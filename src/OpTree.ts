@@ -14,6 +14,12 @@ export class OP {
     }
 }
 
+export class NOOP extends OP {
+    constructor() {
+        super('null', {})
+    }
+}
+
 // statement seperators
 export class COP extends OP {
     constructor() {

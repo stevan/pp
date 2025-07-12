@@ -3,6 +3,6 @@ import { Console } from 'console';
 export const logger = new Console({
     stdout         : process.stdout,
     stderr         : process.stderr,
-    inspectOptions : { depth : 100 },
+    inspectOptions : { depth : Infinity },
 });
 
