@@ -89,15 +89,22 @@ export class ScalarDecl implements Node {
     }
 
     emit () : OpTree {
-        let value = this.value.emit();
-
-        let variable = new UNOP('padsv_store', {
-            target : this.ident.name
+        let value    = this.value.emit();
+        let variable = this.ident.emit();
+        let binding  = new BINOP('padsv_store', {
+            operation : '=',
+            target    : this.ident.name,
         });
 
-        value.enter.next = variable;
-        variable.first   = value.enter;
-        return new OpTree(value.enter, variable);
+        variable.enter.next = value.enter;
+        value.enter.next    = binding;
+
+        binding.first = variable.enter;
+        binding.last  = value.enter;
+
+        variable.enter.sibling = value.enter;
+
+        return new OpTree(value.enter, binding);
     }
 }
 
