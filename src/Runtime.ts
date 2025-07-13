@@ -41,16 +41,19 @@ export class Interpreter {
             i.pad.set(op.config.target, i.stack.pop() as SV);
             return op.next
         });
+
         this.opcodes.set('padsv_fetch', (i, op) => {
             let t = i.pad.get(op.config.target);
-            if (t == undefined) throw new Error(`The pad var(${op.config.target}) does not exist`);
-            i.stack.push(t as SV);
-            return op.next
+            if (t != undefined) {
+                i.stack.push(t as SV);
+            }
+            return op.next;
         });
 
         this.opcodes.set('add', (i, op) => {
             let lhs = i.stack.pop() as SV;
             let rhs = i.stack.pop() as SV;
+            console.log([lhs, rhs])
             assertIsIV(lhs);
             assertIsIV(rhs);
             i.stack.push(newIV( lhs.value + rhs.value ));

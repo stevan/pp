@@ -96,13 +96,13 @@ export class ScalarDecl implements Node {
             target    : this.ident.name,
         });
 
-        variable.enter.next = value.enter;
-        value.enter.next    = binding;
+        value.leave.next    = variable.enter;
+        variable.leave.next = binding;
 
-        binding.first = variable.enter;
-        binding.last  = value.enter;
+        binding.first = value.leave;
+        binding.last  = variable.leave;
 
-        variable.enter.sibling = value.enter;
+        value.leave.sibling = variable.leave;
 
         return new OpTree(value.enter, binding);
     }
@@ -123,11 +123,14 @@ export class Add implements Node {
         let rhs = this.rhs.emit();
         let op  = new BINOP('add', { operation : '+' });
 
-        lhs.enter.next = rhs.enter;
-        rhs.enter.next = op;
-        op.first = lhs.enter;
-        op.last  = rhs.enter;
-        lhs.enter.sibling = rhs.enter;
+        lhs.leave.next = rhs.enter;
+        rhs.leave.next = op;
+
+        op.first = lhs.leave;
+        op.last  = rhs.leave;
+
+        lhs.leave.sibling = rhs.leave;
+
         return new OpTree(lhs.enter, op);
     }
 }

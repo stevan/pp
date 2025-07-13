@@ -16,12 +16,19 @@ import { Interpreter } from '../src/Runtime'
 */
 
 let prog = new Program([
-    new Statement(new ScalarDecl(new ScalarVar('x'), new ConstInt(1))),
-    new Statement(new ScalarDecl(new ScalarVar('y'), new ConstInt(2))),
-    new Statement(new Add(new ScalarVar('x'), new ScalarVar('y'))),
+    new Statement(
+        new ScalarDecl(new ScalarVar('x'), new ConstInt(1))),
+    new Statement(
+        new ScalarDecl(new ScalarVar('y'), new ConstInt(2))),
+    new Statement(
+        new ScalarDecl(new ScalarVar('z'),
+            new Add(
+                new Add(new ScalarVar('x'), new ScalarVar('y')),
+                new Add(new ScalarVar('x'), new ScalarVar('y')),
+            )
+        )
+    ),
 ]);
-
-console.log(prog.deparse());
 
 function dump(op : any) {
     //logger.log(op);
@@ -39,11 +46,24 @@ function walk(op : any, depth : number = 0) {
 }
 
 let op = prog.emit();
+
 //logger.log(op);
 
+logger.group('DEPARSE:');
+logger.log(prog.deparse());
+logger.groupEnd();
 
+logger.group('EXEC:');
 dump(op.enter);
-walk(op.leave);
+logger.groupEnd();
 
+logger.group('WALK:');
+walk(op.leave);
+logger.groupEnd();
+
+
+logger.group('RUN:');
 let interpreter = new Interpreter();
 interpreter.run(op);
+logger.groupEnd();
+
