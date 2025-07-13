@@ -7,10 +7,12 @@ import {
 } from './SymbolTable'
 
 import {
-    OP, MaybeOP
+    OP, MaybeOP, OpTree
 } from './OpTree'
 
 export type Opcode = (i : Interpreter, op : OP) => MaybeOP;
+
+export class Pad extends Map<string, SV> {}
 
 export class Interpreter {
     public stack   : SV[];
@@ -20,7 +22,7 @@ export class Interpreter {
 
     constructor () {
         this.stack = [];
-        this.pad   = new Map<string, SV>();
+        this.pad   = new Pad();
         this.root  = newStash('main::');
 
         this.opcodes = new Map<string, Opcode>();
@@ -56,8 +58,8 @@ export class Interpreter {
         });
     }
 
-    run (root : OP) : void {
-        let op : MaybeOP = root;
+    run (root : OpTree) : void {
+        let op : MaybeOP = root.enter;
         while (op != undefined) {
             let opcode = this.opcodes.get(op.name);
             if (opcode == undefined) throw new Error(`Could not find opcode(${op.name})`);

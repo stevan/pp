@@ -31,10 +31,19 @@ function dump(op : any) {
     }
 }
 
-let op = prog.emit();
+function walk(op : any, depth : number = 0) {
+    logger.log("  ".repeat(depth), op.name, op.config);
+    for (let k : any = op.first; k != undefined; k = k.sibling) {
+        walk(k, depth + 1);
+    }
+}
 
-dump(op);
+let op = prog.emit();
+//logger.log(op);
+
+
+dump(op.enter);
+walk(op.leave);
 
 let interpreter = new Interpreter();
-
 interpreter.run(op);

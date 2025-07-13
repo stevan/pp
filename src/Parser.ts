@@ -1,11 +1,16 @@
 
 import {
-    OP, MaybeOP, NOOP, COP, BINOP, UNOP
+    OP,
+    NOOP,
+    COP,
+    UNOP,
+    BINOP,
+    OpTree
 } from './OpTree'
 
 export interface Node {
     deparse () : string;
-    emit    () : OP;
+    emit    () : OpTree;
 }
 
 export class Program implements Node {
@@ -15,26 +20,24 @@ export class Program implements Node {
         return this.statements.map((s) => s.deparse()).join('\n');
     }
 
-    emit () : OP {
+    emit () : OpTree {
         let enter = new OP('enter', {});
         let leave = new UNOP('leave', { halt : true });
 
+        leave.first = enter;
+
         let curr = enter;
         for (const statement of this.statements) {
-            let start = statement.emit();
-            curr.next = start;
+            let s = statement.emit();
 
-            let end = start;
-            while (end.next != undefined) {
-                end = end.next;
-            }
-
-            curr = end;
+            curr.next    = s.enter;
+            curr.sibling = s.leave;
+            curr         = s.leave;
         }
 
         curr.next = leave;
 
-        return enter;
+        return new OpTree(enter, leave);
     }
 }
 
@@ -43,10 +46,11 @@ export class Statement implements Node {
 
     deparse() : string { return this.body.deparse() + ';' }
 
-    emit () : OP {
+    emit () : OpTree {
         let s = new COP();
-        s.next = this.body.emit();
-        return s;
+        let n = this.body.emit();
+        s.next = n.enter;
+        return new OpTree(s, n.leave);
     }
 }
 
@@ -55,8 +59,9 @@ export class ConstInt implements Node {
 
     deparse() : string { return String(this.literal) }
 
-    emit () : OP {
-        return new OP('const', { literal : this.literal })
+    emit () : OpTree {
+        let op = new OP('const', { literal : this.literal })
+        return new OpTree(op, op)
     }
 }
 
@@ -65,10 +70,11 @@ export class ScalarVar implements Node {
 
     deparse() : string { return '$' + this.name }
 
-    emit () : OP {
-        return new UNOP('padsv_fetch', {
+    emit () : OpTree {
+        let op =  new UNOP('padsv_fetch', {
             target : this.name
         });
+        return new OpTree(op, op)
     }
 }
 
@@ -82,13 +88,16 @@ export class ScalarDecl implements Node {
         return `my ${this.ident.deparse()} = ${this.value.deparse()}`
     }
 
-    emit () : OP {
+    emit () : OpTree {
         let value = this.value.emit();
+
         let variable = new UNOP('padsv_store', {
             target : this.ident.name
         });
-        value.next = variable;
-        return value;
+
+        value.enter.next = variable;
+        variable.first   = value.enter;
+        return new OpTree(value.enter, variable);
     }
 }
 
@@ -102,12 +111,16 @@ export class Add implements Node {
         return `${this.lhs.deparse()} + ${this.rhs.deparse()}`
     }
 
-    emit () : OP {
+    emit () : OpTree {
         let lhs = this.lhs.emit();
         let rhs = this.rhs.emit();
         let op  = new BINOP('add', { operation : '+' });
-        lhs.next = rhs;
-        rhs.next = op;
-        return lhs;
+
+        lhs.enter.next = rhs.enter;
+        rhs.enter.next = op;
+        op.first = lhs.enter;
+        op.last  = rhs.enter;
+        lhs.enter.sibling = rhs.enter;
+        return new OpTree(lhs.enter, op);
     }
 }

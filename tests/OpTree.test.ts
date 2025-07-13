@@ -1,7 +1,7 @@
 
 import { logger } from '../src/Logger'
 import {
-    OP, UNOP, BINOP, COP
+    OP, UNOP, BINOP, COP, OpExpression
 } from '../src/OpTree'
 
 

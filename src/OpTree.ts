@@ -1,6 +1,12 @@
+
+import {
+    SV,
+} from './SymbolTable'
+
 // -----------------------------------------------------------------------------
 
 export type MaybeOP = OP | undefined
+
 
 export class OP {
     public name    : string;
@@ -49,14 +55,14 @@ export class LISTOP extends BINOP {
 
 // -----------------------------------------------------------------------------
 
-export class Pad {
-    // TODO - figure out entries here ...
-}
+export class OpTree {
+    public enter : OP;
+    public leave : OP;
 
-export class Optree {
-    public root  : MaybeOP;
-    public start : MaybeOP;
-    public pad   : Pad = new Pad();
+    constructor(enter : OP, leave : OP) {
+        this.enter = enter;
+        this.leave = leave;
+    }
 }
 
 // -----------------------------------------------------------------------------
