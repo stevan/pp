@@ -11,8 +11,8 @@ import { Interpreter } from '../src/Runtime'
 
 /*
 // my $x = 1;
-// my $y = 1;
-// $x + $y;
+// my $y = 2;
+// my $z = $x + $x + $y + $x + $y + $x + $y + $x + $y;
 */
 
 let prog = new Program([
@@ -23,8 +23,17 @@ let prog = new Program([
     new Statement(
         new ScalarDecl(new ScalarVar('z'),
             new Add(
-                new Add(new ScalarVar('x'), new ScalarVar('y')),
-                new Add(new ScalarVar('x'), new ScalarVar('y')),
+                new Add(
+                    new ScalarVar('x'),
+                    new Add(
+                        new Add(new ScalarVar('x'), new ScalarVar('y')),
+                        new Add(new ScalarVar('x'), new ScalarVar('y')),
+                    )
+                ),
+                new Add(
+                    new Add(new ScalarVar('x'), new ScalarVar('y')),
+                    new Add(new ScalarVar('x'), new ScalarVar('y')),
+                )
             )
         )
     ),
