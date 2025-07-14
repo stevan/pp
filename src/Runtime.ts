@@ -116,9 +116,9 @@ export class Interpreter {
         // Maths
         // ---------------------------------------------------------------------
 
-        this.opcodes.set('add', LiftNumericBinOp((n, m) => n + m));
-        this.opcodes.set('sub', LiftNumericBinOp((n, m) => n - m));
-        this.opcodes.set('mul', LiftNumericBinOp((n, m) => n * m));
+        this.opcodes.set('add',      LiftNumericBinOp((n, m) => n + m));
+        this.opcodes.set('subtract', LiftNumericBinOp((n, m) => n - m));
+        this.opcodes.set('multiply', LiftNumericBinOp((n, m) => n * m));
 
         // ---------------------------------------------------------------------
         // Eq & Ord
