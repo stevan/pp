@@ -37,7 +37,7 @@ export abstract class Scope implements Node {
             let s = statement.emit();
 
             curr.next    = s.enter;
-            curr.sibling = s.leave;
+            curr.sibling = s.enter;
             curr         = s.leave;
         }
 
@@ -55,6 +55,11 @@ export class Program extends Scope {
 export class Block extends Scope {
     enter () : OP   { return new OP('enterscope', {}) }
     leave () : UNOP { return new UNOP('leavescope', { halt : true }) }
+
+    override deparse() : string {
+        let src = super.deparse();
+        return '{\n  ' + src.replace('\n', '\n  ') + '\n}';
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -69,7 +74,8 @@ export class Statement implements Node {
     emit () : OpTree {
         let s = new COP();
         let n = this.body.emit();
-        s.next = n.enter;
+        s.next    = n.enter;
+        s.sibling = n.leave;
         return new OpTree(s, n.leave);
     }
 }
