@@ -2,41 +2,39 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarDecl, ScalarVar,
+    ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
-    Add,
+    Add, Block, Undef,
 } from '../src/Parser'
 
 import { Interpreter } from '../src/Runtime'
 
 /*
-// my $x = 1;
-// my $y = 2;
-// my $z = $x + $x + $y + $x + $y + $x + $y + $x + $y;
+
+my $x = 1;
+my $y;
+{
+   my $x = 10;
+   $y = $x;
+}
+
+perl -MO=Concise -E 'my $x = 1; my $y; { my $x = 10; $y = $x; }'
+
 */
 
 let prog = new Program([
     new Statement(
-        new ScalarDecl(new ScalarVar('x'), new ConstInt(1))),
+        new ScalarDeclare(new ScalarVar('x'), new ConstInt(1))),
     new Statement(
-        new ScalarDecl(new ScalarVar('y'), new ConstInt(2))),
+        new ScalarDeclare(new ScalarVar('y'), new Undef())),
     new Statement(
-        new ScalarDecl(new ScalarVar('z'),
-            new Add(
-                new Add(
-                    new ScalarVar('x'),
-                    new Add(
-                        new Add(new ScalarVar('x'), new ScalarVar('y')),
-                        new Add(new ScalarVar('x'), new ScalarVar('y')),
-                    )
-                ),
-                new Add(
-                    new Add(new ScalarVar('x'), new ScalarVar('y')),
-                    new Add(new ScalarVar('x'), new ScalarVar('y')),
-                )
-            )
-        )
-    ),
+        new Block([
+            new Statement(
+                new ScalarDeclare(new ScalarVar('x'), new ConstInt(10))),
+            new Statement(
+                new ScalarStore(new ScalarVar('y'), new ScalarFetch('x'))),
+        ])
+    )
 ]);
 
 function dump(op : any) {

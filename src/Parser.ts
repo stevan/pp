@@ -16,16 +16,19 @@ export interface Node {
 // Compilation Unit
 // -----------------------------------------------------------------------------
 
-export class Program implements Node {
+export abstract class Scope implements Node {
     constructor(public statements : Statement[]) { }
 
     deparse() : string {
         return this.statements.map((s) => s.deparse()).join('\n');
     }
 
+    abstract enter () : OP;
+    abstract leave () : UNOP;
+
     emit () : OpTree {
-        let enter = new OP('enter', {});
-        let leave = new UNOP('leave', { halt : true });
+        let enter = this.enter();
+        let leave = this.leave();
 
         leave.first = enter;
 
@@ -42,6 +45,16 @@ export class Program implements Node {
 
         return new OpTree(enter, leave);
     }
+}
+
+export class Program extends Scope {
+    enter () : OP   { return new OP('enter', {}) }
+    leave () : UNOP { return new UNOP('leave', { halt : true }) }
+}
+
+export class Block extends Scope {
+    enter () : OP   { return new OP('enterscope', {}) }
+    leave () : UNOP { return new UNOP('leavescope', { halt : true }) }
 }
 
 // -----------------------------------------------------------------------------
@@ -76,8 +89,17 @@ export class ConstInt implements Node {
     }
 }
 
+export class Undef implements Node {
+    deparse() : string { return 'undef' }
+
+    emit () : OpTree {
+        let op = new OP('undef', {})
+        return new OpTree(op, op)
+    }
+}
+
 // -----------------------------------------------------------------------------
-// Unary Ops
+// Scalar Ops
 // -----------------------------------------------------------------------------
 
 export class ScalarVar implements Node {
@@ -86,25 +108,34 @@ export class ScalarVar implements Node {
     deparse() : string { return '$' + this.name }
 
     emit () : OpTree {
-        let op =  new UNOP('padsv_fetch', {
-            target : this.name
+        let op =  new UNOP('padsv', {
+            target : this.name,
         });
         return new OpTree(op, op)
     }
 }
 
-// -----------------------------------------------------------------------------
-// Binary Ops
-// -----------------------------------------------------------------------------
+export class ScalarFetch implements Node {
+    constructor(public name : string) {}
 
-export class ScalarDecl implements Node {
+    deparse() : string { return '$' + this.name }
+
+    emit () : OpTree {
+        let op =  new UNOP('padsv_fetch', {
+            target : this.name,
+        });
+        return new OpTree(op, op)
+    }
+}
+
+export class ScalarStore implements Node {
     constructor(
         public ident : ScalarVar,
         public value : Node,
     ) {}
 
     deparse() : string {
-        return `my ${this.ident.deparse()} = ${this.value.deparse()}`
+        return `${this.ident.deparse()} = ${this.value.deparse()}`
     }
 
     emit () : OpTree {
@@ -113,6 +144,7 @@ export class ScalarDecl implements Node {
         let binding  = new BINOP('padsv_store', {
             operation : '=',
             target    : this.ident.name,
+            introduce : false,
         });
 
         value.leave.next    = variable.enter;
@@ -126,6 +158,24 @@ export class ScalarDecl implements Node {
         return new OpTree(value.enter, binding);
     }
 }
+
+export class ScalarDeclare extends ScalarStore {
+
+    override deparse () : string {
+        let src = super.deparse();
+        return `my ${src}`
+    }
+
+    override emit () : OpTree {
+        let tree = super.emit();
+        tree.leave.config.introduce = true;
+        return tree;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Binary Ops
+// -----------------------------------------------------------------------------
 
 export class Add implements Node {
     constructor(

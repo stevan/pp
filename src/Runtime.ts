@@ -4,7 +4,7 @@ import {
     SV,
     Stash, newStash,
     newIV, assertIsIV,
-    SV_True, SV_False
+    SV_True, SV_False, SV_Undef
 } from './SymbolTable'
 
 import {
@@ -76,6 +76,9 @@ export class Interpreter {
         this.opcodes.set('enter', (i, op) => op.next);
         this.opcodes.set('leave', (i, op) => op.next);
 
+        this.opcodes.set('enterscope', (i, op) => { i.enterScope(); return op.next });
+        this.opcodes.set('leavescope', (i, op) => { i.leaveScope(); return op.next });
+
         this.opcodes.set('nextstate', (i, op) => op.next);
 
         // ---------------------------------------------------------------------
@@ -87,20 +90,30 @@ export class Interpreter {
             return op.next;
         });
 
+        this.opcodes.set('undef', (i, op) => {
+            i.stack.push(SV_Undef);
+            return op.next;
+        });
+
         // ---------------------------------------------------------------------
         // Pad SV operations
         // ---------------------------------------------------------------------
 
+        // This is a NOOP, the fetch/store have config.target instead
+        this.opcodes.set('padsv', (i, op) => op.next);
+
         this.opcodes.set('padsv_store', (i, op) => {
-            i.currentScope().set(op.config.target, i.stack.pop() as SV);
+            if (op.config.introduce) {
+                i.createLexical(op.config.target, i.stack.pop() as SV);
+            } else {
+                i.setLexical(op.config.target, i.stack.pop() as SV);
+            }
             return op.next
         });
 
         this.opcodes.set('padsv_fetch', (i, op) => {
-            let t = i.currentScope().get(op.config.target);
-            if (t != undefined) {
-                i.stack.push(t as SV);
-            }
+            let t = i.getLexical(op.config.target);
+            i.stack.push(t as SV);
             return op.next;
         });
 
@@ -137,10 +150,43 @@ export class Interpreter {
         // ---------------------------------------------------------------------
     }
 
+    getLexical (name : string) : SV {
+        let index = 0;
+        while (index < this.padlist.length) {
+            let scope = this.padlist[index] as Pad;
+            if (scope.has(name)) {
+                return scope.get(name) as SV;
+            }
+            index++;
+        }
+        throw new Error(`Unable to find lexical(${name}) in any scope`);
+    }
+
+    createLexical (name : string, value : SV) : void {
+        this.currentScope().set(name, value);
+    }
+
+    setLexical (name : string, value : SV) : void {
+        let index = 0;
+        while (index < this.padlist.length) {
+            let scope = this.padlist[index] as Pad;
+            if (scope.has(name)) {
+                scope.set(name, value);
+                return;
+            }
+            index++;
+        }
+        this.createLexical(name, value);
+    }
+
     currentScope () : Pad { return this.padlist[0] as Pad }
 
     enterScope () : void { this.padlist.unshift(new Pad()) }
-    leaveScope () : void { this.padlist.pop() }
+    leaveScope () : void {
+        if (this.padlist.length == 1)
+            throw new Error('Cannot leave the global scope!');
+        this.padlist.shift()
+    }
 
     run (root : OpTree) : void {
         let op : MaybeOP = root.enter;

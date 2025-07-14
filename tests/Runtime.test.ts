@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarDecl, ScalarVar,
+    ScalarStore, ScalarFetch,
     ConstInt,
     Add,
 } from '../src/Parser'
@@ -131,10 +131,6 @@ leavesub
 
 - gv_fetch
     - locates the GV to be called by entersub
-- enterscope
-    - creates a new current scope
-- leavescope
-    - exits current scope
 
 // ---------------------
 // kinda easy
