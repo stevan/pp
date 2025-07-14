@@ -7,6 +7,7 @@ import {
 
 export type MaybeOP = OP | undefined
 
+// -----------------------------------------------------------------------------
 
 export class OP {
     public name    : string;

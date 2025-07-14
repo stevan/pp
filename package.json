@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "@types/node": "^22.13.17"
+  },
+  "scripts": {
+    "test": "tsc && node --test js/tests/*.js"
   }
 }

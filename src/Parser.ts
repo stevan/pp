@@ -1,17 +1,20 @@
 
 import {
-    OP,
-    NOOP,
-    COP,
-    UNOP,
-    BINOP,
-    OpTree
+    OP, NOOP, COP, UNOP, BINOP, OpTree
 } from './OpTree'
+
+// -----------------------------------------------------------------------------
+// AST Node
+// -----------------------------------------------------------------------------
 
 export interface Node {
     deparse () : string;
     emit    () : OpTree;
 }
+
+// -----------------------------------------------------------------------------
+// Compilation Unit
+// -----------------------------------------------------------------------------
 
 export class Program implements Node {
     constructor(public statements : Statement[]) { }
@@ -41,6 +44,10 @@ export class Program implements Node {
     }
 }
 
+// -----------------------------------------------------------------------------
+// Statements
+// -----------------------------------------------------------------------------
+
 export class Statement implements Node {
     constructor(public body : Node) {}
 
@@ -54,6 +61,10 @@ export class Statement implements Node {
     }
 }
 
+// -----------------------------------------------------------------------------
+// Constants
+// -----------------------------------------------------------------------------
+
 export class ConstInt implements Node {
     constructor(public literal : number) {}
 
@@ -64,6 +75,10 @@ export class ConstInt implements Node {
         return new OpTree(op, op)
     }
 }
+
+// -----------------------------------------------------------------------------
+// Unary Ops
+// -----------------------------------------------------------------------------
 
 export class ScalarVar implements Node {
     constructor(public name : string) {}
@@ -77,6 +92,10 @@ export class ScalarVar implements Node {
         return new OpTree(op, op)
     }
 }
+
+// -----------------------------------------------------------------------------
+// Binary Ops
+// -----------------------------------------------------------------------------
 
 export class ScalarDecl implements Node {
     constructor(
@@ -134,3 +153,5 @@ export class Add implements Node {
         return new OpTree(lhs.enter, op);
     }
 }
+
+// -----------------------------------------------------------------------------

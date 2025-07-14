@@ -1,7 +1,7 @@
 
 import { logger } from '../src/Logger'
 import {
-    OP, UNOP, BINOP, COP
+    OP, UNOP, BINOP, COP, OpTree
 } from '../src/OpTree'
 
 import { Interpreter } from '../src/Runtime'
@@ -50,4 +50,4 @@ add.next    = leave;
 
 let interpreter = new Interpreter();
 
-interpreter.run(enter);
+interpreter.run(new OpTree(enter, leave));
