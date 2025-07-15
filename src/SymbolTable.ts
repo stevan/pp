@@ -30,6 +30,14 @@ export type HV = { type : 'HASH', contents : Hash }
 export type CV = { type : 'CODE' } // TODO
 export type RV = { type : 'REF', value : Any }
 
+export enum GlobSlot {
+    NONE    = '*',
+    SCALAR  = '$',
+    ARRAY   = '@',
+    HASH    = '%',
+    CODE    = '&',
+}
+
 export type Glob = {
     type  : 'GLOB',
     name  : Identifier,

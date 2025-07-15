@@ -4,7 +4,8 @@ import {
     SV,
     Stash, newStash,
     newIV, assertIsIV,
-    SV_True, SV_False, SV_Undef
+    SV_True, SV_False, SV_Undef,
+    GlobSlot
 } from './SymbolTable'
 
 import {
@@ -92,6 +93,15 @@ export class Interpreter {
 
         this.opcodes.set('undef', (i, op) => {
             i.stack.push(SV_Undef);
+            return op.next;
+        });
+
+        // ---------------------------------------------------------------------
+        // Glob operations
+        // ---------------------------------------------------------------------
+
+        this.opcodes.set('gv', (i, op) => {
+            console.log(op);
             return op.next;
         });
 

@@ -1,5 +1,9 @@
 
 import {
+    GlobSlot
+} from './SymbolTable'
+
+import {
     OP, NOOP, COP, UNOP, BINOP, OpTree
 } from './OpTree'
 
@@ -100,6 +104,27 @@ export class Undef implements Node {
 
     emit () : OpTree {
         let op = new OP('undef', {})
+        return new OpTree(op, op)
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Glob Ops
+// -----------------------------------------------------------------------------
+
+export class GlobVar implements Node {
+    constructor(
+        public name : string,
+        public slot : GlobSlot = GlobSlot.NONE,
+    ) {}
+
+    deparse() : string { return this.slot + this.name }
+
+    emit () : OpTree {
+        let op =  new UNOP('gv', {
+            target : this.name,
+            slot   : this.slot,
+        });
         return new OpTree(op, op)
     }
 }
