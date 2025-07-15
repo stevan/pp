@@ -9,10 +9,12 @@ import {
     newNV,
     SV_True,
     SV_Undef,
-    newRV
+    newRV,
+    SymbolTable,
+    assertIsGlob
 } from '../src/SymbolTable'
 
-let main = newStash('main::');
+let main = new SymbolTable('main');
 
 let foo = newGlob('foo');
 
@@ -25,7 +27,19 @@ foo.slots.ARRAY  = newAV([
     newRV(foo.slots.SCALAR)
 ]);
 
-main.stash.set('foo', foo);
+main.root.stash.set('foo', foo);
+
+let Bar = new SymbolTable('Bar');
+
+main.root.stash.set('Bar', Bar.root);
+
+let baz = main.autovivify('Bar::Gorch::baz');
+assertIsGlob(baz);
+
+baz.slots.SCALAR = newPV("BAZ");
+
+let Gorch = main.autovivify('Bar::Gorch::');
+
 
 logger.log(main);
 

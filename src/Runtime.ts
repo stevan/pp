@@ -5,7 +5,9 @@ import {
     Stash, newStash,
     newIV, assertIsIV,
     SV_True, SV_False, SV_Undef,
+    SymbolTable
 } from './SymbolTable'
+
 import { GlobSlot } from './Parser'
 
 import {
@@ -60,13 +62,13 @@ export class Pad extends Map<string, SV> {}
 export class Interpreter {
     public stack   : SV[];
     public padlist : Pad[];
-    public root    : Stash;
+    public root    : SymbolTable;
     public opcodes : Map<string, Opcode>;
 
     constructor () {
         this.stack   = [];
         this.padlist = [ new Pad() ];
-        this.root    = newStash('main::');
+        this.root    = new SymbolTable('main');
 
         this.opcodes = new Map<string, Opcode>();
 
