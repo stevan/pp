@@ -132,6 +132,25 @@ export class GlobVar implements Node {
     }
 }
 
+export class GlobFetch implements Node {
+    constructor(
+        public name : string,
+        public slot : GlobSlot
+    ) {}
+
+    deparse() : string { return this.slot + this.name }
+
+    emit () : OpTree {
+        let op =  new UNOP('gv_fetch', {
+            target : {
+                name : this.name,
+                slot : this.slot
+            }
+        });
+        return new OpTree(op, op)
+    }
+}
+
 export class GlobStore implements Node {
     constructor(
         public ident : GlobVar,
@@ -175,8 +194,6 @@ export class GlobDeclare extends GlobStore {
         return tree;
     }
 }
-
-
 
 // -----------------------------------------------------------------------------
 // Scalar Ops

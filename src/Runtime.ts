@@ -4,8 +4,8 @@ import {
     SV,
     Stash, newStash,
     newIV, assertIsIV,
-    SV_True, SV_False, SV_Undef,
-    SymbolTable, assertIsGlob
+    SV_True, SV_False, SV_Undef, isUndef,
+    SymbolTable, assertIsGlob,
 } from './SymbolTable'
 
 import { GlobSlot } from './Parser'
@@ -119,8 +119,12 @@ export class Interpreter {
         });
 
         this.opcodes.set('gv_fetch', (i, op) => {
-            // let t = i.getLexical(op.config.target);
-            // i.stack.push(t as SV);
+            let target = op.config.target;
+
+            let gv = i.root.autovivify(target.name);
+            assertIsGlob(gv);
+            i.stack.push( gv.slots.SCALAR );
+
             return op.next;
         });
 
