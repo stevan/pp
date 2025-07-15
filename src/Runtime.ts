@@ -5,7 +5,7 @@ import {
     Stash, newStash,
     newIV, assertIsIV,
     SV_True, SV_False, SV_Undef,
-    SymbolTable
+    SymbolTable, assertIsGlob
 } from './SymbolTable'
 
 import { GlobSlot } from './Parser'
@@ -102,8 +102,25 @@ export class Interpreter {
         // Glob operations
         // ---------------------------------------------------------------------
 
-        this.opcodes.set('gv', (i, op) => {
-            console.log(op);
+        // FIXME:
+        // these only work SVs for now
+
+        this.opcodes.set('gv', (i, op) => op.next);
+
+        this.opcodes.set('gv_store', (i, op) => {
+            let target = op.config.target;
+
+            let gv = i.root.autovivify(target.name);
+            assertIsGlob(gv);
+
+            gv.slots.SCALAR = i.stack.pop() as SV;
+
+            return op.next
+        });
+
+        this.opcodes.set('gv_fetch', (i, op) => {
+            // let t = i.getLexical(op.config.target);
+            // i.stack.push(t as SV);
             return op.next;
         });
 
@@ -115,20 +132,21 @@ export class Interpreter {
         this.opcodes.set('padsv', (i, op) => op.next);
 
         this.opcodes.set('padsv_store', (i, op) => {
+            // NOTE: ponder splitting this into two opcodes
+            // one for the store and one for the declare
             if (op.config.introduce) {
-                i.createLexical(op.config.target, i.stack.pop() as SV);
+                i.createLexical(op.config.target.name, i.stack.pop() as SV);
             } else {
-                i.setLexical(op.config.target, i.stack.pop() as SV);
+                i.setLexical(op.config.target.name, i.stack.pop() as SV);
             }
             return op.next
         });
 
         this.opcodes.set('padsv_fetch', (i, op) => {
-            let t = i.getLexical(op.config.target);
+            let t = i.getLexical(op.config.target.name);
             i.stack.push(t as SV);
             return op.next;
         });
-
 
         // ---------------------------------------------------------------------
         // Operators
@@ -209,6 +227,7 @@ export class Interpreter {
             op = opcode(this, op);
             logger.log('STACK   :', this.stack);
             logger.log('PADLIST :', this.padlist);
+            logger.log('SYMTBL  :', this.root);
             logger.groupEnd();
         }
     }

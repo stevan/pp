@@ -4,7 +4,7 @@ import {
     Program, Statement,
     ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
-    Add, Block, Undef, GlobVar, GlobSlot
+    Add, Block, Undef, GlobVar, GlobSlot, GlobDeclare
 } from '../src/Parser'
 import { Interpreter } from '../src/Runtime'
 
@@ -27,7 +27,10 @@ perl -MO=Concise -E 'our $foo = 10;'
 
 let prog = new Program([
     new Statement(
-        new GlobVar('foo', GlobSlot.SCALAR)
+        new GlobDeclare(
+            new GlobVar('foo', GlobSlot.SCALAR),
+            new ConstInt(10)
+        )
     ),
 ]);
 

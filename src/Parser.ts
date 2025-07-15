@@ -109,29 +109,74 @@ export class Undef implements Node {
 // -----------------------------------------------------------------------------
 
 export enum GlobSlot {
-    NONE    = '*',
-    SCALAR  = '$',
-    ARRAY   = '@',
-    HASH    = '%',
-    CODE    = '&',
+    SCALAR = '$',
+    ARRAY  = '@',
+    HASH   = '%',
+    CODE   = '&',
 }
 
 export class GlobVar implements Node {
     constructor(
         public name : string,
-        public slot : GlobSlot = GlobSlot.NONE,
+        public slot : GlobSlot
     ) {}
 
     deparse() : string { return this.slot + this.name }
 
     emit () : OpTree {
         let op =  new UNOP('gv', {
-            target : this.name,
-            slot   : this.slot,
+            name : this.name,
+            slot : this.slot,
         });
         return new OpTree(op, op)
     }
 }
+
+export class GlobStore implements Node {
+    constructor(
+        public ident : GlobVar,
+        public value : Node,
+    ) {}
+
+    deparse() : string {
+        return `${this.ident.deparse()} = ${this.value.deparse()}`
+    }
+
+    emit () : OpTree {
+        let value    = this.value.emit();
+        let variable = this.ident.emit();
+        let binding  = new BINOP('gv_store', {
+            target    : variable.enter.config,
+            introduce : false,
+        });
+
+        value.leave.next    = variable.enter;
+        variable.leave.next = binding;
+
+        binding.first = value.leave;
+        binding.last  = variable.leave;
+
+        value.leave.sibling = variable.leave;
+
+        return new OpTree(value.enter, binding);
+    }
+}
+
+export class GlobDeclare extends GlobStore {
+
+    override deparse () : string {
+        let src = super.deparse();
+        return `our ${src}`
+    }
+
+    override emit () : OpTree {
+        let tree = super.emit();
+        tree.leave.config.introduce = true;
+        return tree;
+    }
+}
+
+
 
 // -----------------------------------------------------------------------------
 // Scalar Ops
@@ -144,7 +189,7 @@ export class ScalarVar implements Node {
 
     emit () : OpTree {
         let op =  new UNOP('padsv', {
-            target : this.name,
+            name : this.name,
         });
         return new OpTree(op, op)
     }
@@ -157,7 +202,7 @@ export class ScalarFetch implements Node {
 
     emit () : OpTree {
         let op =  new UNOP('padsv_fetch', {
-            target : this.name,
+            target : { name : this.name },
         });
         return new OpTree(op, op)
     }
@@ -177,8 +222,7 @@ export class ScalarStore implements Node {
         let value    = this.value.emit();
         let variable = this.ident.emit();
         let binding  = new BINOP('padsv_store', {
-            operation : '=',
-            target    : this.ident.name,
+            target    : variable.enter.config,
             introduce : false,
         });
 
