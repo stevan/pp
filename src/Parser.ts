@@ -1,9 +1,5 @@
 
 import {
-    GlobSlot
-} from './SymbolTable'
-
-import {
     OP, NOOP, COP, UNOP, BINOP, OpTree
 } from './OpTree'
 
@@ -111,6 +107,14 @@ export class Undef implements Node {
 // -----------------------------------------------------------------------------
 // Glob Ops
 // -----------------------------------------------------------------------------
+
+export enum GlobSlot {
+    NONE    = '*',
+    SCALAR  = '$',
+    ARRAY   = '@',
+    HASH    = '%',
+    CODE    = '&',
+}
 
 export class GlobVar implements Node {
     constructor(

@@ -5,8 +5,8 @@ import {
     Stash, newStash,
     newIV, assertIsIV,
     SV_True, SV_False, SV_Undef,
-    GlobSlot
 } from './SymbolTable'
+import { GlobSlot } from './Parser'
 
 import {
     OP, MaybeOP, OpTree

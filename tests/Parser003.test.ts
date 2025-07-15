@@ -4,10 +4,8 @@ import {
     Program, Statement,
     ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
-    Add, Block, Undef, GlobVar
+    Add, Block, Undef, GlobVar, GlobSlot
 } from '../src/Parser'
-
-import { GlobSlot }    from '../src/SymbolTable'
 import { Interpreter } from '../src/Runtime'
 
 /*
