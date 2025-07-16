@@ -5,9 +5,9 @@ import {
     ScalarVar, ScalarDeclare, ScalarStore, ScalarFetch,
     ConstInt,
     Add,
-} from '../src/Parser'
+} from '../src/AST'
 
-import { Interpreter } from '../src/Runtime'
+import { Interpreter } from '../src/Interpreter'
 
 /*
 // my $x = 1;

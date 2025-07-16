@@ -5,8 +5,8 @@ import {
     ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Block, Undef, GlobVar, GlobSlot, GlobDeclare, GlobFetch
-} from '../src/Parser'
-import { Interpreter } from '../src/Runtime'
+} from '../src/AST'
+import { Interpreter } from '../src/Interpreter'
 
 /*
 

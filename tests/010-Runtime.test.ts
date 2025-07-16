@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     OP, UNOP, BINOP, COP
-} from '../src/OpTree'
+} from '../src/Runtime'
 
 
 

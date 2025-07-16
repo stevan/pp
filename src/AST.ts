@@ -1,7 +1,7 @@
 
 import {
     OP, NOOP, COP, UNOP, BINOP, OpTree
-} from './OpTree'
+} from './Runtime'
 
 // -----------------------------------------------------------------------------
 // AST Node

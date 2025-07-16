@@ -12,7 +12,7 @@ import {
     newRV,
     SymbolTable,
     assertIsGlob
-} from '../src/SymbolTable'
+} from '../src/Runtime'
 
 let main = new SymbolTable('main');
 

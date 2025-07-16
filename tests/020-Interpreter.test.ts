@@ -2,9 +2,9 @@
 import { logger } from '../src/Logger'
 import {
     OP, UNOP, BINOP, COP, OpTree
-} from '../src/OpTree'
+} from '../src/Runtime'
 
-import { Interpreter } from '../src/Runtime'
+import { Interpreter } from '../src/Interpreter'
 
 /*
 // my $x = 1;

@@ -5,9 +5,9 @@ import {
     ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Block, Undef,
-} from '../src/Parser'
+} from '../src/AST'
 
-import { Interpreter } from '../src/Runtime'
+import { Interpreter } from '../src/Interpreter'
 
 /*
 
