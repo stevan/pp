@@ -2,6 +2,8 @@
 # HISTORY
 <!----------------------------------------------------------------------------->
 
+## THE SOURCE
+
 I did a little trip down memory lane after hearing about Matt, and went back to 
 look at some old IRC logs and emails. For a while I'd been thinking about a 
 conversation that Matt and I had back in 2007ish about the Perl core, and I 
@@ -69,5 +71,15 @@ Aug 05 13:40:30 <mst>   k
 Aug 05 13:40:42 <stevan>    lets continue this later though
 Aug 05 13:41:40 <mst>   yeah
 ```
+
+We went on to discuss macros and other things, but this was the earliest and 
+most complete example I could find. 
+
+<!----------------------------------------------------------------------------->
+
+## ADDITIONAL SOURCES
+
+- TODO
+
 
 <!----------------------------------------------------------------------------->
