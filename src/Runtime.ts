@@ -6,6 +6,9 @@ export type Identifier = string // [A-Za-z_][A-Za-z0-9_]+
 
 export type MaybeOP = OP | undefined
 
+
+export class Pad extends Map<string, SV> {}
+
 // =============================================================================
 // OPs
 // =============================================================================
