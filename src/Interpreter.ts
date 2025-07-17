@@ -6,7 +6,7 @@
 
 import { logger } from './Logger'
 import {
-    SV, SymbolTable,
+    SV, PV, SymbolTable,
     OP, MaybeOP, OpTree,
     Pad
 } from './Runtime'
@@ -32,6 +32,18 @@ export class Interpreter implements Executor {
         this.padlist = [ new Pad() ];
         this.root    = new SymbolTable('main');
         this.opcodes = loadInstructionSet();
+    }
+
+    // -------------------------------------------------------------------------
+    // I/O
+    // -------------------------------------------------------------------------
+
+    toSTDOUT (args : PV[]) : void {
+        console.log('STDOUT>', args.map((pv) => pv.value).join(''));
+    }
+
+    toSTDERR (args : PV[]) : void {
+        console.log('STDERR>', args.map((pv) => pv.value).join(''));
     }
 
     // -------------------------------------------------------------------------

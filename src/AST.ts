@@ -148,12 +148,58 @@ export class ConstInt implements Node {
     deparse() : string { return String(this.literal) }
 
     emit () : OpTree {
-        let op = new OP('const', { literal : this.literal })
+        let op = new OP('const', {
+            literal : this.literal,
+            type    : 'IV'
+        })
         return new OpTree(op, op)
     }
 }
 
-export class Undef implements Node {
+export class ConstFloat implements Node {
+    constructor(public literal : number) {}
+
+    deparse() : string { return String(this.literal) }
+
+    emit () : OpTree {
+        let op = new OP('const', {
+            literal : this.literal,
+            type    : 'NV'
+        })
+        return new OpTree(op, op)
+    }
+}
+
+export class ConstStr implements Node {
+    constructor(public literal : string) {}
+
+    deparse() : string { return `'${this.literal}'` }
+
+    emit () : OpTree {
+        let op = new OP('const', { literal : this.literal, type : 'PV' })
+        return new OpTree(op, op)
+    }
+}
+
+export class ConstTrue implements Node {
+    deparse() : string { return 'true' }
+
+    emit () : OpTree {
+        let op = new OP('true', {})
+        return new OpTree(op, op)
+    }
+}
+
+export class ConstFalse implements Node {
+    deparse() : string { return 'false' }
+
+    emit () : OpTree {
+        let op = new OP('false', {})
+        return new OpTree(op, op)
+    }
+}
+
+export class ConstUndef implements Node {
     deparse() : string { return 'undef' }
 
     emit () : OpTree {
@@ -331,17 +377,19 @@ export class ScalarDeclare extends ScalarStore {
 // Builtins
 // -----------------------------------------------------------------------------
 
-export class Say implements Node {
+export abstract class BuiltIn implements Node {
     constructor(
-        public args : Node[]
+        public name : string,
+        public op   : LISTOP,
+        public args : Node[],
     ) {}
 
     deparse() : string {
-        return `say(${this.args.map((a) => a.deparse()).join(', ')})`
+        return `${this.name}(${this.args.map((a) => a.deparse()).join(', ')})`
     }
 
     emit () : OpTree {
-        let op       = new LISTOP('say', {});
+        let op       = this.op;
         let pushmark = new OP('pushmark', {});
 
         op.first = pushmark;
@@ -358,6 +406,18 @@ export class Say implements Node {
         curr.next = op;
 
         return new OpTree(pushmark, op);
+    }
+}
+
+export class Say extends BuiltIn {
+    constructor(args : Node[]) {
+        super('say', new LISTOP('say', {}), args)
+    }
+}
+
+export class Join extends BuiltIn {
+    constructor(args : Node[]) {
+        super('join', new LISTOP('join', {}), args)
     }
 }
 

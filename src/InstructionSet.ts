@@ -7,9 +7,9 @@
 
 import { logger } from './Logger'
 import {
-    SV, Pad, SVtoPV,
+    SV, IV, NV, PV, Pad, SVtoPV, assertIsSV, assertIsPV,
     Stash, newStash,
-    newIV, assertIsIV, newPV,
+    newIV, assertIsIV, newPV, newNV,
     SV_True, SV_False, SV_Undef, isUndef,
     SymbolTable, assertIsGlob,
     OP, MaybeOP, OpTree,
@@ -33,6 +33,9 @@ export interface Executor {
     createLexical (name : string, value : SV) : void;
     setLexical    (name : string, value : SV) : void;
     getLexical    (name : string) : SV;
+
+    toSTDOUT (args : PV[]) : void;
+    toSTDERR (args : PV[]) : void;
 
     run (root : OpTree) : void;
 }
@@ -129,21 +132,36 @@ export function loadInstructionSet () : InstructionSet {
     // Builtins
     // ---------------------------------------------------------------------
 
-    opcodes.set('say', (i, op) => {
-
+    function collectArgumentsFromStack (i : Executor) : SV[] {
         let args = [];
         while (true) {
             let arg = i.stack.pop();
             if (arg == undefined) throw new Error('Stack Underflow!');
+            assertIsSV(arg);
             if (arg === PUSHMARK) {
                 break;
             } else {
                 args.unshift(arg);
             }
         }
+        return args;
+    }
 
-        // FIXME: this is totally wrong :)
-        console.log('STDOUT:', args.map((sv) => SVtoPV(sv).value).join(''));
+    opcodes.set('say', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+        i.toSTDOUT(args.map((sv) => SVtoPV(sv)));
+        return op.next;
+    });
+
+    opcodes.set('join', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+
+        let sep = args.shift();
+        if (sep == undefined) throw new Error('Expected seperator arg for join');
+        assertIsPV(sep);
+        i.stack.push(
+            newPV(args.map((sv) => SVtoPV(sv).value).join(sep.value))
+        );
 
         return op.next;
     });
@@ -153,12 +171,30 @@ export function loadInstructionSet () : InstructionSet {
     // ---------------------------------------------------------------------
 
     opcodes.set('const', (i, op) => {
-        i.stack.push(newIV(op.config.literal));
+        if (op.config.type == 'IV') {
+            i.stack.push(newIV(op.config.literal as number));
+        }
+        else if (op.config.type == 'NV') {
+            i.stack.push(newNV(op.config.literal as number));
+        }
+        else if (op.config.type == 'PV') {
+            i.stack.push(newPV(op.config.literal as string));
+        }
         return op.next;
     });
 
     opcodes.set('undef', (i, op) => {
         i.stack.push(SV_Undef);
+        return op.next;
+    });
+
+    opcodes.set('false', (i, op) => {
+        i.stack.push(SV_False);
+        return op.next;
+    });
+
+    opcodes.set('true', (i, op) => {
+        i.stack.push(SV_True);
         return op.next;
     });
 

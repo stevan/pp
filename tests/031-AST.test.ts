@@ -4,7 +4,7 @@ import {
     Program, Statement,
     ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
-    Add, Block, Undef,
+    Add, Block, ConstUndef,
 } from '../src/AST'
 
 import { Interpreter } from '../src/Interpreter'
@@ -48,7 +48,7 @@ let prog = new Program([
     new Statement(
         new ScalarDeclare(new ScalarVar('x'), new ConstInt(1))),
     new Statement(
-        new ScalarDeclare(new ScalarVar('y'), new Undef())),
+        new ScalarDeclare(new ScalarVar('y'), new ConstUndef())),
     new Statement(
         new Block([
             new Statement(
