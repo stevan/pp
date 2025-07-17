@@ -7,9 +7,9 @@
 
 import { logger } from './Logger'
 import {
-    SV, Pad,
+    SV, Pad, SVtoPV,
     Stash, newStash,
-    newIV, assertIsIV,
+    newIV, assertIsIV, newPV,
     SV_True, SV_False, SV_Undef, isUndef,
     SymbolTable, assertIsGlob,
     OP, MaybeOP, OpTree,
@@ -82,6 +82,8 @@ function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
 
 export class InstructionSet extends Map<string, Opcode> {}
 
+const PUSHMARK = newPV('*PUSHMARK*');
+
 export function loadInstructionSet () : InstructionSet {
 
     let opcodes = new InstructionSet();
@@ -113,6 +115,37 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     opcodes.set('goto', (i, op) => op.next);
+
+    // ---------------------------------------------------------------------
+    // Sub Calls
+    // ---------------------------------------------------------------------
+
+    opcodes.set('pushmark', (i, op) => {
+        i.stack.push(PUSHMARK);
+        return op.next
+    });
+
+    // ---------------------------------------------------------------------
+    // Builtins
+    // ---------------------------------------------------------------------
+
+    opcodes.set('say', (i, op) => {
+
+        let args = [];
+        while (true) {
+            let arg = i.stack.pop();
+            if (arg == undefined) throw new Error('Stack Underflow!');
+            if (arg === PUSHMARK) {
+                break;
+            } else {
+                args.unshift(arg);
+            }
+        }
+
+        console.log('STDOUT:', args.map((sv) => SVtoPV(sv).value).join(''));
+
+        return op.next;
+    });
 
     // ---------------------------------------------------------------------
     // Constants

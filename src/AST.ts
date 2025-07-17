@@ -10,7 +10,7 @@
 // =============================================================================
 
 import {
-    OP, NOOP, COP, UNOP, BINOP, LOGOP, OpTree
+    OP, NOOP, COP, UNOP, BINOP, LOGOP, LISTOP, OpTree
 } from './Runtime'
 
 // -----------------------------------------------------------------------------
@@ -324,6 +324,40 @@ export class ScalarDeclare extends ScalarStore {
         let tree = super.emit();
         tree.leave.config.introduce = true;
         return tree;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Builtins
+// -----------------------------------------------------------------------------
+
+export class Say implements Node {
+    constructor(
+        public args : Node[]
+    ) {}
+
+    deparse() : string {
+        return `say(${this.args.map((a) => a.deparse()).join(', ')})`
+    }
+
+    emit () : OpTree {
+        let op       = new LISTOP('say', {});
+        let pushmark = new OP('pushmark', {});
+
+        op.first = pushmark;
+
+        let curr = pushmark;
+        for (const arg of this.args) {
+            let a = arg.emit();
+
+            curr.next    = a.leave;
+            curr.sibling = a.enter;
+
+            curr = a.enter;
+        }
+        curr.next = op;
+
+        return new OpTree(pushmark, op);
     }
 }
 
