@@ -142,6 +142,7 @@ export function loadInstructionSet () : InstructionSet {
             }
         }
 
+        // FIXME: this is totally wrong :)
         console.log('STDOUT:', args.map((sv) => SVtoPV(sv).value).join(''));
 
         return op.next;

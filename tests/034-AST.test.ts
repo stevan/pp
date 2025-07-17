@@ -30,8 +30,17 @@ let prog = new Program([
     new Statement(
         new Say([
             new ConstInt(1),
-            new ConstInt(2),
-            new ConstInt(3),
+            new Add(
+                new ConstInt(1),
+                new ConstInt(1)
+            ),
+            new Add(
+                new ConstInt(1),
+                new Add(
+                    new ConstInt(1),
+                    new ConstInt(1)
+                ),
+            ),
         ])
     )
 ]);

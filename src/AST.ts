@@ -350,10 +350,10 @@ export class Say implements Node {
         for (const arg of this.args) {
             let a = arg.emit();
 
-            curr.next    = a.leave;
-            curr.sibling = a.enter;
+            curr.next    = a.enter;
+            curr.sibling = a.leave;
 
-            curr = a.enter;
+            curr = a.leave;
         }
         curr.next = op;
 
