@@ -1,6 +1,16 @@
+// =============================================================================
+// Abstract Syntax Tree
+// -----------------------------------------------------------------------------
+// This will be the result of the Parse phase (when written) and represents the
+// abstract syntax tree, with deparsing functionality
+//
+// Currently this also implements kind of the first phase of a Compiler
+// through the emit() method which constructions OpTree segments and
+// stiches them together.
+// =============================================================================
 
 import {
-    OP, NOOP, COP, UNOP, BINOP, OpTree
+    OP, NOOP, COP, UNOP, BINOP, LOGOP, OpTree
 } from './Runtime'
 
 // -----------------------------------------------------------------------------
@@ -54,7 +64,7 @@ export class Program extends Scope {
 
 export class Block extends Scope {
     enter () : OP   { return new OP('enterscope', {}) }
-    leave () : UNOP { return new UNOP('leavescope', { halt : true }) }
+    leave () : UNOP { return new UNOP('leavescope', {}) }
 
     override deparse() : string {
         let src = super.deparse();
@@ -77,6 +87,54 @@ export class Statement implements Node {
         s.next    = n.enter;
         s.sibling = n.leave;
         return new OpTree(s, n.leave);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Control Structures
+// -----------------------------------------------------------------------------
+
+export class Conditional implements Node {
+    constructor(
+        public predicate : Node,
+        public ifTrue    : Block,
+        public ifFalse   : Block,
+    ) {}
+
+    deparse() : string {
+        return [
+            `if (${this.predicate.deparse()})`,
+                this.ifTrue.deparse().replace('\n', '\n  '),
+            ' else ',
+                this.ifFalse.deparse().replace('\n', '\n  '),
+            ''
+        ].join('\n')
+    }
+
+    emit () : OpTree {
+        let condition   = this.predicate.emit();
+        let trueBranch  = this.ifTrue.emit();
+        let falseBranch = this.ifFalse.emit();
+
+        let op = new LOGOP('cond_expr', {});
+
+        condition.leave.next = op;
+
+        op.first = condition.leave;
+        op.other = trueBranch.enter;
+        op.next  = falseBranch.enter;
+
+        let goto = new UNOP('goto', {});
+
+        trueBranch.leave.next  = goto;
+        falseBranch.leave.next = goto;
+
+        condition.leave.sibling = trueBranch.leave;
+        trueBranch.leave.sibling = falseBranch.leave;
+
+        goto.first = op;
+
+        return new OpTree(condition.enter, goto);
     }
 }
 
@@ -287,6 +345,33 @@ export class Add implements Node {
         let lhs = this.lhs.emit();
         let rhs = this.rhs.emit();
         let op  = new BINOP('add', { operation : '+' });
+
+        lhs.leave.next = rhs.enter;
+        rhs.leave.next = op;
+
+        op.first = lhs.leave;
+        op.last  = rhs.leave;
+
+        lhs.leave.sibling = rhs.leave;
+
+        return new OpTree(lhs.enter, op);
+    }
+}
+
+export class Eq implements Node {
+    constructor(
+        public lhs : Node,
+        public rhs : Node,
+    ) {}
+
+    deparse() : string {
+        return `${this.lhs.deparse()} == ${this.rhs.deparse()}`
+    }
+
+    emit () : OpTree {
+        let lhs = this.lhs.emit();
+        let rhs = this.rhs.emit();
+        let op  = new BINOP('eq', { operation : '==' });
 
         lhs.leave.next = rhs.enter;
         rhs.leave.next = op;

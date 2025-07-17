@@ -1,3 +1,9 @@
+// =============================================================================
+// Instruction Set
+// -----------------------------------------------------------------------------
+// This contains all the opcodes that will be referenced in the OP tree, which
+// is emited by the AST and then executed by the interpreter.
+// =============================================================================
 
 import { logger } from './Logger'
 import {
@@ -6,7 +12,9 @@ import {
     newIV, assertIsIV,
     SV_True, SV_False, SV_Undef, isUndef,
     SymbolTable, assertIsGlob,
-    OP, MaybeOP, OpTree
+    OP, MaybeOP, OpTree,
+    assertIsBool, isTrue,
+    LOGOP,
 } from './Runtime'
 
 import { GlobSlot } from './AST'
@@ -89,6 +97,22 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('leavescope', (i, op) => { i.leaveScope(); return op.next });
 
     opcodes.set('nextstate', (i, op) => op.next);
+
+    // ---------------------------------------------------------------------
+    // Control Structures
+    // ---------------------------------------------------------------------
+
+    opcodes.set('cond_expr', (i, op) => {
+        let bool = i.stack.pop() as SV;
+        assertIsBool(bool);
+        if (isTrue(bool) && op instanceof LOGOP) {
+            return op.other;
+        } else {
+            return op.next;
+        }
+    });
+
+    opcodes.set('goto', (i, op) => op.next);
 
     // ---------------------------------------------------------------------
     // Constants

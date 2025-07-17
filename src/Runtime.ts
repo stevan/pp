@@ -1,11 +1,22 @@
 // =============================================================================
+// Runtime
+// -----------------------------------------------------------------------------
+// NOTE: This file should strive to be as self contained as possible and
+// not import anything from the other files in this module. Not 100% sure
+// why, it's a gut thing.
+// -----------------------------------------------------------------------------
+// This contains all the elements used by the interpreter during runtime,
+// such as op trees, data values, and some internal classes. An instruction
+// set would contain opcodes that manipulate these things.
+// =============================================================================
+
+// =============================================================================
 // Misc. Types
 // =============================================================================
 
 export type Identifier = string // [A-Za-z_][A-Za-z0-9_]+
 
 export type MaybeOP = OP | undefined
-
 
 export class Pad extends Map<string, SV> {}
 
@@ -220,7 +231,7 @@ export function isBool (sv : Any) : sv is Bool {
 }
 
 export function assertIsBool (sv : Any) : asserts sv is Bool {
-    if (isBool(sv)) throw new Error(`Not Bool ??(${JSON.stringify(sv)})`)
+    if (!isBool(sv)) throw new Error(`Not Bool ??(${JSON.stringify(sv)})`)
 }
 
 // -----------------------------------------------------------------------------
