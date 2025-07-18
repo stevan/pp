@@ -71,12 +71,13 @@ export class LISTOP extends BINOP {
 
 // declaration
 
-export class DECLARE extends OP {
+export class DECLARE extends UNOP {
     public declaration : OpTree;
 
     constructor(decl : OpTree, config : any) {
-        super('declare', config)
+        super('declare', config);
         this.declaration = decl;
+        this.first = decl.leave;
     }
 }
 
@@ -187,8 +188,10 @@ export class Hash extends Map<string, SV> {}
 
 export type AV = { type : 'LIST', contents : List }
 export type HV = { type : 'HASH', contents : Hash }
-export type CV = { type : 'CODE' } // TODO
+export type CV = { type : 'CODE', contents : OpTree }
 export type RV = { type : 'REF', value : Any }
+
+export type GlobSlotName = 'SCALAR' | 'ARRAY' | 'HASH' | 'CODE';
 
 export type Glob = {
     type  : 'GLOB',
@@ -226,15 +229,15 @@ export function isTrue  (sv : Any) : sv is True  { return sv.type == 'TRUE'  }
 export function isFalse (sv : Any) : sv is False { return sv.type == 'FALSE' }
 
 export function assertIsUndef (sv : Any) : asserts sv is Undef {
-    if (isUndef(sv)) throw new Error(`Not Undef ??(${JSON.stringify(sv)})`)
+    if (!isUndef(sv)) throw new Error(`Not Undef ??(${JSON.stringify(sv)})`)
 }
 
 export function assertIsTrue (sv : Any) : asserts sv is True {
-    if (isTrue(sv)) throw new Error(`Not True ??(${JSON.stringify(sv)})`)
+    if (!isTrue(sv)) throw new Error(`Not True ??(${JSON.stringify(sv)})`)
 }
 
 export function assertIsFalse (sv : Any) : asserts sv is False {
-    if (isFalse(sv)) throw new Error(`Not False ??(${JSON.stringify(sv)})`)
+    if (!isFalse(sv)) throw new Error(`Not False ??(${JSON.stringify(sv)})`)
 }
 
 export function isBool (sv : Any) : sv is Bool {
@@ -389,7 +392,9 @@ export function assertIsHV (hv : Any) : asserts hv is HV {
 
 // =============================================================================
 
-export function newCV () : CV { return { type : 'CODE' } }
+export function newCV (contents : OpTree) : CV {
+    return { type : 'CODE', contents }
+}
 
 export function isCV (cv : Any) : cv is CV { return cv.type == 'CODE' }
 
@@ -416,6 +421,27 @@ export function isGlob (glob : Any) : glob is Glob { return glob.type == 'GLOB' 
 
 export function assertIsGlob (glob : Any) : asserts glob is Glob {
     if (!isGlob(glob)) throw new Error(`Not Glob ??(${JSON.stringify(glob)})`)
+}
+
+export function setGlobScalar (gv : Glob, sv : SV) : void { gv.slots.SCALAR = sv }
+export function setGlobArray  (gv : Glob, av : AV) : void { gv.slots.ARRAY  = av }
+export function setGlobHash   (gv : Glob, hv : HV) : void { gv.slots.HASH   = hv }
+export function setGlobCode   (gv : Glob, cv : CV) : void { gv.slots.CODE   = cv }
+
+export function getGlobScalar (gv : Glob) : SV | Undef { return gv.slots.SCALAR }
+export function getGlobArray  (gv : Glob) : AV | Undef { return gv.slots.ARRAY  }
+export function getGlobHash   (gv : Glob) : HV | Undef { return gv.slots.HASH   }
+export function getGlobCode   (gv : Glob) : CV | Undef { return gv.slots.CODE   }
+
+export function getGlobSlot (gv : Glob, slot : GlobSlotName) : Any {
+    switch (slot) {
+    case 'SCALAR': return getGlobScalar(gv);
+    case 'ARRAY' : return getGlobArray(gv);
+    case 'HASH'  : return getGlobHash(gv);
+    case 'CODE'  : return getGlobCode(gv);
+    default:
+        throw new Error('Never gonna happen');
+    }
 }
 
 // -----------------------------------------------------------------------------

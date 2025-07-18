@@ -351,6 +351,17 @@ export enum GlobSlot {
     CODE   = '&',
 }
 
+function SigilToSlot (sigil : GlobSlot) : string {
+    switch (sigil) {
+    case '$' : return 'SCALAR';
+    case '@' : return 'ARRAY';
+    case '%' : return 'HASH';
+    case '&' : return 'CODE';
+    default:
+        throw new Error("WTF");
+    }
+}
+
 export class GlobVar implements Node {
     constructor(
         public name : string,
@@ -362,7 +373,7 @@ export class GlobVar implements Node {
     emit () : OpTree {
         let op =  new UNOP('gv', {
             name : this.name,
-            slot : this.slot,
+            slot : SigilToSlot(this.slot),
         });
         return new OpTree(op, op)
     }
@@ -380,7 +391,7 @@ export class GlobFetch implements Node {
         let op =  new UNOP('gv_fetch', {
             target : {
                 name : this.name,
-                slot : this.slot
+                slot : SigilToSlot(this.slot),
             }
         });
         return new OpTree(op, op)

@@ -7,14 +7,15 @@
 
 import { logger } from './Logger'
 import {
-    SV, IV, NV, PV, Pad, SVtoPV, assertIsSV, assertIsPV,
-    Stash, newStash,
+    Any, SV, IV, NV, PV, Pad, SVtoPV, assertIsSV, assertIsPV,
+    Stash, newStash, newCV,
     newIV, assertIsIV, newPV, newNV,
     SV_True, SV_False, SV_Undef, isUndef,
     SymbolTable, assertIsGlob,
     OP, MaybeOP, OpTree,
     assertIsBool, isTrue,
-    LOGOP,
+    LOGOP, DECLARE,
+    setGlobScalar, setGlobCode, getGlobSlot,
 } from './Runtime'
 
 import { GlobSlot } from './AST'
@@ -22,7 +23,7 @@ import { GlobSlot } from './AST'
 // -----------------------------------------------------------------------------
 
 export interface Executor {
-    stack   : SV[];
+    stack   : Any[];
     padlist : Pad[];
     root    : SymbolTable;
 
@@ -55,8 +56,8 @@ function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
     // it out and use the correct opcode. But this is
     // an MVP, so this is fine for now.
     return (i, op) => {
-        let lhs = i.stack.pop() as SV;
-        let rhs = i.stack.pop() as SV;
+        let lhs = i.stack.pop() as Any;
+        let rhs = i.stack.pop() as Any;
         assertIsIV(lhs);
         assertIsIV(rhs);
         i.stack.push(newIV( f(lhs.value, rhs.value) ));
@@ -72,8 +73,8 @@ function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
     // it out and use the correct opcode. But this is
     // an MVP, so this is fine for now.
     return (i, op) => {
-        let lhs = i.stack.pop() as SV;
-        let rhs = i.stack.pop() as SV;
+        let lhs = i.stack.pop() as Any;
+        let rhs = i.stack.pop() as Any;
         assertIsIV(lhs);
         assertIsIV(rhs);
         i.stack.push( f(lhs.value, rhs.value) ? SV_True : SV_False );
@@ -87,12 +88,11 @@ export class InstructionSet extends Map<string, Opcode> {}
 
 const PUSHMARK = newPV('*PUSHMARK*');
 
-function collectArgumentsFromStack (i : Executor) : SV[] {
+function collectArgumentsFromStack (i : Executor) : Any[] {
     let args = [];
     while (true) {
         let arg = i.stack.pop();
         if (arg == undefined) throw new Error('Stack Underflow!');
-        assertIsSV(arg);
         if (arg === PUSHMARK) {
             break;
         } else {
@@ -105,6 +105,19 @@ function collectArgumentsFromStack (i : Executor) : SV[] {
 export function loadInstructionSet () : InstructionSet {
 
     let opcodes = new InstructionSet();
+
+    // ---------------------------------------------------------------------
+    // Compile Time Ops
+    // ---------------------------------------------------------------------
+
+    opcodes.set('declare', (i, op) => {
+        if (!(op instanceof DECLARE)) throw new Error('Y NO DECLARE?')
+        let cv = newCV(op.declaration);
+        let gv = i.root.autovivify(op.config.name);
+        assertIsGlob(gv);
+        setGlobCode(gv, cv);
+        return op.next
+    });
 
     // ---------------------------------------------------------------------
     // Enter/Leave
@@ -123,7 +136,7 @@ export function loadInstructionSet () : InstructionSet {
     // ---------------------------------------------------------------------
 
     opcodes.set('cond_expr', (i, op) => {
-        let bool = i.stack.pop() as SV;
+        let bool = i.stack.pop() as Any;
         assertIsBool(bool);
         if (isTrue(bool) && op instanceof LOGOP) {
             return op.other;
@@ -159,10 +172,6 @@ export function loadInstructionSet () : InstructionSet {
 
     // ...
 
-    opcodes.set('definesub', (i, op) => {
-        return op.next
-    });
-
     opcodes.set('callsub', (i, op) => {
         return op.next
     });
@@ -173,7 +182,11 @@ export function loadInstructionSet () : InstructionSet {
 
     opcodes.set('say', (i, op) => {
         let args = collectArgumentsFromStack(i);
-        i.toSTDOUT(args.map((sv) => SVtoPV(sv)));
+        i.toSTDOUT(args.map((sv) => {
+            // TODO: handle things other than scalars ...
+            assertIsSV(sv);
+            return SVtoPV(sv);
+        }));
         return op.next;
     });
 
@@ -184,7 +197,11 @@ export function loadInstructionSet () : InstructionSet {
         if (sep == undefined) throw new Error('Expected seperator arg for join');
         assertIsPV(sep);
         i.stack.push(
-            newPV(args.map((sv) => SVtoPV(sv).value).join(sep.value))
+            newPV(args.map((sv) => {
+                // TODO: handle things other than scalars ...
+                assertIsSV(sv);
+                return SVtoPV(sv).value;
+            }).join(sep.value))
         );
 
         return op.next;
@@ -237,7 +254,9 @@ export function loadInstructionSet () : InstructionSet {
         let gv = i.root.autovivify(target.name);
         assertIsGlob(gv);
 
-        gv.slots.SCALAR = i.stack.pop() as SV;
+        let sv = i.stack.pop() as Any;
+        assertIsSV(sv);
+        setGlobScalar(gv, sv);
 
         return op.next
     });
@@ -247,7 +266,7 @@ export function loadInstructionSet () : InstructionSet {
 
         let gv = i.root.autovivify(target.name);
         assertIsGlob(gv);
-        i.stack.push( gv.slots.SCALAR );
+        i.stack.push( getGlobSlot(gv, target.slot) );
 
         return op.next;
     });
@@ -262,17 +281,19 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('padsv_store', (i, op) => {
         // NOTE: ponder splitting this into two opcodes
         // one for the store and one for the declare
+        let sv = i.stack.pop() as Any;
+        assertIsSV(sv);
         if (op.config.introduce) {
-            i.createLexical(op.config.target.name, i.stack.pop() as SV);
+            i.createLexical(op.config.target.name, sv);
         } else {
-            i.setLexical(op.config.target.name, i.stack.pop() as SV);
+            i.setLexical(op.config.target.name, sv);
         }
         return op.next
     });
 
     opcodes.set('padsv_fetch', (i, op) => {
         let t = i.getLexical(op.config.target.name);
-        i.stack.push(t as SV);
+        i.stack.push(t);
         return op.next;
     });
 

@@ -92,45 +92,49 @@ sub fact ($n) {
 
 */
 
-let fact = new SubDefinition(
-    'fact',
-    [ new ScalarVar('n') ],
-    [
-        new Statement(
-            new Conditional(
-                new Eq(
-                    new ScalarFetch('n'),
-                    new ConstInt(0)
-                ),
-                new Block([
-                    new Statement(
-                        new SubReturn(new ConstInt(1))
-                    ),
-                ]),
-                new Block([
-                    new Statement(
-                        new SubReturn(
-                            new Multiply(
-                                new ScalarFetch('n'),
-                                new SubCall(
-                                    new GlobFetch('fact', GlobSlot.CODE),
-                                    [
-                                        new Subtract(
-                                            new ScalarFetch('n'),
-                                            new ConstInt(1)
+let BEGIN = new Program([
+    new Statement(
+        new SubDefinition(
+            'fact',
+            [ new ScalarVar('n') ],
+            [
+                new Statement(
+                    new Conditional(
+                        new Eq(
+                            new ScalarFetch('n'),
+                            new ConstInt(0)
+                        ),
+                        new Block([
+                            new Statement(
+                                new SubReturn(new ConstInt(1))
+                            ),
+                        ]),
+                        new Block([
+                            new Statement(
+                                new SubReturn(
+                                    new Multiply(
+                                        new ScalarFetch('n'),
+                                        new SubCall(
+                                            new GlobFetch('fact', GlobSlot.CODE),
+                                            [
+                                                new Subtract(
+                                                    new ScalarFetch('n'),
+                                                    new ConstInt(1)
+                                                )
+                                            ]
                                         )
-                                    ]
+                                    )
                                 )
-                            )
-                        )
-                    ),
-                ])
-            )
+                            ),
+                        ])
+                    )
+                )
+            ]
         )
-    ]
-);
+    )
+]);
 
-let prog = new Program([
+let RUN = new Program([
     new Statement(
         new SubCall(
             new GlobFetch('fact', GlobSlot.CODE),
@@ -164,37 +168,42 @@ function walk(op : any, depth : number = 0) {
     }
 }
 
-let op = prog.emit();
-let f  = fact.emit();
-
-let decl = f.enter as DECLARE;
+let runtime  = RUN.emit();
+let comptime = BEGIN.emit();
 
 //logger.log(op);
 
-logger.group('DEPARSE:');
-logger.log(fact.deparse());
-logger.log(prog.deparse());
+logger.group('DEPARSE/BEGIN:');
+logger.log(BEGIN.deparse());
 logger.groupEnd();
 
-logger.group('FACT/EXEC:');
-dump(decl.declaration.enter);
+logger.group('DEPARSE/RUN:');
+logger.log(RUN.deparse());
 logger.groupEnd();
 
-logger.group('EXEC:');
-dump(op.enter);
+logger.group('BEGIN/EXEC:');
+dump(comptime.enter);
 logger.groupEnd();
 
-logger.group('FACT/WALK:');
-walk(decl.declaration.leave);
+logger.group('RUN/EXEC:');
+dump(runtime.enter);
 logger.groupEnd();
 
-logger.group('WALK:');
-walk(op.leave);
+logger.group('BEGIN/WALK:');
+walk(comptime.leave);
 logger.groupEnd();
 
+logger.group('RUN/WALK:');
+walk(runtime.leave);
+logger.groupEnd();
 
-// logger.group('RUN:');
-// let interpreter = new Interpreter();
-// interpreter.run(op);
-// logger.groupEnd();
+let interpreter = new Interpreter();
+
+logger.group('INTERPRET/BEGIN:');
+interpreter.run(comptime);
+logger.groupEnd();
+
+logger.group('INTERPRET/RUN:');
+interpreter.run(runtime);
+logger.groupEnd();
 

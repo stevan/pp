@@ -6,7 +6,7 @@
 
 import { logger } from './Logger'
 import {
-    SV, PV, SymbolTable,
+    Any, SV, PV, SymbolTable,
     OP, MaybeOP, OpTree,
     Pad
 } from './Runtime'
@@ -22,7 +22,7 @@ import { GlobSlot } from './AST'
 // -----------------------------------------------------------------------------
 
 export class Interpreter implements Executor {
-    public stack   : SV[];
+    public stack   : Any[];
     public padlist : Pad[];
     public root    : SymbolTable;
     public opcodes : InstructionSet;
