@@ -30,7 +30,11 @@ export abstract class Scope implements Node {
     constructor(public statements : Statement[]) { }
 
     deparse() : string {
-        return this.statements.map((s) => s.deparse()).join('\n');
+        return this.statements
+                //.map((s) => (typeof s) + ":" + s.deparse() + "####")
+                .map((s) => s.deparse())
+                .filter((s) => s.length > 0)
+                .join('\n');
     }
 
     abstract enter () : OP;
@@ -68,7 +72,7 @@ export class Block extends Scope {
 
     override deparse() : string {
         let src = super.deparse();
-        return '{\n  ' + src.replace('\n', '\n  ') + '\n}';
+        return '{\n' + src + '\n}';
     }
 }
 
@@ -102,7 +106,7 @@ export class SubBody extends Scope {
 
     override deparse() : string {
         let src = super.deparse();
-        return '{\n  ' + src.replace('\n', '\n  ') + '\n}';
+        return '{\n' + src + '\n}';
     }
 }
 
@@ -201,8 +205,12 @@ export class Statement implements Node {
     constructor(public body : Node, public internal : boolean = false) {}
 
     deparse() : string {
-        if (this.internal) return '; # internal';
-        return this.body.deparse() + ';'
+        if (this.internal) return '';
+        let src = this.body.deparse();
+        if (src.charAt(src.length - 1) != '}') {
+            src = src + ';';
+        }
+        return src;
     }
 
     emit () : OpTree {
@@ -228,11 +236,11 @@ export class Conditional implements Node {
     deparse() : string {
         return [
             `if (${this.predicate.deparse()})`,
-                this.ifTrue.deparse().replace('\n', '\n  '),
-            ' else ',
-                this.ifFalse.deparse().replace('\n', '\n  '),
-            ''
-        ].join('\n')
+                this.ifTrue.deparse(),
+            'else',
+                this.ifFalse.deparse(),
+        ]
+        .join('\n')
     }
 
     emit () : OpTree {
