@@ -118,10 +118,8 @@ export class SubDefinition implements Node {
     ) {
         this.name = name;
         this.sig  = new SubSignature(sig);
-        this.body = new SubBody([
-            new Statement(this.sig),
-            body...
-        ]);
+        body.unshift(new Statement(this.sig));
+        this.body = new SubBody(body);
     }
 
     deparse() : string {
