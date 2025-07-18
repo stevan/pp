@@ -10,7 +10,7 @@
 // =============================================================================
 
 import {
-    OP, NOOP, COP, UNOP, BINOP, LOGOP, LISTOP, OpTree
+    OP, NOOP, COP, UNOP, BINOP, LOGOP, LISTOP, DECLARE, OpTree
 } from './Runtime'
 
 // -----------------------------------------------------------------------------
@@ -20,66 +20,6 @@ import {
 export interface Node {
     deparse () : string;
     emit    () : OpTree;
-}
-
-// -----------------------------------------------------------------------------
-// Subroutines ...
-// -----------------------------------------------------------------------------
-
-export class Subroutine {
-    constructor(
-        // FIXME: we dont have anything else than ScalarVar right now
-        public parameters : ScalarVar[],
-        public body       : Block,
-    ) {}
-}
-
-export class SubCall implements Node {
-    constructor(
-        public glob : GlobFetch,
-        public args : Node[],
-    ) {}
-
-    deparse() : string {
-        return `${this.glob.name}(${this.args.map((a) => a.deparse()).join(', ')})`
-    }
-
-    emit () : OpTree {
-        let glob     = this.glob.emit();
-        let op       = new LISTOP('entersub', {});
-        let pushmark = new OP('pushmark', {});
-
-        op.first = pushmark;
-
-        let curr = pushmark;
-        for (const arg of this.args) {
-            let a = arg.emit();
-
-            curr.next    = a.enter;
-            curr.sibling = a.leave;
-
-            curr = a.leave;
-        }
-        curr.next    = glob.enter;
-        curr.sibling = glob.leave;
-
-        glob.leave.next = op;
-
-        return new OpTree(pushmark, op);
-    }
-}
-
-export class Return implements Node {
-    constructor(
-        public result : Node,
-    ) {}
-
-    deparse() : string { return `return ${this.result.deparse()}` }
-
-    emit () : OpTree {
-        let op = new OP('return', {})
-        return new OpTree(op, op)
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -129,6 +69,123 @@ export class Block extends Scope {
     override deparse() : string {
         let src = super.deparse();
         return '{\n  ' + src.replace('\n', '\n  ') + '\n}';
+    }
+}
+
+export class SubBody extends Scope {
+    enter () : OP   { return new OP('entersub', {}) }
+    leave () : UNOP { return new UNOP('leavesub', {}) }
+
+    override deparse() : string {
+        let src = super.deparse();
+        return '{\n  ' + src.replace('\n', '\n  ') + '\n}';
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Subroutines ...
+// -----------------------------------------------------------------------------
+
+export class SubSignature implements Node {
+    constructor(
+            // FIXME: we dont have anything else than ScalarVar right now
+        public parameters : ScalarVar[],
+    ) {}
+
+    // XXX: needs to handle slurpy
+    arity () : number { return this.parameters.length }
+
+    deparse() : string { return `(${this.parameters.map((p) => p.deparse()).join(', ')})` }
+
+    emit () : OpTree {
+        let s  = new COP();
+        let op = new OP('argcheck', {
+            expected : this.arity()
+        });
+        s.next    = op;
+        s.sibling = op;
+        return new OpTree(s, op);
+    }
+}
+
+export class SubDefinition implements Node {
+    constructor(
+        public name : string,
+        public sig  : SubSignature,
+        public body : SubBody,
+    ) {}
+
+    deparse() : string {
+        return `sub ${this.name} ${this.sig.deparse()} ${this.body.deparse()}`
+    }
+
+    emit () : OpTree {
+        let sig  = this.sig.emit();
+        let body = this.body.emit();
+
+        sig.leave.next = body.enter;
+
+        let op = new DECLARE(
+            new OpTree(sig.enter, body.leave),
+            {
+                name  : this.name,
+                arity : this.sig.arity()
+            }
+        );
+
+        return new OpTree(op, op)
+    }
+}
+
+export class SubCall implements Node {
+    constructor(
+        public glob : GlobFetch,
+        public args : Node[],
+    ) {}
+
+    deparse() : string {
+        return `${this.glob.name}(${this.args.map((a) => a.deparse()).join(', ')})`
+    }
+
+    emit () : OpTree {
+        let glob     = this.glob.emit();
+        let op       = new LISTOP('callsub', {});
+        let pushmark = new OP('pushmark', {});
+
+        op.first = pushmark;
+
+        let curr = pushmark;
+        for (const arg of this.args) {
+            let a = arg.emit();
+
+            curr.next    = a.enter;
+            curr.sibling = a.leave;
+
+            curr = a.leave;
+        }
+        curr.next    = glob.enter;
+        curr.sibling = glob.leave;
+
+        glob.leave.next = op;
+
+        return new OpTree(pushmark, op);
+    }
+}
+
+export class SubReturn implements Node {
+    constructor(public result : Node) {}
+
+    deparse() : string { return `return ${this.result.deparse()}` }
+
+    emit () : OpTree {
+        let result = this.result.emit();
+        let op     = new UNOP('return', {})
+
+        result.leave.next = op;
+
+        op.first = result.leave;
+
+        return new OpTree(result.enter, op)
     }
 }
 

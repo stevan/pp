@@ -7,8 +7,10 @@ import {
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
     Conditional, Eq,
-    Subroutine, SubCall, Return,
+    SubDefinition, SubCall, SubReturn, SubBody, SubSignature,
 } from '../src/AST'
+
+import { DECLARE } from '../src/Runtime'
 
 import { Interpreter } from '../src/Interpreter'
 
@@ -90,11 +92,10 @@ sub fact ($n) {
 
 */
 
-let fact = new Subroutine(
-    [
-        new ScalarVar('n')
-    ],
-    new Block([
+let fact = new SubDefinition(
+    'fact',
+    new SubSignature([ new ScalarVar('n') ]),
+    new SubBody([
         new Statement(
             new Conditional(
                 new Eq(
@@ -103,16 +104,17 @@ let fact = new Subroutine(
                 ),
                 new Block([
                     new Statement(
-                        new Return(new ConstInt(1))
+                        new SubReturn(new ConstInt(1))
                     ),
                 ]),
                 new Block([
                     new Statement(
-                        new Return(
+                        new SubReturn(
                             new Multiply(
                                 new ScalarFetch('n'),
                                 new SubCall(
-                                    new GlobFetch('fact', GlobSlot.CODE), [
+                                    new GlobFetch('fact', GlobSlot.CODE),
+                                    [
                                         new Subtract(
                                             new ScalarFetch('n'),
                                             new ConstInt(1)
@@ -138,114 +140,19 @@ let prog = new Program([
 ]);
 
 
-/*
-
-// -----------------------------------------------------------------------------
-// Simplify the opcode tree
-// -----------------------------------------------------------------------------
-
-main:
-leave
-    enter
-        entersub
-            pushmark
-                const
-            gv_fetch
-
-fact:
-leavesub
-    lineseq
-        nextstate
-        argcheck
-            nextstate
-            argelem
-        nextstate
-        cond_expr
-            eq
-                padsv_fetch
-                const
-            leavescope
-                enterscope
-                    nextstate
-                    return
-                        pushmark
-                            const
-            leavescope
-                enterscope
-                    nextstate
-                    return
-                        pushmark
-                        multiply
-                            padsv_fetch
-                            entersub
-                                pushmark
-                                subtract
-                                    padsv_fetch
-                                    const
-                                gv_fetch
-
-// -----------------------------------------------------------------------------
-// Catalog the ones to build
-// -----------------------------------------------------------------------------
-
-// ---------------------
-// very easy
-// ---------------------
-
-- gv_fetch
-    - locates the GV to be called by entersub
-
-// ---------------------
-// kinda easy
-// ---------------------
-
-- lineseq
-    - runs multipe statements together
-- pushmark
-    - declares the start of arguments for entersub
-- cond_expr
-    - first is a conditional expression
-    - then the if-true part
-    - then the if-false part
-
-// ---------------------
-// Ponder
-// ---------------------
-
-- entersub
-    - sets up any stack frames, etc.
-    - enters a new scope
-- leavesub
-    - leaves the scope
-    - places return values where expected
-
-- return
-    - expects a pushmark followed by an expression
-    - we need to connect the end of the expression to the leavesub
-        - this will require a second phase perhaps
-        - or having the enter/leave in scope somehow
-
-// ---------------------
-// Remove
-// ---------------------
-
-// these should be part of entersub
-
-- argcheck
-    - checks arg arity
-    - could be handled in entersub
-    - could also be compile time checked
-- argelem
-    - moves arg from stack to local
-    - could also be handled in entersub
-
-
-*/
-
-function dump(op : any) {
+function dump(op : any, depth : number = 0) {
     //logger.log(op);
     while (op != undefined) {
-        logger.log(op.name, op.config);
+        logger.log("  ".repeat(depth), op.name, op.config);
+
+        if (op.name == 'goto' && depth > 0) {
+            return;
+        }
+
+        if (op.other) {
+            dump(op.other, depth + 1);
+        }
+
         op = op.next;
     }
 }
@@ -258,15 +165,27 @@ function walk(op : any, depth : number = 0) {
 }
 
 let op = prog.emit();
+let f  = fact.emit();
+
+let decl = f.enter as DECLARE;
 
 //logger.log(op);
 
 logger.group('DEPARSE:');
+logger.log(fact.deparse());
 logger.log(prog.deparse());
+logger.groupEnd();
+
+logger.group('FACT/EXEC:');
+dump(decl.declaration.enter);
 logger.groupEnd();
 
 logger.group('EXEC:');
 dump(op.enter);
+logger.groupEnd();
+
+logger.group('FACT/WALK:');
+walk(decl.declaration.leave);
 logger.groupEnd();
 
 logger.group('WALK:');

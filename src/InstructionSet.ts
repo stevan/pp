@@ -157,6 +157,16 @@ export function loadInstructionSet () : InstructionSet {
         return op.next
     });
 
+    // ...
+
+    opcodes.set('definesub', (i, op) => {
+        return op.next
+    });
+
+    opcodes.set('callsub', (i, op) => {
+        return op.next
+    });
+
     // ---------------------------------------------------------------------
     // Builtins
     // ---------------------------------------------------------------------

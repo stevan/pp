@@ -37,8 +37,8 @@ export class OP {
 }
 
 export class NOOP extends OP {
-    constructor() {
-        super('null', {})
+    constructor(config : any = {}) {
+        super('null', config)
     }
 }
 
@@ -67,6 +67,17 @@ export class LOGOP extends UNOP {
 // operations that take lists
 export class LISTOP extends BINOP {
     public children : number = 0;
+}
+
+// declaration
+
+export class DECLARE extends OP {
+    public declaration : OpTree;
+
+    constructor(decl : OpTree, config : any) {
+        super('declare', config)
+        this.declaration = decl;
+    }
 }
 
 // -----------------------------------------------------------------------------
