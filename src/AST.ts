@@ -118,7 +118,7 @@ export class SubDefinition implements Node {
     ) {
         this.name = name;
         this.sig  = new SubSignature(sig);
-        body.unshift(new Statement(this.sig));
+        body.unshift(new Statement(this.sig, true));
         this.body = new SubBody(body);
     }
 
@@ -198,9 +198,12 @@ export class SubReturn implements Node {
 // -----------------------------------------------------------------------------
 
 export class Statement implements Node {
-    constructor(public body : Node) {}
+    constructor(public body : Node, public internal : boolean = false) {}
 
-    deparse() : string { return this.body.deparse() + ';' }
+    deparse() : string {
+        if (this.internal) return '; # internal';
+        return this.body.deparse() + ';'
+    }
 
     emit () : OpTree {
         let s = new COP();
