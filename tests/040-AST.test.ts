@@ -2,9 +2,12 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarStore, ScalarFetch,
+    ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
-    Add,
+    Add, Multiply, Subtract, Block,
+    ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
+    Conditional, Eq,
+    Subroutine, SubCall, Return,
 } from '../src/AST'
 
 import { Interpreter } from '../src/Interpreter'
@@ -76,6 +79,66 @@ u           <$> const(IV 10) sM ->v
 -           <1> ex-rv2cv sK/1 ->-
 v              <$> gv(*fact) s ->w
 -e syntax OK
+
+sub fact ($n) {
+    if ($n == 0) {
+        return 1;
+    } else {
+        return $n * fact( $n - 1 )
+    }
+}
+
+*/
+
+let fact = new Subroutine(
+    [
+        new ScalarVar('n')
+    ],
+    new Block([
+        new Statement(
+            new Conditional(
+                new Eq(
+                    new ScalarFetch('n'),
+                    new ConstInt(0)
+                ),
+                new Block([
+                    new Statement(
+                        new Return(new ConstInt(1))
+                    ),
+                ]),
+                new Block([
+                    new Statement(
+                        new Return(
+                            new Multiply(
+                                new ScalarFetch('n'),
+                                new SubCall(
+                                    new GlobFetch('fact', GlobSlot.CODE), [
+                                        new Subtract(
+                                            new ScalarFetch('n'),
+                                            new ConstInt(1)
+                                        )
+                                    ]
+                                )
+                            )
+                        )
+                    ),
+                ])
+            )
+        )
+    ])
+);
+
+let prog = new Program([
+    new Statement(
+        new SubCall(
+            new GlobFetch('fact', GlobSlot.CODE),
+            [ new ConstInt(6) ]
+        )
+    )
+]);
+
+
+/*
 
 // -----------------------------------------------------------------------------
 // Simplify the opcode tree
@@ -179,8 +242,6 @@ leavesub
 
 */
 
-let prog = new Program([]);
-
 function dump(op : any) {
     //logger.log(op);
     while (op != undefined) {
@@ -213,8 +274,8 @@ walk(op.leave);
 logger.groupEnd();
 
 
-logger.group('RUN:');
-let interpreter = new Interpreter();
-interpreter.run(op);
-logger.groupEnd();
+// logger.group('RUN:');
+// let interpreter = new Interpreter();
+// interpreter.run(op);
+// logger.groupEnd();
 

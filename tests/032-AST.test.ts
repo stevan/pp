@@ -4,7 +4,7 @@ import {
     Program, Statement,
     ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
-    Add, Block, Undef, GlobVar, GlobSlot, GlobDeclare, GlobFetch
+    Add, Block, ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch
 } from '../src/AST'
 import { Interpreter } from '../src/Interpreter'
 

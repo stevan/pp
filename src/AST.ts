@@ -23,6 +23,66 @@ export interface Node {
 }
 
 // -----------------------------------------------------------------------------
+// Subroutines ...
+// -----------------------------------------------------------------------------
+
+export class Subroutine {
+    constructor(
+        // FIXME: we dont have anything else than ScalarVar right now
+        public parameters : ScalarVar[],
+        public body       : Block,
+    ) {}
+}
+
+export class SubCall implements Node {
+    constructor(
+        public glob : GlobFetch,
+        public args : Node[],
+    ) {}
+
+    deparse() : string {
+        return `${this.glob.name}(${this.args.map((a) => a.deparse()).join(', ')})`
+    }
+
+    emit () : OpTree {
+        let glob     = this.glob.emit();
+        let op       = new LISTOP('entersub', {});
+        let pushmark = new OP('pushmark', {});
+
+        op.first = pushmark;
+
+        let curr = pushmark;
+        for (const arg of this.args) {
+            let a = arg.emit();
+
+            curr.next    = a.enter;
+            curr.sibling = a.leave;
+
+            curr = a.leave;
+        }
+        curr.next    = glob.enter;
+        curr.sibling = glob.leave;
+
+        glob.leave.next = op;
+
+        return new OpTree(pushmark, op);
+    }
+}
+
+export class Return implements Node {
+    constructor(
+        public result : Node,
+    ) {}
+
+    deparse() : string { return `return ${this.result.deparse()}` }
+
+    emit () : OpTree {
+        let op = new OP('return', {})
+        return new OpTree(op, op)
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Compilation Unit
 // -----------------------------------------------------------------------------
 
@@ -379,13 +439,12 @@ export class ScalarDeclare extends ScalarStore {
 
 export abstract class BuiltIn implements Node {
     constructor(
-        public name : string,
         public op   : LISTOP,
         public args : Node[],
     ) {}
 
     deparse() : string {
-        return `${this.name}(${this.args.map((a) => a.deparse()).join(', ')})`
+        return `${this.op.config.builtin}(${this.args.map((a) => a.deparse()).join(', ')})`
     }
 
     emit () : OpTree {
@@ -411,13 +470,13 @@ export abstract class BuiltIn implements Node {
 
 export class Say extends BuiltIn {
     constructor(args : Node[]) {
-        super('say', new LISTOP('say', {}), args)
+        super(new LISTOP('say', { builtin : 'say' }), args)
     }
 }
 
 export class Join extends BuiltIn {
     constructor(args : Node[]) {
-        super('join', new LISTOP('join', {}), args)
+        super(new LISTOP('join', { builtin : 'join' }), args)
     }
 }
 
@@ -425,20 +484,21 @@ export class Join extends BuiltIn {
 // Binary Ops
 // -----------------------------------------------------------------------------
 
-export class Add implements Node {
+export class BinaryOp implements Node {
     constructor(
+        public op  : BINOP,
         public lhs : Node,
         public rhs : Node,
     ) {}
 
     deparse() : string {
-        return `${this.lhs.deparse()} + ${this.rhs.deparse()}`
+        return `${this.lhs.deparse()} ${this.op.config.operation} ${this.rhs.deparse()}`
     }
 
     emit () : OpTree {
         let lhs = this.lhs.emit();
         let rhs = this.rhs.emit();
-        let op  = new BINOP('add', { operation : '+' });
+        let op  = this.op;
 
         lhs.leave.next = rhs.enter;
         rhs.leave.next = op;
@@ -452,31 +512,29 @@ export class Add implements Node {
     }
 }
 
-export class Eq implements Node {
-    constructor(
-        public lhs : Node,
-        public rhs : Node,
-    ) {}
-
-    deparse() : string {
-        return `${this.lhs.deparse()} == ${this.rhs.deparse()}`
-    }
-
-    emit () : OpTree {
-        let lhs = this.lhs.emit();
-        let rhs = this.rhs.emit();
-        let op  = new BINOP('eq', { operation : '==' });
-
-        lhs.leave.next = rhs.enter;
-        rhs.leave.next = op;
-
-        op.first = lhs.leave;
-        op.last  = rhs.leave;
-
-        lhs.leave.sibling = rhs.leave;
-
-        return new OpTree(lhs.enter, op);
+export class Add extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('add', { operation : '+' }), lhs, rhs)
     }
 }
+
+export class Multiply extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('multiply', { operation : '*' }), lhs, rhs)
+    }
+}
+
+export class Subtract extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('subtract', { operation : '-' }), lhs, rhs)
+    }
+}
+
+export class Eq extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('eq', { operation : '==' }), lhs, rhs)
+    }
+}
+
 
 // -----------------------------------------------------------------------------

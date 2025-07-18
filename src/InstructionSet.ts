@@ -87,6 +87,21 @@ export class InstructionSet extends Map<string, Opcode> {}
 
 const PUSHMARK = newPV('*PUSHMARK*');
 
+function collectArgumentsFromStack (i : Executor) : SV[] {
+    let args = [];
+    while (true) {
+        let arg = i.stack.pop();
+        if (arg == undefined) throw new Error('Stack Underflow!');
+        assertIsSV(arg);
+        if (arg === PUSHMARK) {
+            break;
+        } else {
+            args.unshift(arg);
+        }
+    }
+    return args;
+}
+
 export function loadInstructionSet () : InstructionSet {
 
     let opcodes = new InstructionSet();
@@ -128,24 +143,23 @@ export function loadInstructionSet () : InstructionSet {
         return op.next
     });
 
+    opcodes.set('return', (i, op) => {
+        return op.next
+    });
+
+    // ...
+
+    opcodes.set('entersub', (i, op) => {
+        return op.next
+    });
+
+    opcodes.set('leavesub', (i, op) => {
+        return op.next
+    });
+
     // ---------------------------------------------------------------------
     // Builtins
     // ---------------------------------------------------------------------
-
-    function collectArgumentsFromStack (i : Executor) : SV[] {
-        let args = [];
-        while (true) {
-            let arg = i.stack.pop();
-            if (arg == undefined) throw new Error('Stack Underflow!');
-            assertIsSV(arg);
-            if (arg === PUSHMARK) {
-                break;
-            } else {
-                args.unshift(arg);
-            }
-        }
-        return args;
-    }
 
     opcodes.set('say', (i, op) => {
         let args = collectArgumentsFromStack(i);
