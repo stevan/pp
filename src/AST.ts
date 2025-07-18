@@ -72,16 +72,6 @@ export class Block extends Scope {
     }
 }
 
-export class SubBody extends Scope {
-    enter () : OP   { return new OP('entersub', {}) }
-    leave () : UNOP { return new UNOP('leavesub', {}) }
-
-    override deparse() : string {
-        let src = super.deparse();
-        return '{\n  ' + src.replace('\n', '\n  ') + '\n}';
-    }
-}
-
 // -----------------------------------------------------------------------------
 // Subroutines ...
 // -----------------------------------------------------------------------------
@@ -95,38 +85,54 @@ export class SubSignature implements Node {
     // XXX: needs to handle slurpy
     arity () : number { return this.parameters.length }
 
+    // FIXME: this is wrong ...
     deparse() : string { return `(${this.parameters.map((p) => p.deparse()).join(', ')})` }
 
     emit () : OpTree {
-        let s  = new COP();
         let op = new OP('argcheck', {
             expected : this.arity()
         });
-        s.next    = op;
-        s.sibling = op;
-        return new OpTree(s, op);
+        return new OpTree(op, op);
+    }
+}
+
+export class SubBody extends Scope {
+    enter () : OP   { return new OP('entersub', {}) }
+    leave () : UNOP { return new UNOP('leavesub', {}) }
+
+    override deparse() : string {
+        let src = super.deparse();
+        return '{\n  ' + src.replace('\n', '\n  ') + '\n}';
     }
 }
 
 export class SubDefinition implements Node {
+    public name : string;
+    public sig  : SubSignature;
+    public body : SubBody;
+
     constructor(
-        public name : string,
-        public sig  : SubSignature,
-        public body : SubBody,
-    ) {}
+        name : string,
+        sig  : ScalarVar[], // XXX: support other types
+        body : Statement[],
+    ) {
+        this.name = name;
+        this.sig  = new SubSignature(sig);
+        this.body = new SubBody([
+            new Statement(this.sig),
+            body...
+        ]);
+    }
 
     deparse() : string {
         return `sub ${this.name} ${this.sig.deparse()} ${this.body.deparse()}`
     }
 
     emit () : OpTree {
-        let sig  = this.sig.emit();
         let body = this.body.emit();
 
-        sig.leave.next = body.enter;
-
         let op = new DECLARE(
-            new OpTree(sig.enter, body.leave),
+            body,
             {
                 name  : this.name,
                 arity : this.sig.arity()

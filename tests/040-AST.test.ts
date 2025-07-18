@@ -94,8 +94,8 @@ sub fact ($n) {
 
 let fact = new SubDefinition(
     'fact',
-    new SubSignature([ new ScalarVar('n') ]),
-    new SubBody([
+    [ new ScalarVar('n') ],
+    [
         new Statement(
             new Conditional(
                 new Eq(
@@ -127,7 +127,7 @@ let fact = new SubDefinition(
                 ])
             )
         )
-    ])
+    ]
 );
 
 let prog = new Program([
