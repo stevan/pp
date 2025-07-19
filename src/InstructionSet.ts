@@ -182,6 +182,10 @@ export function loadInstructionSet () : InstructionSet {
         return op.next
     });
 
+    opcodes.set('argcheck', (i, op) => {
+        return op.next
+    });
+
     // ...
 
     opcodes.set('entersub', (i, op) => {
