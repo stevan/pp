@@ -64,7 +64,7 @@ export type Opcode = (i : ActivationRecord, op : OP) => MaybeOP;
 // -----------------------------------------------------------------------------
 
 function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
-    // NOTE:
+    // FIXME:
     // This currenly only works for IVs, it should
     // detect if either check the lhs/rhs values at
     // runtime and DWIM, or the compiler should figure
@@ -81,7 +81,7 @@ function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
 }
 
 function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
-    // NOTE:
+    // FIXME:
     // This currenly only works for IVs, it should
     // detect if either check the lhs/rhs values at
     // runtime and DWIM, or the compiler should figure
@@ -111,6 +111,12 @@ function collectArgumentsFromStack (i : ActivationRecord) : Any[] {
         if (arg === PUSHMARK) {
             break;
         } else {
+            // NOTE:
+            // This may be wrong, not sure, and I
+            // might then be correcting for this
+            // elsewhere, but I can't figure out
+            // where it is. And since things work
+            // I am just gonna leave this here.
             args.unshift(arg);
         }
     }
@@ -374,6 +380,7 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('add',      LiftNumericBinOp((n, m) => n + m));
     opcodes.set('subtract', LiftNumericBinOp((n, m) => n - m));
     opcodes.set('multiply', LiftNumericBinOp((n, m) => n * m));
+    opcodes.set('modulo',   LiftNumericBinOp((n, m) => n % m));
 
     // ---------------------------------------------------------------------
     // Eq & Ord

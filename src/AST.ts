@@ -599,6 +599,12 @@ export class Subtract extends BinaryOp {
     }
 }
 
+export class Modulo extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('modulo', { operation : '%' }), lhs, rhs)
+    }
+}
+
 // -----------------------------------------------------------------------------
 // Equality
 // -----------------------------------------------------------------------------
