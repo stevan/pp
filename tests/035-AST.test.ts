@@ -5,7 +5,7 @@ import {
     ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Block, ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
-    Conditional, Eq, Say, ConstStr, Join,
+    Conditional, Equal, Say, ConstStr, Join,
 } from '../src/AST'
 import { Interpreter } from '../src/Interpreter'
 

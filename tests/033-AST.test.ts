@@ -5,7 +5,7 @@ import {
     ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Block, ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
-    Conditional, Eq,
+    Conditional, Equal,
 } from '../src/AST'
 import { Interpreter } from '../src/Interpreter'
 
@@ -53,7 +53,7 @@ let prog = new Program([
     ),
     new Statement(
         new Conditional(
-            new Eq(
+            new Equal(
                 new ScalarFetch('foo'),
                 new ConstInt(0)
             ),

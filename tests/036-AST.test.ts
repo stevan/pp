@@ -6,7 +6,7 @@ import {
     ConstInt,
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
-    Conditional, Eq, Say,
+    Conditional, Equal, Say,
     SubDefinition, SubCall, SubReturn, SubBody,
 } from '../src/AST'
 

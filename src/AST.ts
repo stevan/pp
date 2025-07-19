@@ -577,6 +577,10 @@ export class BinaryOp implements Node {
     }
 }
 
+// -----------------------------------------------------------------------------
+// Math
+// -----------------------------------------------------------------------------
+
 export class Add extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
         super(new LISTOP('add', { operation : '+' }), lhs, rhs)
@@ -595,11 +599,48 @@ export class Subtract extends BinaryOp {
     }
 }
 
-export class Eq extends BinaryOp {
+// -----------------------------------------------------------------------------
+// Equality
+// -----------------------------------------------------------------------------
+
+export class Equal extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
         super(new LISTOP('eq', { operation : '==' }), lhs, rhs)
     }
 }
 
+export class NotEqual extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('ne', { operation : '!=' }), lhs, rhs)
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Ordering
+// -----------------------------------------------------------------------------
+
+export class LessThan extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('lt', { operation : '<' }), lhs, rhs)
+    }
+}
+
+export class GreaterThan extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('gt', { operation : '>' }), lhs, rhs)
+    }
+}
+
+export class LessThanOrEqual extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('le', { operation : '<=' }), lhs, rhs)
+    }
+}
+
+export class GreaterThanOrEqual extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {
+        super(new LISTOP('ge', { operation : '>=' }), lhs, rhs)
+    }
+}
 
 // -----------------------------------------------------------------------------
