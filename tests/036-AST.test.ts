@@ -6,7 +6,7 @@ import {
     ConstInt,
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
-    Conditional, Eq,
+    Conditional, Eq, Say,
     SubDefinition, SubCall, SubReturn, SubBody, SubSignature,
 } from '../src/AST'
 
@@ -18,7 +18,7 @@ import { Interpreter } from '../src/Interpreter'
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
-            'adder',
+            'add_one_and_two',
             [],
             [
                 new Statement(
@@ -37,10 +37,16 @@ let BEGIN = new Program([
 
 let RUN = new Program([
     new Statement(
-        new SubCall(
-            new GlobFetch('adder', GlobSlot.CODE),
-            [ new ConstInt(1), new ConstInt(2) ]
+        new ScalarDeclare(
+            new ScalarVar('x'),
+            new SubCall(
+                new GlobFetch('add_one_and_two', GlobSlot.CODE),
+                [ new ConstInt(1), new ConstInt(2) ]
+            )
         )
+    ),
+    new Statement(
+        new Say([ new ScalarFetch('x') ])
     )
 ]);
 
