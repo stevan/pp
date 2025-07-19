@@ -111,7 +111,7 @@ export class Interpreter implements Executor {
         this.opcodes = loadInstructionSet();
     }
 
-    invokeSub (cv : CV, args : Any[]) : ActivationRecord {
+    invokeCV (cv : CV, args : Any[]) : MaybeOP {
 
         let parent = this.frames[0] as StackFrame;
         let frame  = new StackFrame(
@@ -123,7 +123,21 @@ export class Interpreter implements Executor {
 
         this.frames.unshift(frame);
 
-        return frame;
+        return frame.current_op;
+    }
+
+    returnFromCV () : MaybeOP {
+        let old = this.frames.shift();
+        if (old == undefined || this.frames.length == 0) throw new Error('Frame Stack Underflow!');
+
+        let cur = this.frames[0] as StackFrame;
+
+        // spill the stack into parent Frame's stack
+        while (old.stack.length > 0) {
+            cur.stack.push(old.stack.pop() as Any);
+        }
+
+        return old.return_to;
     }
 
     private prepareRootFrame (optree : OpTree) : void {

@@ -47,7 +47,8 @@ export interface Executor {
     opcodes : InstructionSet;
     root    : SymbolTable;
 
-    invokeSub (cv : CV, args : Any[]) : ActivationRecord;
+    invokeCV (cv : CV, args : Any[]) : MaybeOP;
+    returnFromCV () : MaybeOP;
 
     run (root : OpTree) : void;
 
@@ -179,20 +180,22 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     opcodes.set('return', (i, op) => {
-        return op.next
+        return i.executor().returnFromCV();
     });
 
     opcodes.set('argcheck', (i, op) => {
+        // create the Arg Lexicals ...
         return op.next
     });
 
     // ...
 
-    opcodes.set('entersub', (i, op) => {
-        return op.next
+    opcodes.set('leavesub', (i, op) => {
+        return i.executor().returnFromCV();
     });
 
-    opcodes.set('leavesub', (i, op) => {
+    opcodes.set('entersub', (i, op) => {
+        // hmmm? this could be argcheck ...
         return op.next
     });
 
@@ -204,12 +207,12 @@ export function loadInstructionSet () : InstructionSet {
         if (cv == undefined) throw new Error('Expected CV on stack for callsub');
         assertIsCV(cv);
 
-        let start = i.executor().invokeSub(
+        let next_op = i.executor().invokeCV( // should be EnterSub
             cv,     // sub to call
             args,   // args from parent frame
         );
 
-        return start.current_op;
+        return next_op;
     });
 
     // ---------------------------------------------------------------------

@@ -19,15 +19,16 @@ let BEGIN = new Program([
     new Statement(
         new SubDefinition(
             'adder',
-            [ new ScalarVar('n'), new ScalarVar('m') ],
+            [],
             [
                 new Statement(
-                    new SubReturn(
+                    //new SubReturn(
                         new Add(
-                            new ScalarFetch('n'),
-                            new ScalarFetch('m'),
+                            new ConstInt(1), new ConstInt(2)
+                            //new ScalarFetch('n'),
+                            //new ScalarFetch('m'),
                         )
-                    )
+                    //)
                 )
             ]
         )
