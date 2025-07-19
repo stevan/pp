@@ -37,7 +37,7 @@ let RUN = new Program([
             new ScalarVar('x'),
             new SubCall(
                 new GlobFetch('add_one_and_two', GlobSlot.CODE),
-                [ new ConstInt(1), new ConstInt(2) ]
+                []
             )
         )
     ),

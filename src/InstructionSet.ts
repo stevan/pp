@@ -71,8 +71,8 @@ function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
     // it out and use the correct opcode. But this is
     // an MVP, so this is fine for now.
     return (i, op) => {
-        let lhs = i.stack.pop() as Any;
         let rhs = i.stack.pop() as Any;
+        let lhs = i.stack.pop() as Any;
         assertIsIV(lhs);
         assertIsIV(rhs);
         i.stack.push(newIV( f(lhs.value, rhs.value) ));
@@ -88,8 +88,8 @@ function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
     // it out and use the correct opcode. But this is
     // an MVP, so this is fine for now.
     return (i, op) => {
-        let lhs = i.stack.pop() as Any;
         let rhs = i.stack.pop() as Any;
+        let lhs = i.stack.pop() as Any;
         assertIsIV(lhs);
         assertIsIV(rhs);
         i.stack.push( f(lhs.value, rhs.value) ? SV_True : SV_False );

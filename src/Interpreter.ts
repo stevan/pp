@@ -122,7 +122,9 @@ export class Interpreter implements Executor {
         );
 
         // push the args onto the new stack frame
-        frame.stack.push(...args);
+        while (args.length > 0) {
+            frame.stack.push(args.pop() as Any);
+        }
 
         this.frames.unshift(frame);
 
@@ -155,10 +157,12 @@ export class Interpreter implements Executor {
             undefined
         );
 
+        optree.enter.config.name = '__main__';
+
         this.frames.unshift(frame);
     }
 
-    run (root : OpTree) : void {
+    run (root : OpTree, options : any = {}) : void {
         this.prepareRootFrame(root);
 
         let frame = this.frames[0] as StackFrame;
@@ -170,21 +174,41 @@ export class Interpreter implements Executor {
             let opcode = this.opcodes.get(op.name);
             if (opcode == undefined) throw new Error(`Could not find opcode(${op.name})`);
 
-            logger.group(`*OPCODE[${op.name}] = ${JSON.stringify(op.config)}`);
+            let depth = this.frames.length;
+
+            if (options.DEBUG)
+                logger.group(`[${depth}] {${frame.optree.enter.config.name}} -> OP[${op.name}] = ${JSON.stringify(op.config)}`);
 
             let next_op = opcode(frame, op);
-            if (next_op == undefined) break;
+            if (next_op == undefined) {
+                if (options.DEBUG) logger.groupEnd();
+                break;
+            }
 
-            logger.log('STACK   :', frame.stack);
-            logger.log('PADLIST :', frame.padlist);
-            logger.log('SYMTBL  :', this.root);
-            logger.groupEnd();
+            if (options.DEBUG) {
+                if (this.frames.length > depth) {
+                    logger.log('ARGS    :', this.frames[0]?.stack);
+                }
+
+                if (this.frames.length < depth) {
+                    logger.log('RETURN  :', this.frames[0]?.stack);
+                }
+
+                logger.log('STACK   :', frame.stack);
+                logger.log('PADLIST :', frame.padlist);
+                //logger.log('SYMTBL  :', this.root);
+                logger.groupEnd();
+            }
 
             frame = this.frames[0] as StackFrame;
             frame.current_op = next_op;
         }
 
-        logger.log('HALT!');
+        if (options.DEBUG) {
+            logger.log('HALT!');
+        }
+
+        this.frames = [];
     }
 
     // -------------------------------------------------------------------------

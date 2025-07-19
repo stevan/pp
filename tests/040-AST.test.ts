@@ -7,7 +7,7 @@ import {
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
     Conditional, Eq,
-    SubDefinition, SubCall, SubReturn, SubBody,
+    SubDefinition, SubCall, SubReturn, SubBody, Say,
 } from '../src/AST'
 
 import { DECLARE } from '../src/Runtime'
@@ -82,14 +82,6 @@ u           <$> const(IV 10) sM ->v
 v              <$> gv(*fact) s ->w
 -e syntax OK
 
-sub fact ($n) {
-    if ($n == 0) {
-        return 1;
-    } else {
-        return $n * fact( $n - 1 )
-    }
-}
-
 */
 
 let BEGIN = new Program([
@@ -136,10 +128,16 @@ let BEGIN = new Program([
 
 let RUN = new Program([
     new Statement(
-        new SubCall(
-            new GlobFetch('fact', GlobSlot.CODE),
-            [ new ConstInt(6) ]
+        new ScalarDeclare(
+            new ScalarVar('x'),
+            new SubCall(
+                new GlobFetch('fact', GlobSlot.CODE),
+                [ new ConstInt(100) ]
+            )
         )
+    ),
+    new Statement(
+        new Say([ new ScalarFetch('x') ])
     )
 ]);
 
@@ -199,11 +197,15 @@ logger.groupEnd();
 
 let interpreter = new Interpreter();
 
-logger.group('INTERPRET/BEGIN:');
+logger.group('BEGIN/INTERPRET:');
+logger.time('BEGIN elapased');
 interpreter.run(comptime);
+logger.timeEnd('BEGIN elapased');
 logger.groupEnd();
 
-logger.group('INTERPRET/RUN:');
+logger.group('RUN/INTERPRET:');
+logger.time('RUN elapased');
 interpreter.run(runtime);
+logger.timeEnd('RUN elapased');
 logger.groupEnd();
 
