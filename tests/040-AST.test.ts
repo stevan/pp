@@ -7,7 +7,7 @@ import {
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
     Conditional, Eq,
-    SubDefinition, SubCall, SubReturn, SubBody, SubSignature,
+    SubDefinition, SubCall, SubReturn, SubBody,
 } from '../src/AST'
 
 import { DECLARE } from '../src/Runtime'

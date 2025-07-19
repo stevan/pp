@@ -174,45 +174,69 @@ export function loadInstructionSet () : InstructionSet {
     // Sub Calls
     // ---------------------------------------------------------------------
 
+    // --------------------------------
+    // calling sub
+    // --------------------------------
+
+    // mark the start of arguments
     opcodes.set('pushmark', (i, op) => {
         i.stack.push(PUSHMARK);
         return op.next
     });
 
-    opcodes.set('return', (i, op) => {
-        return i.executor().returnFromCV();
-    });
-
-    opcodes.set('argcheck', (i, op) => {
-        // create the Arg Lexicals ...
-        return op.next
-    });
-
-    // ...
-
-    opcodes.set('leavesub', (i, op) => {
-        return i.executor().returnFromCV();
-    });
-
-    opcodes.set('entersub', (i, op) => {
-        // hmmm? this could be argcheck ...
-        return op.next
-    });
-
-    // ...
-
+    // call the sub itself
     opcodes.set('callsub', (i, op) => {
         let args = collectArgumentsFromStack(i);
         let cv   = args.pop();
         if (cv == undefined) throw new Error('Expected CV on stack for callsub');
         assertIsCV(cv);
 
-        let next_op = i.executor().invokeCV( // should be EnterSub
+        let next_op = i.executor().invokeCV(
             cv,     // sub to call
             args,   // args from parent frame
         );
 
         return next_op;
+    });
+
+    // --------------------------------
+    // enter sub
+    // --------------------------------
+
+    // this handles the args
+    opcodes.set('entersub', (i, op) => {
+        let params = op.config.params;
+
+        if (params.length > 0) {
+            if (i.stack.length < params.length)
+                throw new Error(`${op.config.name} expected ${params.length} only got ${i.stack.length}`);
+            for (const param of params) {
+                let sv = i.stack.pop() as Any;
+                assertIsSV(sv);
+                i.createLexical(param, sv);
+            }
+        }
+
+        return op.next
+    });
+
+    // --------------------------------
+    // leaveing a subroutine
+    // --------------------------------
+
+    // NOTE:
+    // these two are functionality equivalent
+    // though this feels too easy. As long as
+    // the leavesub doesn't do anything other
+    // than just returnFromCV, then they it
+    // should be okay. Just not 100% sure :)
+
+    opcodes.set('return', (i, op) => {
+        return i.executor().returnFromCV();
+    });
+
+    opcodes.set('leavesub', (i, op) => {
+        return i.executor().returnFromCV();
     });
 
     // ---------------------------------------------------------------------

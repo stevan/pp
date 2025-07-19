@@ -80,26 +80,6 @@ export class Block extends Scope {
 // Subroutines ...
 // -----------------------------------------------------------------------------
 
-export class SubSignature implements Node {
-    constructor(
-            // FIXME: we dont have anything else than ScalarVar right now
-        public parameters : ScalarVar[],
-    ) {}
-
-    // XXX: needs to handle slurpy
-    arity () : number { return this.parameters.length }
-
-    // FIXME: this is wrong ...
-    deparse() : string { return `(${this.parameters.map((p) => p.deparse()).join(', ')})` }
-
-    emit () : OpTree {
-        let op = new OP('argcheck', {
-            expected : this.arity()
-        });
-        return new OpTree(op, op);
-    }
-}
-
 export class SubBody extends Scope {
     enter () : OP   { return new OP('entersub', {}) }
     leave () : UNOP { return new UNOP('leavesub', {}) }
@@ -110,37 +90,39 @@ export class SubBody extends Scope {
     }
 }
 
+// NOTE:
+// I am calling them `params` now to indicate that it
+// is nothing more than a list of variables. But this
+// eventually needs to become a Signature object that
+// can handle different types as well as slurpy args.
+// But this is good enough for now.
+
 export class SubDefinition implements Node {
-    public name : string;
-    public sig  : SubSignature;
-    public body : SubBody;
+    public name   : string;
+    public params : ScalarVar[];
+    public body   : SubBody;
 
     constructor(
-        name : string,
-        sig  : ScalarVar[], // XXX: support other types
-        body : Statement[],
+        name   : string,
+        params : ScalarVar[], // XXX: support other types
+        body   : Statement[],
     ) {
-        this.name = name;
-        this.sig  = new SubSignature(sig);
-        body.unshift(new Statement(this.sig, true));
-        this.body = new SubBody(body);
+        this.name   = name;
+        this.params = params;
+        this.body   = new SubBody(body);
     }
 
     deparse() : string {
-        return `sub ${this.name} ${this.sig.deparse()} ${this.body.deparse()}`
+        return `sub ${this.name} (${this.params.map((p) => p.deparse()).join(', ')}) ${this.body.deparse()}`
     }
 
     emit () : OpTree {
         let body = this.body.emit();
 
-        let op = new DECLARE(
-            body,
-            {
-                name  : this.name,
-                arity : this.sig.arity()
-            }
-        );
+        body.enter.config.name   = this.name;
+        body.enter.config.params = this.params.map((v) => v.name);
 
+        let op = new DECLARE( body, { name : this.name } );
         return new OpTree(op, op)
     }
 }

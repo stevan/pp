@@ -18,12 +18,15 @@ import { Interpreter } from '../src/Interpreter'
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
-            'add_one_and_two',
-            [],
+            'adder',
+            [ new ScalarVar('n'), new ScalarVar('m') ],
             [
                 new Statement(
-                    new Add(
-                        new ConstInt(1), new ConstInt(2)
+                    new SubReturn(
+                        new Add(
+                            new ScalarFetch('n'),
+                            new ScalarFetch('m'),
+                        )
                     )
                 )
             ]
@@ -35,9 +38,15 @@ let RUN = new Program([
     new Statement(
         new ScalarDeclare(
             new ScalarVar('x'),
-            new SubCall(
-                new GlobFetch('add_one_and_two', GlobSlot.CODE),
-                [ new ConstInt(1), new ConstInt(2) ]
+            new Add(
+                new SubCall(
+                    new GlobFetch('adder', GlobSlot.CODE),
+                    [ new ConstInt(10), new ConstInt(20) ]
+                ),
+                new SubCall(
+                    new GlobFetch('adder', GlobSlot.CODE),
+                    [ new ConstInt(5), new ConstInt(15) ]
+                )
             )
         )
     ),

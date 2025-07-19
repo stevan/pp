@@ -121,6 +121,9 @@ export class Interpreter implements Executor {
             parent
         );
 
+        // push the args onto the new stack frame
+        frame.stack.push(...args);
+
         this.frames.unshift(frame);
 
         return frame.current_op;
