@@ -168,8 +168,8 @@ function walk(op : any, depth : number = 0) {
     }
 }
 
-let runtime  = RUN.emit();
 let comptime = BEGIN.emit();
+let runtime  = RUN.emit();
 
 //logger.log(op);
 

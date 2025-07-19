@@ -6,7 +6,7 @@
 
 import { logger } from './Logger'
 import {
-    Any, SV, PV, SymbolTable,
+    Any, SV, PV, CV, SymbolTable,
     OP, MaybeOP, OpTree,
     Pad
 } from './Runtime'
@@ -14,37 +14,43 @@ import {
 import {
     InstructionSet,
     loadInstructionSet,
-    Executor
+    Executor, ActivationRecord, MaybeActivationRecord,
 } from './InstructionSet'
 
 import { GlobSlot } from './AST'
 
 // -----------------------------------------------------------------------------
 
-export class Interpreter implements Executor {
-    public stack   : Any[];
-    public padlist : Pad[];
-    public root    : SymbolTable;
-    public opcodes : InstructionSet;
+class StackFrame implements ActivationRecord {
+    public stack      : Any[];
+    public padlist    : Pad[];
+    public optree     : OpTree; // the CV basically
+    public current_op : MaybeOP;
+    public return_to  : MaybeOP;
 
-    constructor () {
-        this.stack   = [];
-        this.padlist = [ new Pad() ];
-        this.root    = new SymbolTable('main');
-        this.opcodes = loadInstructionSet();
+    private parent      : MaybeActivationRecord;
+    private interpreter : Interpreter;
+
+    constructor(
+            optree      : OpTree,
+            return_to   : MaybeOP,
+            interpreter : Interpreter,
+            parent?     : MaybeActivationRecord
+        ) {
+        this.stack       = [];
+        this.padlist     = [ new Pad() ];
+        this.optree      = optree;
+        this.return_to   = return_to;
+        this.interpreter = interpreter;
+        this.parent      = parent;
+        this.current_op  = optree.enter;
     }
 
     // -------------------------------------------------------------------------
-    // I/O
+    // Symbol Table
     // -------------------------------------------------------------------------
 
-    toSTDOUT (args : PV[]) : void {
-        console.log('STDOUT>', args.map((pv) => pv.value).join(''));
-    }
-
-    toSTDERR (args : PV[]) : void {
-        console.log('STDERR>', args.map((pv) => pv.value).join(''));
-    }
+    executor () : Executor { return this.interpreter }
 
     // -------------------------------------------------------------------------
     // Lexicals
@@ -91,22 +97,89 @@ export class Interpreter implements Executor {
             throw new Error('Cannot leave the global scope!');
         this.padlist.shift()
     }
+}
 
-    // -------------------------------------------------------------------------
-    // Execution
-    // -------------------------------------------------------------------------
+
+export class Interpreter implements Executor {
+    public frames  : StackFrame[];
+    public root    : SymbolTable;
+    public opcodes : InstructionSet;
+
+    constructor () {
+        this.frames  = [];
+        this.root    = new SymbolTable('main');
+        this.opcodes = loadInstructionSet();
+    }
+
+    invokeSub (cv : CV, args : Any[]) : ActivationRecord {
+
+        let parent = this.frames[0] as StackFrame;
+        let frame  = new StackFrame(
+            cv.contents,
+            parent.current_op?.next, // FIXME, this should never be null
+            this,
+            parent
+        );
+
+        this.frames.unshift(frame);
+
+        return frame;
+    }
+
+    private prepareRootFrame (optree : OpTree) : void {
+        let halt = new OP('halt', {});
+
+        optree.leave.next = halt;
+
+        let frame = new StackFrame(
+            optree,
+            halt,
+            this,
+            undefined
+        );
+
+        this.frames.unshift(frame);
+    }
 
     run (root : OpTree) : void {
-        let op : MaybeOP = root.enter;
-        while (op != undefined) {
+        this.prepareRootFrame(root);
+
+        let frame = this.frames[0] as StackFrame;
+
+        while (frame.current_op != undefined) {
+
+            let op : MaybeOP = frame.current_op;
+
             let opcode = this.opcodes.get(op.name);
             if (opcode == undefined) throw new Error(`Could not find opcode(${op.name})`);
+
             logger.group(`*OPCODE[${op.name}] = ${JSON.stringify(op.config)}`);
-            op = opcode(this, op);
-            logger.log('STACK   :', this.stack);
-            logger.log('PADLIST :', this.padlist);
+
+            let next_op = opcode(frame, op);
+            if (next_op == undefined) break;
+
+            logger.log('STACK   :', frame.stack);
+            logger.log('PADLIST :', frame.padlist);
             logger.log('SYMTBL  :', this.root);
             logger.groupEnd();
+
+            frame = this.frames[0] as StackFrame;
+            frame.current_op = next_op;
         }
+
+        logger.log('HALT!');
     }
+
+    // -------------------------------------------------------------------------
+    // I/O
+    // -------------------------------------------------------------------------
+
+    toSTDOUT (args : PV[]) : void {
+        console.log('STDOUT>', args.map((pv) => pv.value).join(''));
+    }
+
+    toSTDERR (args : PV[]) : void {
+        console.log('STDERR>', args.map((pv) => pv.value).join(''));
+    }
+
 }

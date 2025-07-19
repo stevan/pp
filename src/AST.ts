@@ -63,7 +63,7 @@ export abstract class Scope implements Node {
 
 export class Program extends Scope {
     enter () : OP   { return new OP('enter', {}) }
-    leave () : UNOP { return new UNOP('leave', { halt : true }) }
+    leave () : UNOP { return new UNOP('leave', {}) }
 }
 
 export class Block extends Scope {

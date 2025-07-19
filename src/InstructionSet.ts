@@ -7,10 +7,10 @@
 
 import { logger } from './Logger'
 import {
-    Any, SV, IV, NV, PV, Pad, SVtoPV, assertIsSV, assertIsPV,
+    Any, SV, IV, NV, PV, CV, Pad, SVtoPV, assertIsSV, assertIsPV,
     Stash, newStash, newCV,
     newIV, assertIsIV, newPV, newNV,
-    SV_True, SV_False, SV_Undef, isUndef,
+    SV_True, SV_False, SV_Undef, isUndef, assertIsCV,
     SymbolTable, assertIsGlob,
     OP, MaybeOP, OpTree,
     assertIsBool, isTrue,
@@ -22,10 +22,14 @@ import { GlobSlot } from './AST'
 
 // -----------------------------------------------------------------------------
 
-export interface Executor {
-    stack   : Any[];
-    padlist : Pad[];
-    root    : SymbolTable;
+export type MaybeActivationRecord = ActivationRecord | undefined
+
+export interface ActivationRecord {
+    stack      : Any[];
+    padlist    : Pad[];
+    optree     : OpTree;
+    return_to  : MaybeOP;
+    current_op : MaybeOP;
 
     currentScope () : Pad;
     enterScope   () : void;
@@ -35,16 +39,26 @@ export interface Executor {
     setLexical    (name : string, value : SV) : void;
     getLexical    (name : string) : SV;
 
-    toSTDOUT (args : PV[]) : void;
-    toSTDERR (args : PV[]) : void;
+    executor () : Executor;
+}
+
+export interface Executor {
+    frames  : ActivationRecord[];
+    opcodes : InstructionSet;
+    root    : SymbolTable;
+
+    invokeSub (cv : CV, args : Any[]) : ActivationRecord;
 
     run (root : OpTree) : void;
+
+    toSTDOUT (args : PV[]) : void;
+    toSTDERR (args : PV[]) : void;
 }
 
 // Opcodes return MaybeOP because the final `leave`
 // will not have a next OP to go to. This could probably
 // be fixed, but it is okay for now.
-export type Opcode = (i : Executor, op : OP) => MaybeOP;
+export type Opcode = (i : ActivationRecord, op : OP) => MaybeOP;
 
 // -----------------------------------------------------------------------------
 
@@ -88,7 +102,7 @@ export class InstructionSet extends Map<string, Opcode> {}
 
 const PUSHMARK = newPV('*PUSHMARK*');
 
-function collectArgumentsFromStack (i : Executor) : Any[] {
+function collectArgumentsFromStack (i : ActivationRecord) : Any[] {
     let args = [];
     while (true) {
         let arg = i.stack.pop();
@@ -113,10 +127,18 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('declare', (i, op) => {
         if (!(op instanceof DECLARE)) throw new Error('Y NO DECLARE?')
         let cv = newCV(op.declaration);
-        let gv = i.root.autovivify(op.config.name);
+        let gv = i.executor().root.autovivify(op.config.name);
         assertIsGlob(gv);
         setGlobCode(gv, cv);
         return op.next
+    });
+
+    // ---------------------------------------------------------------------
+    // Enter/Leave
+    // ---------------------------------------------------------------------
+
+    opcodes.set('halt', (i, op) => {
+        return undefined;
     });
 
     // ---------------------------------------------------------------------
@@ -173,7 +195,17 @@ export function loadInstructionSet () : InstructionSet {
     // ...
 
     opcodes.set('callsub', (i, op) => {
-        return op.next
+        let args = collectArgumentsFromStack(i);
+        let cv   = args.pop();
+        if (cv == undefined) throw new Error('Expected CV on stack for callsub');
+        assertIsCV(cv);
+
+        let start = i.executor().invokeSub(
+            cv,     // sub to call
+            args,   // args from parent frame
+        );
+
+        return start.current_op;
     });
 
     // ---------------------------------------------------------------------
@@ -182,7 +214,7 @@ export function loadInstructionSet () : InstructionSet {
 
     opcodes.set('say', (i, op) => {
         let args = collectArgumentsFromStack(i);
-        i.toSTDOUT(args.map((sv) => {
+        i.executor().toSTDOUT(args.map((sv) => {
             // TODO: handle things other than scalars ...
             assertIsSV(sv);
             return SVtoPV(sv);
@@ -251,7 +283,7 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('gv_store', (i, op) => {
         let target = op.config.target;
 
-        let gv = i.root.autovivify(target.name);
+        let gv = i.executor().root.autovivify(target.name);
         assertIsGlob(gv);
 
         let sv = i.stack.pop() as Any;
@@ -264,7 +296,7 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('gv_fetch', (i, op) => {
         let target = op.config.target;
 
-        let gv = i.root.autovivify(target.name);
+        let gv = i.executor().root.autovivify(target.name);
         assertIsGlob(gv);
         i.stack.push( getGlobSlot(gv, target.slot) );
 
