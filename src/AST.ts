@@ -141,9 +141,7 @@ export class SubCall implements Node {
 
     emit () : OpTree {
         let glob     = this.glob.emit();
-        let op       = new LISTOP('callsub', {
-            name : this.glob.name,
-        });
+        let op       = new LISTOP('callsub', { name : this.glob.name });
         let pushmark = new OP('pushmark', {});
 
         op.first = pushmark;
@@ -357,7 +355,7 @@ export class GlobVar implements Node {
     deparse() : string { return this.slot + this.name }
 
     emit () : OpTree {
-        let op =  new UNOP('gv', {
+        let op =  new OP('gv', {
             name : this.name,
             slot : SigilToSlot(this.slot),
         });
@@ -374,7 +372,7 @@ export class GlobFetch implements Node {
     deparse() : string { return this.slot + this.name }
 
     emit () : OpTree {
-        let op =  new UNOP('gv_fetch', {
+        let op =  new OP('gv_fetch', {
             target : {
                 name : this.name,
                 slot : SigilToSlot(this.slot),
@@ -438,7 +436,7 @@ export class ScalarFetch implements Node {
     deparse() : string { return '$' + this.name }
 
     emit () : OpTree {
-        let op =  new UNOP('padsv_fetch', {
+        let op =  new OP('padsv_fetch', {
             target : { name : this.name },
         });
         return new OpTree(op, op)
@@ -568,25 +566,25 @@ export class BinaryOp implements Node {
 
 export class Add extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('add', { operation : '+' }), lhs, rhs)
+        super(new BINOP('add', { operation : '+' }), lhs, rhs)
     }
 }
 
 export class Multiply extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('multiply', { operation : '*' }), lhs, rhs)
+        super(new BINOP('multiply', { operation : '*' }), lhs, rhs)
     }
 }
 
 export class Subtract extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('subtract', { operation : '-' }), lhs, rhs)
+        super(new BINOP('subtract', { operation : '-' }), lhs, rhs)
     }
 }
 
 export class Modulo extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('modulo', { operation : '%' }), lhs, rhs)
+        super(new BINOP('modulo', { operation : '%' }), lhs, rhs)
     }
 }
 
@@ -596,13 +594,13 @@ export class Modulo extends BinaryOp {
 
 export class Equal extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('eq', { operation : '==' }), lhs, rhs)
+        super(new BINOP('eq', { operation : '==' }), lhs, rhs)
     }
 }
 
 export class NotEqual extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('ne', { operation : '!=' }), lhs, rhs)
+        super(new BINOP('ne', { operation : '!=' }), lhs, rhs)
     }
 }
 
@@ -612,25 +610,25 @@ export class NotEqual extends BinaryOp {
 
 export class LessThan extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('lt', { operation : '<' }), lhs, rhs)
+        super(new BINOP('lt', { operation : '<' }), lhs, rhs)
     }
 }
 
 export class GreaterThan extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('gt', { operation : '>' }), lhs, rhs)
+        super(new BINOP('gt', { operation : '>' }), lhs, rhs)
     }
 }
 
 export class LessThanOrEqual extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('le', { operation : '<=' }), lhs, rhs)
+        super(new BINOP('le', { operation : '<=' }), lhs, rhs)
     }
 }
 
 export class GreaterThanOrEqual extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new LISTOP('ge', { operation : '>=' }), lhs, rhs)
+        super(new BINOP('ge', { operation : '>=' }), lhs, rhs)
     }
 }
 

@@ -2,8 +2,7 @@
 # TODO
 <!----------------------------------------------------------------------------->
 
-- Glob slots return references, so RVs (maybe we can go back to the stack being SVs then)
-    - and we need a rv2cv opcode
+- Remove GlobVar just like ScalarVar
 
 
 <!----------------------------------------------------------------------------->
