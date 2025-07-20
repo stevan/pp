@@ -11,12 +11,16 @@ import {
 
     SV_True, SV_False, SV_Undef,
 
-    newStash, newCV, newIV, newPV, newNV,
+    List,
 
-    assertIsSV, assertIsPV, assertIsIV, assertIsCV,
+    newStash, newCV, newIV, newPV, newNV, newAV,
+
+    isSV, isAV, isCV,
+
+    assertIsSV, assertIsPV, assertIsIV, assertIsCV, assertIsAV,
     assertIsGlob, assertIsBool,
 
-    SVtoPV, isUndef, isTrue,
+    SVtoPV, AnytoPV, isUndef, isTrue,
     setGlobScalar, setGlobCode, getGlobSlot,
 
     OP, LOGOP, DECLARE, MaybeOP, OpTree,
@@ -216,11 +220,9 @@ export function loadInstructionSet () : InstructionSet {
 
     opcodes.set('say', (i, op) => {
         let args = collectArgumentsFromStack(i);
-        i.executor().toSTDOUT(args.map((sv) => {
-            // TODO: handle things other than scalars ...
-            assertIsSV(sv);
-            return SVtoPV(sv);
-        }));
+        i.executor().toSTDOUT(
+            args.map((arg) => AnytoPV(arg)).flat(1)
+        );
         return op.next;
     });
 
@@ -231,11 +233,12 @@ export function loadInstructionSet () : InstructionSet {
         if (sep == undefined) throw new Error('Expected seperator arg for join');
         assertIsPV(sep);
         i.stack.push(
-            newPV(args.map((sv) => {
-                // TODO: handle things other than scalars ...
-                assertIsSV(sv);
-                return SVtoPV(sv).value;
-            }).join(sep.value))
+            newPV(
+                args.map((sv) => AnytoPV(sv))
+                    .flat(1)
+                    .map((pv) => pv.value)
+                    .join(sep.value)
+            )
         );
 
         return op.next;
@@ -309,12 +312,7 @@ export function loadInstructionSet () : InstructionSet {
     // Pad SV operations
     // ---------------------------------------------------------------------
 
-    // This is a NOOP, the fetch/store have config.target instead
-    opcodes.set('padsv', (i, op) => op.next);
-
     opcodes.set('padsv_store', (i, op) => {
-        // NOTE: ponder splitting this into two opcodes
-        // one for the store and one for the declare
         let sv = i.stack.pop() as Any;
         assertIsSV(sv);
         if (op.config.introduce) {
@@ -326,6 +324,40 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     opcodes.set('padsv_fetch', (i, op) => {
+        let t = i.getLexical(op.config.target.name);
+        i.stack.push(t);
+        return op.next;
+    });
+
+    // ---------------------------------------------------------------------
+    // Pad AV operations
+    // ---------------------------------------------------------------------
+
+    opcodes.set('padav_init', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+
+        let av = newAV(args);
+        if (op.config.introduce) {
+            i.createLexical(op.config.target.name, av);
+        } else {
+            i.setLexical(op.config.target.name, av);
+        }
+
+        return op.next;
+    });
+
+    opcodes.set('padav_store', (i, op) => {
+        let av = i.stack.pop() as Any;
+        assertIsAV(av);
+        if (op.config.introduce) {
+            i.createLexical(op.config.target.name, av);
+        } else {
+            i.setLexical(op.config.target.name, av);
+        }
+        return op.next
+    });
+
+    opcodes.set('padav_fetch', (i, op) => {
         let t = i.getLexical(op.config.target.name);
         i.stack.push(t);
         return op.next;
@@ -345,7 +377,7 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('add',      LiftNumericBinOp((n, m) => n + m));
     opcodes.set('subtract', LiftNumericBinOp((n, m) => n - m));
     opcodes.set('multiply', LiftNumericBinOp((n, m) => n * m));
-    opcodes.set('modulus',   LiftNumericBinOp((n, m) => n % m));
+    opcodes.set('modulus',  LiftNumericBinOp((n, m) => n % m));
 
     // ---------------------------------------------------------------------
     // Eq & Ord

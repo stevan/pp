@@ -482,6 +482,83 @@ export class ScalarDeclare extends ScalarStore {
 }
 
 // -----------------------------------------------------------------------------
+// Array Ops
+// -----------------------------------------------------------------------------
+
+export class ArrayFetch implements Node {
+    constructor(public name : string) {}
+
+    deparse() : string { return '@' + this.name }
+
+    emit () : OpTree {
+        let op =  new OP('padav_fetch', {
+            target : { name : this.name },
+        });
+        return new OpTree(op, op)
+    }
+}
+
+export class ArrayStore implements Node {
+    constructor(
+        public name  : string,
+        public value : Node,
+    ) {}
+
+    deparse() : string {
+        return `$${this.name} = ${this.value.deparse()}`
+    }
+
+    emit () : OpTree {
+        let value    = this.value.emit();
+        let binding  = new UNOP('padav_store', {
+            target    : { name : this.name },
+            introduce : false,
+        });
+
+        value.leave.next = binding;
+        binding.first    = value.leave;
+
+        return new OpTree(value.enter, binding);
+    }
+}
+
+export class ArrayDeclare implements Node {
+    constructor(
+        public name  : string,
+        public items : Node[],
+    ) {}
+
+    deparse() : string {
+        return `my @${this.name} = (${this.items.map((i) => i.deparse()).join(', ')})`
+    }
+
+    emit () : OpTree {
+        let op = new UNOP('padav_init', {
+            target    : { name : this.name },
+            introduce : true,
+        });
+
+        let pushmark = new OP('pushmark', {});
+
+        op.first = pushmark;
+
+        let curr = pushmark;
+        for (const item of this.items) {
+            let i = item.emit();
+
+            curr.next    = i.enter;
+            curr.sibling = i.leave;
+
+            curr = i.leave;
+        }
+        curr.next = op;
+
+        return new OpTree(pushmark, op);
+    }
+
+}
+
+// -----------------------------------------------------------------------------
 // Builtins
 // -----------------------------------------------------------------------------
 

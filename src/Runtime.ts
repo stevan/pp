@@ -19,7 +19,7 @@ export type Identifier = string // [A-Za-z_][A-Za-z0-9_]+
 export type MaybeOP     = OP     | undefined
 export type MaybeOpcode = Opcode | undefined
 
-export class Pad            extends Map<string, SV> {}
+export class Pad            extends Map<string, Any> {}
 export class InstructionSet extends Map<string, Opcode> {}
 
 export type MaybeActivationRecord = ActivationRecord | undefined
@@ -35,9 +35,9 @@ export interface ActivationRecord {
     enterScope   () : void;
     leaveScope   () : void;
 
-    createLexical (name : string, value : SV) : void;
-    setLexical    (name : string, value : SV) : void;
-    getLexical    (name : string) : SV;
+    createLexical (name : string, value : Any) : void;
+    setLexical    (name : string, value : Any) : void;
+    getLexical    (name : string) : Any;
 
     executor () : Executor;
 }
@@ -241,8 +241,8 @@ export type SV =
     | RV
 
 // just so we don't have to repeat the type params
-export class List extends Array<SV>       {}
-export class Hash extends Map<string, SV> {}
+export class List extends Array<Any>       {}
+export class Hash extends Map<string, Any> {}
 
 export type AV = { type : 'LIST', contents : List }
 export type HV = { type : 'HASH', contents : Hash }
@@ -421,6 +421,17 @@ export function SVtoPV (sv : SV) : PV {
         return RVtoPV(sv);
     default:
         throw new Error(`Not SV ??(${JSON.stringify(sv)})`)
+    }
+}
+
+export function AnytoPV (a : Any) : PV[] {
+    switch (true) {
+    case isSV(a):
+        return [ SVtoPV(a) ];
+    case isAV(a):
+        return a.contents.map((i) => AnytoPV(i)).flat(1);
+    default:
+        throw new Error(`Unable to stringify (${JSON.stringify(a)})`)
     }
 }
 

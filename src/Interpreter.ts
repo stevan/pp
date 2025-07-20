@@ -56,23 +56,23 @@ class StackFrame implements ActivationRecord {
     // Lexicals
     // -------------------------------------------------------------------------
 
-    getLexical (name : string) : SV {
+    getLexical (name : string) : Any {
         let index = 0;
         while (index < this.padlist.length) {
             let scope = this.padlist[index] as Pad;
             if (scope.has(name)) {
-                return scope.get(name) as SV;
+                return scope.get(name) as Any;
             }
             index++;
         }
         throw new Error(`Unable to find lexical(${name}) in any scope`);
     }
 
-    createLexical (name : string, value : SV) : void {
+    createLexical (name : string, value : Any) : void {
         this.currentScope().set(name, value);
     }
 
-    setLexical (name : string, value : SV) : void {
+    setLexical (name : string, value : Any) : void {
         let index = 0;
         while (index < this.padlist.length) {
             let scope = this.padlist[index] as Pad;
