@@ -9,13 +9,13 @@ import { loadInstructionSet } from './InstructionSet'
 
 export function prettyPrinter (op : OP, depth : number) : void {
     logger.log(
-        `[${op.uid.toString().padStart(2, "0")}]`,
+        `[${op.metadata.uid.toString().padStart(2, "0")}]`,
         "  ".repeat(depth),
         op.name,
         op.config,
         ((op instanceof LOGOP && op.other != undefined)
-            ? `[other = ${op.other.uid.toString().padStart(2, "0")}, next = ${op.next?.uid.toString().padStart(2, "0") ?? 'null'}]`
-            : `[next = ${op.next?.uid.toString().padStart(2, "0") ?? 'null'}]`),
+            ? `[other = ${op.other.metadata.uid.toString().padStart(2, "0")}, next = ${op.next?.metadata.uid.toString().padStart(2, "0") ?? 'null'}]`
+            : `[next = ${op.next?.metadata.uid.toString().padStart(2, "0") ?? 'null'}]`),
 
     );
 }
@@ -38,7 +38,7 @@ export function walkExecOrder(f : (o : OP, d : number) => void, op : OP, depth :
 export function walkTraversalOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
     f(op, depth);
     if (op instanceof UNOP) {
-        for (let k : any = op.first; k != undefined; k = k.sibling) {
+        for (let k : MaybeOP = op.first; k != undefined; k = k.sibling) {
             walkTraversalOrder(f, k, depth + 1);
         }
     }
@@ -52,14 +52,18 @@ export class Compiler {
     }
 
     compile (program : Program) : OpTree {
+
+        let uid_seq = 0;
+
         let prog = program.emit();
 
-        // link the opcodes ...
+        // link the OPs and Opcodes
         walkTraversalOrder(
             (op, d) => {
                 let opcode = this.opcodes.get(op.name);
                 if (opcode == undefined) throw new Error(`Unable to find opcode(${op.name})`);
-                op.opcode = opcode;
+                op.metadata.uid             = ++uid_seq;
+                op.metadata.compiler.opcode = opcode;
             },
             prog.leave
         );

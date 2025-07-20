@@ -57,31 +57,45 @@ export interface Executor {
 
 export type Opcode = (i : ActivationRecord, op : OP) => MaybeOP;
 
+export type OpConfig = any;
+export type CompMeta = any;
+export type JITMeta  = any;
+
+export type OpMetadata = {
+    uid      : number,
+    compiler : CompMeta,
+    JIT      : JITMeta,
+}
+
 // =============================================================================
 // OPs
 // =============================================================================
 
-let OP_SEQ = 0;
-
 export class OP {
-    public uid     : number;
-    public name    : string;
-    public config  : any;
+    public name     : string;
+    public config   : OpConfig;   // config from the AST
+    public metadata : OpMetadata; // metadata from the compiler
 
     public next    : MaybeOP;     // exeuction order
     public sibling : MaybeOP;     // tree order
 
-    public opcode  : MaybeOpcode; // the cached opcode
+    constructor (name : string, config : OpConfig) {
+        this.name     = name;
+        this.config   = config;
+        this.metadata = {
+            uid      : -1, // the default
+            compiler : {},
+            JIT      : {},
+        }
+    }
 
-    constructor (name : string, config : any) {
-        this.uid    = ++OP_SEQ;
-        this.name   = name;
-        this.config = config;
+    getOpcode () : MaybeOpcode {
+        return this.metadata.compiler.opcode;
     }
 }
 
 export class NOOP extends OP {
-    constructor(config : any = {}) {
+    constructor(config : OpConfig = {}) {
         super('null', config)
     }
 }
@@ -118,7 +132,7 @@ export class LISTOP extends BINOP {
 export class DECLARE extends UNOP {
     public declaration : OpTree;
 
-    constructor(decl : OpTree, config : any) {
+    constructor(decl : OpTree, config : OpConfig) {
         super('declare', config);
         this.declaration = decl;
         this.first = decl.leave;

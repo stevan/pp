@@ -100,6 +100,8 @@ class StackFrame implements ActivationRecord {
 }
 
 
+export type InterpreterOptions = any;
+
 export class Interpreter implements Executor {
     public frames  : StackFrame[];
     public root    : SymbolTable;
@@ -110,7 +112,6 @@ export class Interpreter implements Executor {
     }
 
     invokeCV (cv : CV, args : Any[]) : MaybeOP {
-
         let parent = this.frames[0] as StackFrame;
         let frame  = new StackFrame(
             cv.contents,
@@ -145,7 +146,8 @@ export class Interpreter implements Executor {
 
     private prepareRootFrame (optree : OpTree) : void {
         let halt = new OP('halt', {});
-        halt.opcode = (i, op) => undefined;
+        // XXX: gross ... do better
+        halt.metadata.compiler.opcode = (i : ActivationRecord, op : OP) => undefined;
 
         optree.leave.next = halt;
 
@@ -161,7 +163,7 @@ export class Interpreter implements Executor {
         this.frames.unshift(frame);
     }
 
-    run (root : OpTree, options : any = {}) : void {
+    run (root : OpTree, options : InterpreterOptions = {}) : void {
         this.prepareRootFrame(root);
 
         let frame = this.frames[0] as StackFrame;
@@ -170,10 +172,11 @@ export class Interpreter implements Executor {
 
             let op : MaybeOP = frame.current_op;
             if (op == undefined) throw new Error(`Expected an OP, and could not find one`);
-            if (op.opcode == undefined)
+
+            let opcode = op.getOpcode();
+            if (opcode == undefined)
                 throw new Error(`Unlinked OP, no opcode (${op.name} = ${JSON.stringify(op.config)})`)
 
-            let opcode = op.opcode as Opcode;
             let depth  = this.frames.length;
 
             if (options.DEBUG)
