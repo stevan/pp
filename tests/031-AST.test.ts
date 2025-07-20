@@ -11,6 +11,7 @@ import {
     walkExecOrder,
     walkTraversalOrder,
     Compiler,
+    prettyPrinter,
 } from '../src/Compiler'
 
 import { OP, DECLARE } from '../src/Runtime'
@@ -67,7 +68,6 @@ let RUN = new Program([
     )
 ]);
 
-const prettyPrint = (op : OP, depth : number) : void => logger.log("  ".repeat(depth), op.name, op.config)
 
 let compiler = new Compiler();
 
@@ -79,11 +79,11 @@ logger.log(RUN.deparse());
 logger.groupEnd();
 
 logger.group('RUN/EXEC:');
-walkExecOrder(prettyPrint, runtime.enter);
+walkExecOrder(prettyPrinter, runtime.enter);
 logger.groupEnd();
 
 logger.group('RUN/WALK:');
-walkTraversalOrder(prettyPrint, runtime.leave);
+walkTraversalOrder(prettyPrinter, runtime.leave);
 logger.groupEnd();
 
 let interpreter = new Interpreter();

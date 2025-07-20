@@ -18,6 +18,12 @@ import {
 } from './InstructionSet'
 
 
+let id_seq = 1;
+export function prettyPrinter (op : OP, depth : number) : void {
+    logger.log(id_seq.toString().padStart(2, "0"), ":", "  ".repeat(depth), op.name, op.config)
+    id_seq++;
+}
+
 export function walkExecOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
     while (op != undefined) {
         f(op, depth);
