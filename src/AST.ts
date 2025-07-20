@@ -506,6 +506,34 @@ export class ArrayElemFetch implements Node {
     }
 }
 
+export class ArrayElemStore implements Node {
+    constructor(
+        public name  : string,
+        public index : Node,
+        public value : Node,
+    ) {}
+
+    deparse() : string {
+        return `@${this.name}[${this.index.deparse()}] = ${this.value.deparse()}`
+    }
+
+    emit () : OpTree {
+        let index   = this.index.emit();
+        let value   = this.value.emit();
+        let binding = new BINOP('padav_elem_store', {
+            target    : { name : this.name },
+            introduce : false,
+        });
+
+        index.leave.next    = value.enter;
+        index.leave.sibling = value.leave;
+        value.leave.next    = binding;
+        binding.first       = index.leave;
+
+        return new OpTree(index.enter, binding);
+    }
+}
+
 export class ArrayFetch implements Node {
     constructor(public name : string) {}
 
@@ -526,7 +554,7 @@ export class ArrayStore implements Node {
     ) {}
 
     deparse() : string {
-        return `$${this.name} = ${this.value.deparse()}`
+        return `@${this.name} = ${this.value.deparse()}`
     }
 
     emit () : OpTree {

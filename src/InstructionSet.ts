@@ -368,10 +368,25 @@ export function loadInstructionSet () : InstructionSet {
         let idx = i.stack.pop() as Any;
         assertIsIV(idx);
 
-        let elem = av.contents.at(idx.value);
+        // FIXME: Support negative indices
+        let elem = av.contents[idx.value];
         if (elem == undefined) elem = SV_Undef;
 
         i.stack.push(elem);
+
+        return op.next;
+    });
+
+    opcodes.set('padav_elem_store', (i, op) => {
+        let av = i.getLexical(op.config.target.name);
+        assertIsAV(av);
+
+        let elem = i.stack.pop() as Any;
+        let idx  = i.stack.pop() as Any;
+        assertIsIV(idx);
+
+        // FIXME: Support negative indices
+        av.contents[idx.value] = elem;
 
         return op.next;
     });

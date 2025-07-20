@@ -2,16 +2,23 @@
 # TODO
 <!----------------------------------------------------------------------------->
 
-- Remove GlobVar just like ScalarVar
+- loops
+
+- Hashes
+- figure out exactly what builtins to support
+
+
+- Refs
+- Anon
+    - Array
+    - Hash
+    - Code
+
 
 
 <!----------------------------------------------------------------------------->
 
-- in the compiler
-    - make a map of UID => OP
-    - collect the `return` OPS
-    - follow them to the root
-        - null out ops that are not used anywhere else
+- Remove GlobVar just like ScalarVar
 
 <!----------------------------------------------------------------------------->
 
