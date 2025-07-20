@@ -16,9 +16,46 @@
 
 export type Identifier = string // [A-Za-z_][A-Za-z0-9_]+
 
-export type MaybeOP = OP | undefined
+export type MaybeOP     = OP     | undefined
+export type MaybeOpcode = Opcode | undefined
 
-export class Pad extends Map<string, SV> {}
+export class Pad            extends Map<string, SV> {}
+export class InstructionSet extends Map<string, Opcode> {}
+
+export type MaybeActivationRecord = ActivationRecord | undefined
+
+export interface ActivationRecord {
+    stack      : Any[];
+    padlist    : Pad[];
+    optree     : OpTree;
+    return_to  : MaybeOP;
+    current_op : MaybeOP;
+
+    currentScope () : Pad;
+    enterScope   () : void;
+    leaveScope   () : void;
+
+    createLexical (name : string, value : SV) : void;
+    setLexical    (name : string, value : SV) : void;
+    getLexical    (name : string) : SV;
+
+    executor () : Executor;
+}
+
+export interface Executor {
+    frames  : ActivationRecord[];
+    root    : SymbolTable;
+
+    invokeCV (cv : CV, args : Any[]) : MaybeOP;
+    returnFromCV () : MaybeOP;
+
+    run (root : OpTree) : void;
+
+    toSTDOUT (args : PV[]) : void;
+    toSTDERR (args : PV[]) : void;
+}
+
+export type Opcode = (i : ActivationRecord, op : OP) => MaybeOP;
 
 // =============================================================================
 // OPs
@@ -27,8 +64,9 @@ export class Pad extends Map<string, SV> {}
 export class OP {
     public name    : string;
     public config  : any;
-    public next    : MaybeOP; // exeuction order
-    public sibling : MaybeOP; // tree order
+    public next    : MaybeOP;     // exeuction order
+    public sibling : MaybeOP;     // tree order
+    public opcode  : MaybeOpcode; // the cached opcode
 
     constructor (name : string, config : any) {
         this.name   = name;

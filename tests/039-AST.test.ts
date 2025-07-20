@@ -10,7 +10,13 @@ import {
     SubDefinition, SubCall, SubReturn, SubBody, Say,
 } from '../src/AST'
 
-import { DECLARE } from '../src/Runtime'
+import {
+    walkExecOrder,
+    walkTraversalOrder,
+    Compiler,
+} from '../src/Compiler'
+
+import { OP, DECLARE } from '../src/Runtime'
 
 import { Interpreter } from '../src/Interpreter'
 
@@ -95,34 +101,14 @@ let RUN = new Program([
 ]);
 
 
-function dump(op : any, depth : number = 0) {
-    //logger.log(op);
-    while (op != undefined) {
-        logger.log("  ".repeat(depth), op.name, op.config);
+const prettyPrint = (op : OP, depth : number) : void => logger.log("  ".repeat(depth), op.name, op.config)
 
-        if (op.name == 'goto' && depth > 0) {
-            return;
-        }
+let compiler = new Compiler();
 
-        if (op.other) {
-            dump(op.other, depth + 1);
-        }
-
-        op = op.next;
-    }
-}
-
-function walk(op : any, depth : number = 0) {
-    logger.log("  ".repeat(depth), op.name, op.config);
-    for (let k : any = op.first; k != undefined; k = k.sibling) {
-        walk(k, depth + 1);
-    }
-}
-
-let comptime = BEGIN.emit();
-let runtime  = RUN.emit();
-
-//logger.log(op);
+logger.log('... compiling BEGIN');
+let comptime = compiler.compile(BEGIN);
+logger.log('... compiling RUN');
+let runtime  = compiler.compile(RUN);
 
 logger.group('DEPARSE/BEGIN:');
 logger.log(BEGIN.deparse());
@@ -133,19 +119,19 @@ logger.log(RUN.deparse());
 logger.groupEnd();
 
 logger.group('BEGIN/EXEC:');
-dump(comptime.enter);
+walkExecOrder(prettyPrint, comptime.enter);
 logger.groupEnd();
 
 logger.group('RUN/EXEC:');
-dump(runtime.enter);
+walkExecOrder(prettyPrint, runtime.enter);
 logger.groupEnd();
 
 logger.group('BEGIN/WALK:');
-walk(comptime.leave);
+walkTraversalOrder(prettyPrint, comptime.leave);
 logger.groupEnd();
 
 logger.group('RUN/WALK:');
-walk(runtime.leave);
+walkTraversalOrder(prettyPrint, runtime.leave);
 logger.groupEnd();
 
 let interpreter = new Interpreter();
@@ -161,4 +147,3 @@ logger.time('RUN elapased');
 interpreter.run(runtime);
 logger.timeEnd('RUN elapased');
 logger.groupEnd();
-

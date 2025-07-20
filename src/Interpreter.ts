@@ -8,13 +8,13 @@ import { logger } from './Logger'
 import {
     Any, SV, PV, CV, SymbolTable,
     OP, MaybeOP, OpTree,
-    Pad
+    Pad,
+    Executor, ActivationRecord, MaybeActivationRecord,
+    InstructionSet, Opcode,
 } from './Runtime'
 
 import {
-    InstructionSet,
     loadInstructionSet,
-    Executor, ActivationRecord, MaybeActivationRecord,
 } from './InstructionSet'
 
 import { GlobSlot } from './AST'
@@ -103,12 +103,10 @@ class StackFrame implements ActivationRecord {
 export class Interpreter implements Executor {
     public frames  : StackFrame[];
     public root    : SymbolTable;
-    public opcodes : InstructionSet;
 
     constructor () {
         this.frames  = [];
         this.root    = new SymbolTable('main');
-        this.opcodes = loadInstructionSet();
     }
 
     invokeCV (cv : CV, args : Any[]) : MaybeOP {
@@ -147,6 +145,7 @@ export class Interpreter implements Executor {
 
     private prepareRootFrame (optree : OpTree) : void {
         let halt = new OP('halt', {});
+        halt.opcode = (i, op) => undefined;
 
         optree.leave.next = halt;
 
@@ -170,11 +169,12 @@ export class Interpreter implements Executor {
         while (frame.current_op != undefined) {
 
             let op : MaybeOP = frame.current_op;
+            if (op == undefined) throw new Error(`Expected an OP, and could not find one`);
+            if (op.opcode == undefined)
+                throw new Error(`Unlinked OP, no opcode (${op.name} = ${JSON.stringify(op.config)})`)
 
-            let opcode = this.opcodes.get(op.name);
-            if (opcode == undefined) throw new Error(`Could not find opcode(${op.name})`);
-
-            let depth = this.frames.length;
+            let opcode = op.opcode as Opcode;
+            let depth  = this.frames.length;
 
             if (options.DEBUG)
                 logger.group(`[${depth}] {${frame.optree.enter.config.name}} -> OP[${op.name}] = ${JSON.stringify(op.config)}`);

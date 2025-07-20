@@ -16,51 +16,15 @@ import {
     assertIsBool, isTrue,
     LOGOP, DECLARE,
     setGlobScalar, setGlobCode, getGlobSlot,
+    InstructionSet,
+    MaybeActivationRecord, ActivationRecord,
+    Executor, Opcode,
 } from './Runtime'
 
 import { GlobSlot } from './AST'
 
 // -----------------------------------------------------------------------------
-
-export type MaybeActivationRecord = ActivationRecord | undefined
-
-export interface ActivationRecord {
-    stack      : Any[];
-    padlist    : Pad[];
-    optree     : OpTree;
-    return_to  : MaybeOP;
-    current_op : MaybeOP;
-
-    currentScope () : Pad;
-    enterScope   () : void;
-    leaveScope   () : void;
-
-    createLexical (name : string, value : SV) : void;
-    setLexical    (name : string, value : SV) : void;
-    getLexical    (name : string) : SV;
-
-    executor () : Executor;
-}
-
-export interface Executor {
-    frames  : ActivationRecord[];
-    opcodes : InstructionSet;
-    root    : SymbolTable;
-
-    invokeCV (cv : CV, args : Any[]) : MaybeOP;
-    returnFromCV () : MaybeOP;
-
-    run (root : OpTree) : void;
-
-    toSTDOUT (args : PV[]) : void;
-    toSTDERR (args : PV[]) : void;
-}
-
-// Opcodes return MaybeOP because the final `leave`
-// will not have a next OP to go to. This could probably
-// be fixed, but it is okay for now.
-export type Opcode = (i : ActivationRecord, op : OP) => MaybeOP;
-
+// Utils to lift some BinOps
 // -----------------------------------------------------------------------------
 
 function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
@@ -98,8 +62,8 @@ function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
 }
 
 // -----------------------------------------------------------------------------
-
-export class InstructionSet extends Map<string, Opcode> {}
+// Subroutine calls
+// -----------------------------------------------------------------------------
 
 const PUSHMARK = newPV('*PUSHMARK*');
 
@@ -123,6 +87,10 @@ function collectArgumentsFromStack (i : ActivationRecord) : Any[] {
     return args;
 }
 
+// -----------------------------------------------------------------------------
+// the instruction set ...
+// -----------------------------------------------------------------------------
+
 export function loadInstructionSet () : InstructionSet {
 
     let opcodes = new InstructionSet();
@@ -138,14 +106,6 @@ export function loadInstructionSet () : InstructionSet {
         assertIsGlob(gv);
         setGlobCode(gv, cv);
         return op.next
-    });
-
-    // ---------------------------------------------------------------------
-    // Enter/Leave
-    // ---------------------------------------------------------------------
-
-    opcodes.set('halt', (i, op) => {
-        return undefined;
     });
 
     // ---------------------------------------------------------------------
