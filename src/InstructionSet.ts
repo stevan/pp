@@ -334,15 +334,12 @@ export function loadInstructionSet () : InstructionSet {
     // ---------------------------------------------------------------------
 
     opcodes.set('padav_init', (i, op) => {
-        let args = collectArgumentsFromStack(i);
-
-        let av = newAV(args);
+        let av = newAV(collectArgumentsFromStack(i));
         if (op.config.introduce) {
             i.createLexical(op.config.target.name, av);
         } else {
             i.setLexical(op.config.target.name, av);
         }
-
         return op.next;
     });
 
@@ -358,8 +355,24 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     opcodes.set('padav_fetch', (i, op) => {
-        let t = i.getLexical(op.config.target.name);
-        i.stack.push(t);
+        let av = i.getLexical(op.config.target.name);
+        assertIsAV(av);
+        i.stack.push(av);
+        return op.next;
+    });
+
+    opcodes.set('padav_elem_fetch', (i, op) => {
+        let av = i.getLexical(op.config.target.name);
+        assertIsAV(av);
+
+        let idx = i.stack.pop() as Any;
+        assertIsIV(idx);
+
+        let elem = av.contents.at(idx.value);
+        if (elem == undefined) elem = SV_Undef;
+
+        i.stack.push(elem);
+
         return op.next;
     });
 

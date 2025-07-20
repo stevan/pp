@@ -7,6 +7,7 @@ import {
     ConstInt, ConstStr,
     ArrayDeclare,
     ArrayFetch,
+    ArrayElemFetch,
     Say, Join,
 } from '../src/AST'
 
@@ -21,7 +22,9 @@ import { Interpreter } from '../src/Interpreter'
 /*
 
 my @foo = (1, 2, 3);
-say join ', ' => @foo;
+say @foo[0];
+say @foo[1];
+say @foo[2];
 
 */
 
@@ -33,14 +36,9 @@ let RUN = new Program([
             new ConstInt(3),
         ]),
     ),
-    new Statement(
-        new Say([
-            new Join([
-                new ConstStr(', '),
-                new ArrayFetch('foo')
-            ])
-        ])
-    )
+    new Statement(new Say([ new ConstStr('first  : '), new ArrayElemFetch('foo', new ConstInt(0)) ])),
+    new Statement(new Say([ new ConstStr('second : '), new ArrayElemFetch('foo', new ConstInt(1)) ])),
+    new Statement(new Say([ new ConstStr('third  : '), new ArrayElemFetch('foo', new ConstInt(2)) ])),
 ]);
 
 let compiler = new Compiler();

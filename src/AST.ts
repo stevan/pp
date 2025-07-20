@@ -485,6 +485,27 @@ export class ScalarDeclare extends ScalarStore {
 // Array Ops
 // -----------------------------------------------------------------------------
 
+export class ArrayElemFetch implements Node {
+    constructor(
+        public name  : string,
+        public index : Node,
+    ) {}
+
+    deparse() : string { return `@${this.name}[${this.index.deparse()}]` }
+
+    emit () : OpTree {
+        let index = this.index.emit();
+        let op    = new UNOP('padav_elem_fetch', {
+            target : { name : this.name },
+        });
+
+        index.leave.next = op;
+        op.first         = index.leave;
+
+        return new OpTree(index.enter, op);
+    }
+}
+
 export class ArrayFetch implements Node {
     constructor(public name : string) {}
 
