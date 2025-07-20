@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
+    ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
@@ -22,6 +22,14 @@ import { OP, DECLARE } from '../src/Runtime'
 import { Interpreter } from '../src/Interpreter'
 
 
+/*
+
+sub add_one_and_two() { 1 + 2 }
+
+add_one_and_two();
+
+*/
+
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
@@ -40,8 +48,7 @@ let BEGIN = new Program([
 
 let RUN = new Program([
     new Statement(
-        new ScalarDeclare(
-            new ScalarVar('x'),
+        new ScalarDeclare('x',
             new SubCall(
                 new GlobFetch('add_one_and_two', GlobSlot.CODE),
                 []

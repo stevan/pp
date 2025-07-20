@@ -7,18 +7,23 @@
 
 import { logger } from './Logger'
 import {
-    Any, SV, IV, NV, PV, CV, Pad, SVtoPV, assertIsSV, assertIsPV,
-    Stash, newStash, newCV,
-    newIV, assertIsIV, newPV, newNV,
-    SV_True, SV_False, SV_Undef, isUndef, assertIsCV,
-    SymbolTable, assertIsGlob,
-    OP, MaybeOP, OpTree,
-    assertIsBool, isTrue,
-    LOGOP, DECLARE,
+    Any, SV, IV, NV, PV, CV, Stash, SymbolTable,
+
+    SV_True, SV_False, SV_Undef,
+
+    newStash, newCV, newIV, newPV, newNV,
+
+    assertIsSV, assertIsPV, assertIsIV, assertIsCV,
+    assertIsGlob, assertIsBool,
+
+    SVtoPV, isUndef, isTrue,
     setGlobScalar, setGlobCode, getGlobSlot,
-    InstructionSet,
-    MaybeActivationRecord, ActivationRecord,
-    Executor, Opcode,
+
+    OP, LOGOP, DECLARE, MaybeOP, OpTree,
+
+    Executor, MaybeActivationRecord, ActivationRecord,
+
+    InstructionSet, Opcode,
 } from './Runtime'
 
 import { GlobSlot } from './AST'

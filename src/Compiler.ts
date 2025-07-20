@@ -1,21 +1,11 @@
 
-import { logger } from '../src/Logger'
+import { logger } from './Logger'
 
-import {
-    InstructionSet,
-} from '../src/Runtime'
+import { Program }                          from './AST'
+import { OP, UNOP, LOGOP, MaybeOP, OpTree } from './Runtime'
 
-import {
-    Program
-} from '../src/AST'
-
-import {
-    OP, UNOP, LOGOP, MaybeOP, OpTree,
-} from './Runtime'
-
-import {
-    loadInstructionSet,
-} from './InstructionSet'
+import { InstructionSet }     from './Runtime'
+import { loadInstructionSet } from './InstructionSet'
 
 
 let id_seq = 1;
@@ -63,7 +53,6 @@ export class Compiler {
             (op, d) => {
                 let opcode = this.opcodes.get(op.name);
                 if (opcode == undefined) throw new Error(`Unable to find opcode(${op.name})`);
-                //console.log("ADDING opcode to ", op.name);
                 op.opcode = opcode;
             },
             prog.leave

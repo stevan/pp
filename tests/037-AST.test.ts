@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
+    ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
@@ -21,12 +21,22 @@ import { OP, DECLARE } from '../src/Runtime'
 
 import { Interpreter } from '../src/Interpreter'
 
+/*
+
+sub adder ($n, $m) { return $n + $m }
+
+my $x = adder(10, 20);
+
+say ($x);
+
+*/
+
 
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
             'adder',
-            [ new ScalarVar('n'), new ScalarVar('m') ],
+            [ 'n', 'm' ],
             [
                 new Statement(
                     new SubReturn(
@@ -44,7 +54,7 @@ let BEGIN = new Program([
 let RUN = new Program([
     new Statement(
         new ScalarDeclare(
-            new ScalarVar('x'),
+            'x',
             new Add(
                 new SubCall(
                     new GlobFetch('adder', GlobSlot.CODE),

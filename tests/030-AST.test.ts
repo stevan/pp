@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarVar, ScalarDeclare, ScalarStore, ScalarFetch,
+    ScalarDeclare, ScalarStore, ScalarFetch,
     ConstInt,
     Add,
 } from '../src/AST'
@@ -19,18 +19,18 @@ import { OP, DECLARE } from '../src/Runtime'
 import { Interpreter } from '../src/Interpreter'
 
 /*
-// my $x = 1;
-// my $y = 2;
-// my $z = $x + $x + $y + $x + $y + $x + $y + $x + $y;
+my $x = 1;
+my $y = 2;
+my $z = $x + $x + $y + $x + $y + $x + $y + $x + $y;
 */
 
 let RUN = new Program([
     new Statement(
-        new ScalarDeclare(new ScalarVar('x'), new ConstInt(1))),
+        new ScalarDeclare('x', new ConstInt(1))),
     new Statement(
-        new ScalarDeclare(new ScalarVar('y'), new ConstInt(2))),
+        new ScalarDeclare('y', new ConstInt(2))),
     new Statement(
-        new ScalarDeclare(new ScalarVar('z'),
+        new ScalarDeclare('z',
             new Add(
                 new Add(
                     new ScalarFetch('x'),

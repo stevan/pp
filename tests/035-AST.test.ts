@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
+    ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Block, ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
     Conditional, Equal, Say, ConstStr, Join,
@@ -22,31 +22,10 @@ import { Interpreter } from '../src/Interpreter'
 /*
 
 # NOTE: this is tweaked to be the tree I want, and avoid the
-# perl peephole optimizer. I altered the B::Concise tree
-# output to reflect this.
+# perl peephole optimizer.
 
 my $x = 1;
 say join ', ' => 1, (1 + $x), ($x + (1 + $x));
-
-perl -MO=Concise -E 'my $x = 1; say join ", " => 1, (1 + $x), ($x + (1 + $x))'
-k  <@> leave[1 ref] vKP/REFC ->(end)
-1     <0> enter v ->5
-5     <;> nextstate(main 9 -e:1) v:%,us,{,fea=15 ->6
-j     <@> say vK ->k
-6        <0> pushmark s ->7
-i        <@> join[t18] sK/2 ->j
-7           <0> pushmark s ->8
-8           <$> const(PV ", ") s ->9
-9           <$> const(IV 1) s ->a
-c           <2> add[t15] sKP/2 ->d
-a              <$> const(IV 1) s ->b
-b              <0> const(IV 1) s ->c
-h           <2> add[t17] sKP/2 ->i
-d              <0> const(IV 1) s ->e
-g              <2> add[t16] sKP/2 ->h
-e                 <$> const(IV 1) s ->f
-f                 <0> const(IV 1) s ->g
--e syntax OK
 
 */
 

@@ -10,7 +10,9 @@
 // =============================================================================
 
 import {
-    OP, NOOP, COP, UNOP, BINOP, LOGOP, LISTOP, DECLARE, OpTree
+    OP, COP, UNOP, BINOP, LOGOP, LISTOP,
+    NOOP, DECLARE,
+    OpTree
 } from './Runtime'
 
 // -----------------------------------------------------------------------------
@@ -99,12 +101,12 @@ export class SubBody extends Scope {
 
 export class SubDefinition implements Node {
     public name   : string;
-    public params : ScalarVar[];
+    public params : string[];
     public body   : SubBody;
 
     constructor(
         name   : string,
-        params : ScalarVar[], // XXX: support other types
+        params : string[],
         body   : Statement[],
     ) {
         this.name   = name;
@@ -113,14 +115,14 @@ export class SubDefinition implements Node {
     }
 
     deparse() : string {
-        return `sub ${this.name} (${this.params.map((p) => p.deparse()).join(', ')}) ${this.body.deparse()}`
+        return `sub ${this.name} (${this.params.join(', ')}) ${this.body.deparse()}`
     }
 
     emit () : OpTree {
         let body = this.body.emit();
 
         body.enter.config.name   = this.name;
-        body.enter.config.params = this.params.map((v) => v.name);
+        body.enter.config.params = this.params;
 
         let op = new DECLARE( body, { name : this.name } );
         return new OpTree(op, op)
@@ -428,19 +430,6 @@ export class GlobDeclare extends GlobStore {
 // Scalar Ops
 // -----------------------------------------------------------------------------
 
-export class ScalarVar implements Node {
-    constructor(public name : string) {}
-
-    deparse() : string { return '$' + this.name }
-
-    emit () : OpTree {
-        let op =  new UNOP('padsv', {
-            name : this.name,
-        });
-        return new OpTree(op, op)
-    }
-}
-
 export class ScalarFetch implements Node {
     constructor(public name : string) {}
 
@@ -456,29 +445,23 @@ export class ScalarFetch implements Node {
 
 export class ScalarStore implements Node {
     constructor(
-        public ident : ScalarVar,
+        public name  : string,
         public value : Node,
     ) {}
 
     deparse() : string {
-        return `${this.ident.deparse()} = ${this.value.deparse()}`
+        return `$${this.name} = ${this.value.deparse()}`
     }
 
     emit () : OpTree {
         let value    = this.value.emit();
-        let variable = this.ident.emit();
-        let binding  = new BINOP('padsv_store', {
-            target    : variable.enter.config,
+        let binding  = new UNOP('padsv_store', {
+            target    : { name : this.name },
             introduce : false,
         });
 
-        value.leave.next    = variable.enter;
-        variable.leave.next = binding;
-
-        binding.first = value.leave;
-        binding.last  = variable.leave;
-
-        value.leave.sibling = variable.leave;
+        value.leave.next = binding;
+        binding.first    = value.leave;
 
         return new OpTree(value.enter, binding);
     }

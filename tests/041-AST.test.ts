@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
+    ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Multiply, Subtract, Block, Modulo,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
@@ -37,7 +37,7 @@ let BEGIN = new Program([
     new Statement(
         new SubDefinition(
             'gcd',
-            [ new ScalarVar('a'), new ScalarVar('b') ],
+            [ 'a', 'b' ],
             [
                 new Statement(
                     new Conditional(
@@ -78,7 +78,7 @@ let BEGIN = new Program([
 let RUN = new Program([
     new Statement(
         new ScalarDeclare(
-            new ScalarVar('x'),
+            'x',
             new SubCall(
                 new GlobFetch('gcd', GlobSlot.CODE),
                 // Factorial(25), Factorial(24) .. recurses 24 times

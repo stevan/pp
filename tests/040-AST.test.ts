@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
+    ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
@@ -39,7 +39,7 @@ let BEGIN = new Program([
     new Statement(
         new SubDefinition(
             'fact',
-            [ new ScalarVar('n') ],
+            [ 'n' ],
             [
                 new Statement(
                     new Conditional(
@@ -82,7 +82,7 @@ let BEGIN = new Program([
 let RUN = new Program([
     new Statement(
         new ScalarDeclare(
-            new ScalarVar('x'),
+            'x',
             new SubCall(
                 new GlobFetch('fact', GlobSlot.CODE),
                 [ new ConstInt(100) ]

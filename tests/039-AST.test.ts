@@ -2,7 +2,7 @@
 import { logger } from '../src/Logger'
 import {
     Program, Statement,
-    ScalarVar, ScalarStore, ScalarFetch, ScalarDeclare,
+    ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
@@ -32,15 +32,13 @@ sub fib ($n) {
     }
 }
 
-perl -E 'sub fib ($n) { if ($n < 2) { return $n } else { return fib($n-1)+fib($n-2)}} say fib(2)'
-
 */
 
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
             'fib',
-            [ new ScalarVar('n') ],
+            [ 'n' ],
             [
                 new Statement(
                     new Conditional(
@@ -89,7 +87,7 @@ let BEGIN = new Program([
 let RUN = new Program([
     new Statement(
         new ScalarDeclare(
-            new ScalarVar('x'),
+            'x',
             new SubCall(
                 new GlobFetch('fib', GlobSlot.CODE),
                 [ new ConstInt(25) ]
