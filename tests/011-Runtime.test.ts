@@ -1,5 +1,5 @@
 
-import { logger } from '../src/Logger'
+import { logger, prettyPrinter } from '../src/Logger'
 import {
     newStash,
     newGlob,

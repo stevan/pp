@@ -1,5 +1,5 @@
 
-import { logger } from '../src/Logger'
+import { logger, prettyPrinter } from '../src/Logger'
 import {
     Program, Statement,
     ScalarDeclare, ScalarStore, ScalarFetch,
@@ -11,7 +11,6 @@ import {
     walkExecOrder,
     walkTraversalOrder,
     Compiler,
-    prettyPrinter,
 } from '../src/Compiler'
 
 import { OP, DECLARE } from '../src/Runtime'
