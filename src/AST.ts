@@ -141,7 +141,9 @@ export class SubCall implements Node {
 
     emit () : OpTree {
         let glob     = this.glob.emit();
-        let op       = new LISTOP('callsub', {});
+        let op       = new LISTOP('callsub', {
+            name : this.glob.name,
+        });
         let pushmark = new OP('pushmark', {});
 
         op.first = pushmark;

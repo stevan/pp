@@ -61,14 +61,20 @@ export type Opcode = (i : ActivationRecord, op : OP) => MaybeOP;
 // OPs
 // =============================================================================
 
+let OP_SEQ = 0;
+
 export class OP {
+    public uid     : number;
     public name    : string;
     public config  : any;
+
     public next    : MaybeOP;     // exeuction order
     public sibling : MaybeOP;     // tree order
+
     public opcode  : MaybeOpcode; // the cached opcode
 
     constructor (name : string, config : any) {
+        this.uid    = ++OP_SEQ;
         this.name   = name;
         this.config = config;
     }

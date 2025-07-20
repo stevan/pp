@@ -7,11 +7,17 @@ import { OP, UNOP, LOGOP, MaybeOP, OpTree } from './Runtime'
 import { InstructionSet }     from './Runtime'
 import { loadInstructionSet } from './InstructionSet'
 
-
-let id_seq = 1;
 export function prettyPrinter (op : OP, depth : number) : void {
-    logger.log(id_seq.toString().padStart(2, "0"), ":", "  ".repeat(depth), op.name, op.config)
-    id_seq++;
+    logger.log(
+        `[${op.uid.toString().padStart(2, "0")}]`,
+        "  ".repeat(depth),
+        op.name,
+        op.config,
+        ((op instanceof LOGOP && op.other != undefined)
+            ? `[other = ${op.other.uid.toString().padStart(2, "0")}, next = ${op.next?.uid.toString().padStart(2, "0") ?? 'null'}]`
+            : `[next = ${op.next?.uid.toString().padStart(2, "0") ?? 'null'}]`),
+
+    );
 }
 
 export function walkExecOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
