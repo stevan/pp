@@ -345,7 +345,7 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('add',      LiftNumericBinOp((n, m) => n + m));
     opcodes.set('subtract', LiftNumericBinOp((n, m) => n - m));
     opcodes.set('multiply', LiftNumericBinOp((n, m) => n * m));
-    opcodes.set('modulo',   LiftNumericBinOp((n, m) => n % m));
+    opcodes.set('modulus',   LiftNumericBinOp((n, m) => n % m));
 
     // ---------------------------------------------------------------------
     // Eq & Ord

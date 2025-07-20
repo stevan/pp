@@ -4,7 +4,7 @@ import {
     Program, Statement,
     ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
-    Add, Multiply, Subtract, Block, Modulo,
+    Add, Multiply, Subtract, Block, Modulus,
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
     Conditional, Equal,
     SubDefinition, SubCall, SubReturn, SubBody, Say,
@@ -59,7 +59,7 @@ let BEGIN = new Program([
                                         new GlobFetch('gcd', GlobSlot.CODE),
                                         [
                                             new ScalarFetch('b'),
-                                            new Modulo(
+                                            new Modulus(
                                                 new ScalarFetch('a'),
                                                 new ScalarFetch('b'),
                                             )

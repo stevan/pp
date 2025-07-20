@@ -24,17 +24,24 @@ export function prettyPrinter (op : OP, depth : number) : void {
         }
     }
 
+    const opUID = (op : MaybeOP) : string => {
+        if (op == undefined) return '..'
+        return op.metadata.uid.toString().padStart(2, "0")
+    }
+
+    const opName = (op : MaybeOP) : string => {
+        return (op?.name ?? '').padEnd(20, " ")
+    }
 
     logger.log(
-        `[${op.metadata.uid.toString().padStart(2, "0")}]`,
+        `\x1b[32m[${opUID(op)}]\x1b[0m`,
         "  ".repeat(depth),
-        `<${opType(op)}>`,
-        op.name,
-        op.config,
+        `\x1b[34m<${opType(op)}>\x1b[0m`,
+        `\x1b[33m${opName(op)}\x1b[0m`,
         ((op instanceof LOGOP && op.other != undefined)
-            ? `[other -> ${op.other.metadata.uid.toString().padStart(2, "0")}, next -> ${op.next?.metadata.uid.toString().padStart(2, "0") ?? 'null'}]`
-            : `[next -> ${op.next?.metadata.uid.toString().padStart(2, "0") ?? 'null'}]`),
-
+            ? `\x1b[35m[next -> ${opUID(op.next)}, other -> ${opUID(op.other)}]\x1b[0m`
+            : `\x1b[36m[next -> ${opUID(op.next)}]\x1b[0m`),
+        op.config,
     );
 }
 

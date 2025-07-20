@@ -582,9 +582,9 @@ export class Subtract extends BinaryOp {
     }
 }
 
-export class Modulo extends BinaryOp {
+export class Modulus extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('modulo', { operation : '%' }), lhs, rhs)
+        super(new BINOP('modulus', { operation : '%' }), lhs, rhs)
     }
 }
 
