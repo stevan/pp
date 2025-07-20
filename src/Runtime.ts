@@ -244,10 +244,10 @@ export type SV =
 export class List extends Array<Any>       {}
 export class Hash extends Map<string, Any> {}
 
-export type AV = { type : 'LIST', contents : List }
-export type HV = { type : 'HASH', contents : Hash }
-export type CV = { type : 'CODE', contents : OpTree }
-export type RV = { type : 'REF', value : Any }
+export type AV = { type : 'ARRAY', contents : List }
+export type HV = { type : 'HASH',  contents : Hash }
+export type CV = { type : 'CODE',  contents : OpTree }
+export type RV = { type : 'REF',   value : Any }
 
 export type GlobSlotName = 'SCALAR' | 'ARRAY' | 'HASH' | 'CODE';
 
@@ -438,10 +438,10 @@ export function AnytoPV (a : Any) : PV[] {
 // =============================================================================
 
 export function newAV (contents : List = new List()) : AV {
-    return { type : 'LIST', contents }
+    return { type : 'ARRAY', contents }
 }
 
-export function isAV (av : Any) : av is AV { return av.type == 'LIST' }
+export function isAV (av : Any) : av is AV { return av.type == 'ARRAY' }
 
 export function assertIsAV (av : Any) : asserts av is AV {
     if (!isAV(av)) throw new Error(`Not AV ??(${JSON.stringify(av)})`)

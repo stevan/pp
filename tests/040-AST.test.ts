@@ -1,3 +1,5 @@
+import { test } from "node:test"
+import  assert  from "node:assert"
 
 import { logger, prettyPrinter } from '../src/Logger'
 import {
@@ -16,9 +18,8 @@ import {
     Compiler,
 } from '../src/Compiler'
 
-import { OP, DECLARE } from '../src/Runtime'
-
-import { Interpreter } from '../src/Interpreter'
+import { Pad, IV } from '../src/Runtime'
+import { Interpreter, StackFrame } from '../src/Interpreter'
 
 /*
 
@@ -84,7 +85,7 @@ let RUN = new Program([
             'x',
             new SubCall(
                 new GlobFetch('fact', GlobSlot.CODE),
-                [ new ConstInt(100) ]
+                [ new ConstInt(10) ]
             )
         )
     ),
@@ -135,7 +136,15 @@ logger.groupEnd();
 
 logger.group('RUN/INTERPRET:');
 logger.time('RUN elapased');
-interpreter.run(runtime);
+interpreter.run(runtime, { DEBUG : false });
 logger.timeEnd('RUN elapased');
 logger.groupEnd();
+
+test("... simple AST test", (t) => {
+    let strings = interpreter.STD_buffer;
+
+    assert.strictEqual(strings[0]?.value, "3628800");
+});
+
+
 

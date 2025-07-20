@@ -1,3 +1,5 @@
+import { test } from "node:test"
+import  assert  from "node:assert"
 
 import { logger, prettyPrinter } from '../src/Logger'
 
@@ -16,7 +18,8 @@ import {
     Compiler,
 } from '../src/Compiler'
 
-import { Interpreter } from '../src/Interpreter'
+import { Pad, IV, AV } from '../src/Runtime'
+import { Interpreter, StackFrame } from '../src/Interpreter'
 
 /*
 
@@ -67,3 +70,22 @@ logger.time('RUN elapased');
 interpreter.run(runtime, { DEBUG : false });
 logger.timeEnd('RUN elapased');
 logger.groupEnd();
+
+test("... simple AST test", (t) => {
+    let strings = interpreter.STD_buffer;
+
+    assert.strictEqual(strings[0]?.value, "1, 2, 3");
+
+    let frame = interpreter.frames[0] as StackFrame;
+    let pad   = frame.padlist.at(-1)  as Pad;
+
+    assert.ok(pad.has('foo'));
+
+    let foo = pad.get('foo') as AV;
+
+    assert.strictEqual((foo.contents[0] as IV).value, 1);
+    assert.strictEqual((foo.contents[1] as IV).value, 2);
+    assert.strictEqual((foo.contents[2] as IV).value, 3);
+});
+
+

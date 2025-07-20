@@ -21,7 +21,7 @@ import { GlobSlot } from './AST'
 
 // -----------------------------------------------------------------------------
 
-class StackFrame implements ActivationRecord {
+export class StackFrame implements ActivationRecord {
     public stack      : Any[];
     public padlist    : Pad[];
     public optree     : OpTree; // the CV basically
@@ -210,19 +210,22 @@ export class Interpreter implements Executor {
         if (options.DEBUG) {
             logger.log('HALT!');
         }
-
-        this.frames = [];
     }
 
     // -------------------------------------------------------------------------
     // I/O
     // -------------------------------------------------------------------------
 
+    public STD_buffer : PV[] = [];
+    public ERR_buffer : PV[] = [];
+
     toSTDOUT (args : PV[]) : void {
+        this.STD_buffer.push(...args);
         console.log('STDOUT>', args.map((pv) => pv.value).join(''));
     }
 
     toSTDERR (args : PV[]) : void {
+        this.ERR_buffer.push(...args);
         console.log('STDERR>', args.map((pv) => pv.value).join(''));
     }
 

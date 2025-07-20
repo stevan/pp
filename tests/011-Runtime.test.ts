@@ -1,4 +1,7 @@
 
+import { test } from "node:test"
+import  assert  from "node:assert"
+
 import { logger, prettyPrinter } from '../src/Logger'
 import {
     newStash,
@@ -11,35 +14,52 @@ import {
     SV_Undef,
     newRV,
     SymbolTable,
-    assertIsGlob
+    isGlob, isStash,
+    assertIsGlob,
 } from '../src/Runtime'
 
-let main = new SymbolTable('main');
+test("... simple Runtime test", (t) => {
+    let main = new SymbolTable('main');
+    assert.strictEqual(main.name(), 'main');
 
-let foo = newGlob('foo');
+    let foo = newGlob('foo');
+    assert.strictEqual(foo.name, 'foo');
+    assert.strictEqual(foo.type, 'GLOB');
 
-foo.slots.SCALAR = newPV("FOO");
-foo.slots.ARRAY  = newAV([
-    newIV(10),
-    SV_True,
-    newNV(3.14),
-    SV_Undef,
-    newRV(foo.slots.SCALAR)
-]);
+    foo.slots.SCALAR = newPV("FOO");
+    foo.slots.ARRAY  = newAV([
+        newIV(10),
+        SV_True,
+        newNV(3.14),
+        SV_Undef,
+        newRV(foo.slots.SCALAR)
+    ]);
 
-main.root.stash.set('foo', foo);
+    assert.strictEqual(foo.slots.SCALAR.value, 'FOO');
+    assert.strictEqual(foo.slots.SCALAR.type,  'STR');
 
-let Bar = new SymbolTable('Bar');
+    assert.strictEqual(foo.slots.ARRAY.type, 'ARRAY');
 
-main.root.stash.set('Bar', Bar.root);
+    main.root.stash.set('foo', foo);
 
-let baz = main.autovivify('Bar::Gorch::baz');
-assertIsGlob(baz);
+    let Bar = new SymbolTable('Bar');
+    assert.strictEqual(Bar.name(), 'Bar');
 
-baz.slots.SCALAR = newPV("BAZ");
+    main.root.stash.set('Bar', Bar.root);
 
-let Gorch = main.autovivify('Bar::Gorch::');
+    let baz = main.autovivify('Bar::Gorch::baz');
+    assert.strictEqual(baz.type, 'GLOB');
+    assertIsGlob(baz);
 
+    baz.slots.SCALAR = newPV("BAZ");
 
-logger.log(main);
+    assert.strictEqual(baz.slots.SCALAR.value, 'BAZ');
+    assert.strictEqual(baz.slots.SCALAR.type,  'STR');
+
+    let Gorch = main.autovivify('Bar::Gorch::');
+    assert.strictEqual(Gorch.type, 'STASH');
+
+    logger.log(main);
+
+});
 
