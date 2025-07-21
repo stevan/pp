@@ -127,6 +127,35 @@ export class LISTOP extends BINOP {
     public children : number = 0;
 }
 
+export class LOOPOP extends BINOP {
+    public next_op : MaybeOP;
+    public redo_op : MaybeOP;
+    public last_op : MaybeOP;
+}
+
+
+// TODO:
+// Implement these ops, and very likely
+// replace some current usage with these.
+/*
+
+struct svop {
+    BASEOP
+    SV *    op_sv;
+};
+
+struct padop {
+    BASEOP
+    PADOFFSET   op_padix;
+};
+
+struct pvop {
+    BASEOP
+    char *  op_pv;
+};
+
+*/
+
 // declaration
 
 export class DECLARE extends UNOP {

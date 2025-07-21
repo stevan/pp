@@ -10,7 +10,7 @@
 // =============================================================================
 
 import {
-    OP, COP, UNOP, BINOP, LOGOP, LISTOP,
+    OP, COP, UNOP, BINOP, LOGOP, LISTOP, LOOPOP,
     NOOP, DECLARE,
     OpTree
 } from './Runtime'
@@ -251,6 +251,26 @@ export class Conditional implements Node {
         goto.first = op;
 
         return new OpTree(condition.enter, goto);
+    }
+}
+
+export class ForEachLoop implements Node {
+    constructor(
+        public local : string, // TODO: make this Var object
+        public iter  : Node,   // TODO: make this something
+        public body  : Block,
+    ) {}
+
+    deparse() : string {
+        return [
+            `foreach my $${this.local} (${this.iter.deparse()})`,
+                this.body.deparse(),
+        ]
+        .join('\n')
+    }
+
+    emit () : OpTree {
+        throw new Error('TODO');
     }
 }
 
