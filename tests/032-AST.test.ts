@@ -7,7 +7,7 @@ import {
     ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Block, ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch
-} from '../src/AST'
+} from '../src/Parser/AST'
 
 import {
     walkExecOrder,

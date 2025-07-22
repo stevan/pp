@@ -12,7 +12,7 @@ import {
     ArrayElemFetch,
     ArrayElemStore,
     Say, Join, Subtract,
-} from '../src/AST'
+} from '../src/Parser/AST'
 
 import {
     walkExecOrder,

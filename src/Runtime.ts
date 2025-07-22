@@ -13,12 +13,6 @@ import {
     InstructionSet, Opcode,
 } from './API'
 
-import {
-    loadInstructionSet,
-} from './Compiler/InstructionSet'
-
-import { GlobSlot } from './AST'
-
 // -----------------------------------------------------------------------------
 
 export class StackFrame implements ActivationRecord {

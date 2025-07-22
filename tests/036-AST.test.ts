@@ -10,7 +10,7 @@ import {
     ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
     Conditional, Equal, Say,
     SubDefinition, SubCall, SubReturn, SubBody,
-} from '../src/AST'
+} from '../src/Parser/AST'
 
 import {
     walkExecOrder,

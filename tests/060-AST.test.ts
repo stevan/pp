@@ -14,7 +14,7 @@ import {
     Say, Join, Subtract,
     ForEachLoop,
     Block,
-} from '../src/AST'
+} from '../src/Parser/AST'
 
 import {
     walkExecOrder,

@@ -1,13 +1,12 @@
 
 import { logger } from './Tools'
 
-import { Program } from './AST'
+import { Program } from './Parser/AST'
 import {
     OP, COP, UNOP, BINOP, LOGOP, LISTOP,
-    MaybeOP, OpTree
+    MaybeOP, OpTree, InstructionSet
 } from './API'
 
-import { InstructionSet }     from './API'
 import { loadInstructionSet } from './Compiler/InstructionSet'
 
 export function walkExecOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {

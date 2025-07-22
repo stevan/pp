@@ -30,7 +30,7 @@ import {
     InstructionSet, Opcode,
 } from '../API'
 
-import { GlobSlot } from '../AST'
+import { GlobSlot } from '../Parser/AST'
 
 // -----------------------------------------------------------------------------
 // Utils to lift some BinOps

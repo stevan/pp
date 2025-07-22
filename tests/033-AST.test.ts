@@ -8,7 +8,7 @@ import {
     ConstInt,
     Add, Block, ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
     Conditional, Equal,
-} from '../src/AST'
+} from '../src/Parser/AST'
 
 import {
     walkExecOrder,

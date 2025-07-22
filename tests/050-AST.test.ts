@@ -10,7 +10,7 @@ import {
     ArrayDeclare,
     ArrayFetch,
     Say, Join,
-} from '../src/AST'
+} from '../src/Parser/AST'
 
 import {
     walkExecOrder,

@@ -7,7 +7,7 @@ import {
     ScalarDeclare, ScalarStore, ScalarFetch,
     ConstInt,
     Add,
-} from '../src/AST'
+} from '../src/Parser/AST'
 
 import {
     walkExecOrder,
