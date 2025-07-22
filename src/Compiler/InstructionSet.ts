@@ -5,7 +5,7 @@
 // is emited by the AST and then executed by the interpreter.
 // =============================================================================
 
-import { logger } from './Logger'
+import { logger } from '../Tools'
 import {
     Any, SV, IV, NV, PV, CV, Stash, SymbolTable,
 
@@ -28,9 +28,9 @@ import {
     Executor, MaybeActivationRecord, ActivationRecord,
 
     InstructionSet, Opcode,
-} from './Runtime'
+} from '../API'
 
-import { GlobSlot } from './AST'
+import { GlobSlot } from '../AST'
 
 // -----------------------------------------------------------------------------
 // Utils to lift some BinOps

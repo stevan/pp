@@ -13,7 +13,7 @@ import {
     OP, COP, UNOP, BINOP, LOGOP, LISTOP, LOOPOP,
     NOOP, DECLARE,
     OpTree
-} from './Runtime'
+} from './API'
 
 // -----------------------------------------------------------------------------
 // AST Node

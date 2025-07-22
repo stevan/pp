@@ -1,7 +1,7 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger, prettyPrinter } from '../src/Logger'
+import { logger, prettyPrinter } from '../src/Tools'
 
 import {
     Program,
@@ -20,8 +20,8 @@ import {
     Compiler,
 } from '../src/Compiler'
 
-import { Pad, IV, AV } from '../src/Runtime'
-import { Interpreter, StackFrame } from '../src/Interpreter'
+import { Pad, IV, AV } from '../src/API'
+import { Interpreter, StackFrame } from '../src/Runtime'
 
 /*
 

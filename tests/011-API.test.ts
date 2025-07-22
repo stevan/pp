@@ -2,7 +2,7 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger, prettyPrinter } from '../src/Logger'
+import { logger, prettyPrinter } from '../src/Tools'
 import {
     newStash,
     newGlob,
@@ -16,7 +16,7 @@ import {
     SymbolTable,
     isGlob, isStash,
     assertIsGlob,
-} from '../src/Runtime'
+} from '../src/API'
 
 test("... simple Runtime test", (t) => {
     let main = new SymbolTable('main');

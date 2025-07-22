@@ -2,7 +2,7 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger } from '../src/Logger'
+import { logger } from '../src/Tools'
 
 import { SourceStream, Tokenizer } from '../src/Parser/Tokenizer'
 import { Lexer                   } from '../src/Parser/Lexer'
