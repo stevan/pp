@@ -66,16 +66,16 @@ logger.group('RUN/WALK:');
 walkTraversalOrder(prettyPrinter, runtime.leave);
 logger.groupEnd();
 
-let interpreter = new Interpreter();
+let interpreter = new Interpreter({ DEBUG : false });
 
 logger.group('RUN/INTERPRET:');
 logger.time('RUN elapased');
-interpreter.run(runtime, { DEBUG : false });
+interpreter.run(runtime);
 logger.timeEnd('RUN elapased');
 logger.groupEnd();
 
 test("... simple AST test", (t) => {
-    let strings = interpreter.STD_buffer;
+    let strings = interpreter.main.STD_buffer;
 
     assert.strictEqual(strings[0]?.value, "1");
     assert.strictEqual(strings[1]?.value, "2");

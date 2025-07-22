@@ -28,20 +28,20 @@ export class StackFrame implements ActivationRecord {
     public current_op : MaybeOP;
     public return_to  : MaybeOP;
 
-    private parent      : MaybeActivationRecord;
-    private interpreter : Interpreter;
+    private parent : MaybeActivationRecord;
+    private thread : Executor;
 
     constructor(
-            optree      : OpTree,
-            return_to   : MaybeOP,
-            interpreter : Interpreter,
-            parent?     : MaybeActivationRecord
+            optree    : OpTree,
+            return_to : MaybeOP,
+            thread    : Executor,
+            parent?   : MaybeActivationRecord,
         ) {
         this.stack       = [];
         this.padlist     = [ new Pad() ];
         this.optree      = optree;
         this.return_to   = return_to;
-        this.interpreter = interpreter;
+        this.thread = thread;
         this.parent      = parent;
         this.current_op  = optree.enter;
     }
@@ -50,7 +50,7 @@ export class StackFrame implements ActivationRecord {
     // Symbol Table
     // -------------------------------------------------------------------------
 
-    executor () : Executor { return this.interpreter }
+    executor () : Executor { return this.thread }
 
     // -------------------------------------------------------------------------
     // Lexicals
@@ -99,16 +99,49 @@ export class StackFrame implements ActivationRecord {
     }
 }
 
-
 export type InterpreterOptions = any;
 
-export class Interpreter implements Executor {
+export type ThreadID = number;
+
+export class ThreadMap extends Map<ThreadID, Thread> {
+    addThread(t : Thread) : void { this.set(t.tid, t) }
+}
+
+export class Interpreter {
+    public options : InterpreterOptions;
+    public main    : Thread;
+    public root    : SymbolTable;
+    public threads : ThreadMap;
+
+    private tid_seq : ThreadID = 0;
+
+    constructor (options : InterpreterOptions = {}) {
+        this.options = options;
+        this.root    = new SymbolTable('main');
+        this.threads = new ThreadMap();
+        this.main    = this.initializeMainThread();
+    }
+
+    private initializeMainThread () : Thread {
+        let thread = new Thread(++this.tid_seq, this.root);
+        this.threads.addThread(thread);
+        return thread;
+    }
+
+    run (root : OpTree) : void {
+        this.main.run(root, this.options);
+    }
+}
+
+export class Thread implements Executor {
+    public tid     : ThreadID;
     public frames  : StackFrame[];
     public root    : SymbolTable;
 
-    constructor () {
+    constructor (tid : ThreadID, root : SymbolTable) {
+        this.tid     = tid;
         this.frames  = [];
-        this.root    = new SymbolTable('main');
+        this.root    = root;
     }
 
     invokeCV (cv : CV, args : Any[]) : MaybeOP {
