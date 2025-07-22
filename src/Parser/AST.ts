@@ -19,9 +19,15 @@ import {
 // AST Node
 // -----------------------------------------------------------------------------
 
-export enum NodeType {
-    // unused ... should never exist
-    ABSTRACT           = 'ABSTRACT',
+// So we have a bunch of generic Node kinds (which are different than the
+// node "type" (which is basically the class)), a kind is more of a category
+// to which the Node fits. This should make dispatching in an AST visitor
+// cleaner since often times the same code will be shared across the same
+// kinds of AST nodes (ex - most all bin-ops will be processed the same).
+// And if specialization is needed, then it can be more localized and not
+// require complex code paths. (in theory)
+
+export enum NodeKind {
     // ------------------------------------
     // generic node types
     // ------------------------------------
@@ -86,7 +92,7 @@ export interface Visitor<T> {
 }
 
 export interface Node {
-    type       : NodeType;
+    kind       : NodeKind;
     deparse () : string;
     emit    () : OpTree;
 
@@ -94,7 +100,7 @@ export interface Node {
 }
 
 export abstract class AbstractNode implements Node {
-    abstract type : NodeType;
+    abstract kind : NodeKind;
 
     abstract deparse () : string;
     abstract emit    () : OpTree;
@@ -107,7 +113,7 @@ export abstract class AbstractNode implements Node {
 // -----------------------------------------------------------------------------
 
 export abstract class Scope extends AbstractNode {
-    override type : NodeType = NodeType.SCOPE;
+    override kind : NodeKind = NodeKind.SCOPE;
 
     constructor(public statements : Statement[]) { super() }
 
@@ -180,7 +186,7 @@ export class SubBody extends Scope {
 // But this is good enough for now.
 
 export class SubDefinition extends AbstractNode {
-    override type : NodeType = NodeType.SUBDEFINITION;
+    override kind : NodeKind = NodeKind.SUBDEFINITION;
 
     public name   : string;
     public params : string[];
@@ -213,7 +219,7 @@ export class SubDefinition extends AbstractNode {
 }
 
 export class SubCall extends AbstractNode {
-    override type : NodeType = NodeType.SUBCALL;
+    override kind : NodeKind = NodeKind.SUBCALL;
 
     constructor(
         public glob : GlobFetch,
@@ -250,7 +256,7 @@ export class SubCall extends AbstractNode {
 }
 
 export class SubReturn extends AbstractNode {
-    override type : NodeType = NodeType.SUBRETURN;
+    override kind : NodeKind = NodeKind.SUBRETURN;
 
     constructor(public result : Node) { super() }
 
@@ -273,7 +279,7 @@ export class SubReturn extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class Statement extends AbstractNode {
-    override type : NodeType = NodeType.STATEMENT;
+    override kind : NodeKind = NodeKind.STATEMENT;
 
     constructor(public body : Node, public internal : boolean = false) {
         super();
@@ -302,7 +308,7 @@ export class Statement extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class Conditional extends AbstractNode {
-    override type : NodeType = NodeType.CONDITIONAL;
+    override kind : NodeKind = NodeKind.CONDITIONAL;
 
     constructor(
         public predicate : Node,
@@ -348,7 +354,7 @@ export class Conditional extends AbstractNode {
 }
 
 export class ForEachLoop extends AbstractNode {
-    override type : NodeType = NodeType.FOREACHLOOP;
+    override kind : NodeKind = NodeKind.FOREACHLOOP;
 
     constructor(
         public local : string, // TODO: make this Var object
@@ -374,7 +380,7 @@ export class ForEachLoop extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class ConstInt extends AbstractNode {
-    override type : NodeType = NodeType.CONST;
+    override kind : NodeKind = NodeKind.CONST;
 
     constructor(public literal : number) { super() }
 
@@ -390,7 +396,7 @@ export class ConstInt extends AbstractNode {
 }
 
 export class ConstFloat extends AbstractNode {
-    override type : NodeType = NodeType.CONST;
+    override kind : NodeKind = NodeKind.CONST;
 
     constructor(public literal : number) { super() }
 
@@ -406,7 +412,7 @@ export class ConstFloat extends AbstractNode {
 }
 
 export class ConstStr extends AbstractNode {
-    override type : NodeType = NodeType.CONST;
+    override kind : NodeKind = NodeKind.CONST;
 
     constructor(public literal : string) { super() }
 
@@ -419,7 +425,7 @@ export class ConstStr extends AbstractNode {
 }
 
 export class ConstTrue extends AbstractNode {
-    override type : NodeType = NodeType.CONST;
+    override kind : NodeKind = NodeKind.CONST;
 
     constructor() { super() }
 
@@ -432,7 +438,7 @@ export class ConstTrue extends AbstractNode {
 }
 
 export class ConstFalse extends AbstractNode {
-    override type : NodeType = NodeType.CONST;
+    override kind : NodeKind = NodeKind.CONST;
 
     constructor() { super() }
 
@@ -445,7 +451,7 @@ export class ConstFalse extends AbstractNode {
 }
 
 export class ConstUndef extends AbstractNode {
-    override type : NodeType = NodeType.CONST;
+    override kind : NodeKind = NodeKind.CONST;
 
     constructor() { super() }
 
@@ -480,7 +486,7 @@ function SigilToSlot (sigil : GlobSlot) : string {
 }
 
 export class GlobVar extends AbstractNode {
-    override type : NodeType = NodeType.GLOBVAR;
+    override kind : NodeKind = NodeKind.GLOBVAR;
 
     constructor(
         public name : string,
@@ -499,7 +505,7 @@ export class GlobVar extends AbstractNode {
 }
 
 export class GlobFetch extends AbstractNode {
-    override type : NodeType = NodeType.GLOBFETCH;
+    override kind : NodeKind = NodeKind.GLOBFETCH;
 
     constructor(
         public name : string,
@@ -520,7 +526,7 @@ export class GlobFetch extends AbstractNode {
 }
 
 export class GlobStore extends AbstractNode {
-    override type : NodeType = NodeType.GLOBSTORE;
+    override kind : NodeKind = NodeKind.GLOBSTORE;
 
     constructor(
         public ident : GlobVar,
@@ -552,7 +558,7 @@ export class GlobStore extends AbstractNode {
 }
 
 export class GlobDeclare extends GlobStore {
-    override type : NodeType = NodeType.GLOBDECLARE;
+    override kind : NodeKind = NodeKind.GLOBDECLARE;
 
     override deparse () : string {
         let src = super.deparse();
@@ -571,7 +577,7 @@ export class GlobDeclare extends GlobStore {
 // -----------------------------------------------------------------------------
 
 export class ScalarFetch extends AbstractNode {
-    override type : NodeType = NodeType.SCALARFETCH;
+    override kind : NodeKind = NodeKind.SCALARFETCH;
 
     constructor(public name : string) { super() }
 
@@ -586,7 +592,7 @@ export class ScalarFetch extends AbstractNode {
 }
 
 export class ScalarStore extends AbstractNode {
-    override type : NodeType = NodeType.SCALARSTORE;
+    override kind : NodeKind = NodeKind.SCALARSTORE;
 
     constructor(
         public name  : string,
@@ -612,7 +618,7 @@ export class ScalarStore extends AbstractNode {
 }
 
 export class ScalarDeclare extends ScalarStore {
-    override type : NodeType = NodeType.SCALARDECLARE;
+    override kind : NodeKind = NodeKind.SCALARDECLARE;
 
     override deparse () : string {
         let src = super.deparse();
@@ -631,7 +637,7 @@ export class ScalarDeclare extends ScalarStore {
 // -----------------------------------------------------------------------------
 
 export class ArrayElemFetch extends AbstractNode {
-    override type : NodeType = NodeType.ARRAYELEMFETCH;
+    override kind : NodeKind = NodeKind.ARRAYELEMFETCH;
 
     constructor(
         public name  : string,
@@ -654,7 +660,7 @@ export class ArrayElemFetch extends AbstractNode {
 }
 
 export class ArrayElemStore extends AbstractNode {
-    override type : NodeType = NodeType.ARRAYELEMSTORE;
+    override kind : NodeKind = NodeKind.ARRAYELEMSTORE;
 
     constructor(
         public name  : string,
@@ -684,7 +690,7 @@ export class ArrayElemStore extends AbstractNode {
 }
 
 export class ArrayFetch extends AbstractNode {
-    override type : NodeType = NodeType.ARRAYFETCH;
+    override kind : NodeKind = NodeKind.ARRAYFETCH;
 
     constructor(public name : string) { super() }
 
@@ -699,7 +705,7 @@ export class ArrayFetch extends AbstractNode {
 }
 
 export class ArrayStore extends AbstractNode {
-    override type : NodeType = NodeType.ARRAYSTORE;
+    override kind : NodeKind = NodeKind.ARRAYSTORE;
 
     constructor(
         public name  : string,
@@ -725,7 +731,7 @@ export class ArrayStore extends AbstractNode {
 }
 
 export class ArrayDeclare extends AbstractNode {
-    override type : NodeType = NodeType.ARRAYDECLARE;
+    override kind : NodeKind = NodeKind.ARRAYDECLARE;
 
     constructor(
         public name  : string,
@@ -767,7 +773,7 @@ export class ArrayDeclare extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export abstract class BuiltIn extends AbstractNode {
-    override type : NodeType = NodeType.BUILTIN;
+    override kind : NodeKind = NodeKind.BUILTIN;
 
     constructor(
         public op   : LISTOP,
@@ -816,7 +822,7 @@ export class Join extends BuiltIn {
 // -----------------------------------------------------------------------------
 
 export class BinaryOp extends AbstractNode {
-    override type : NodeType = NodeType.BINARYOP;
+    override kind : NodeKind = NodeKind.BINARYOP;
 
     constructor(
         public op  : BINOP,
