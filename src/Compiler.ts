@@ -8,19 +8,21 @@ import {
 } from './Runtime/API'
 
 import { loadInstructionSet } from './Compiler/InstructionSet'
+import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
 
 export class Compiler {
     public opcodes : InstructionSet;
+    public emitter : OpTreeEmitter;
 
     constructor () {
+        this.emitter = new OpTreeEmitter();
         this.opcodes = loadInstructionSet();
     }
 
     compile (program : Program) : OpTree {
+        let prog = program.accept(this.emitter);
 
         let uid_seq = 0;
-
-        let prog = program.emit();
 
         // link the OPs and Opcodes
         walkTraversalOrder(

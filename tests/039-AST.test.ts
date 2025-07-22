@@ -7,14 +7,14 @@ import {
     ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
     Add, Multiply, Subtract, Block,
-    ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch,
+    ConstUndef, GlobVar, GlobDeclare, GlobFetch,
     Conditional, Equal, LessThan,
     SubDefinition, SubCall, SubReturn, SubBody, Say,
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
 
-import { Pad, IV } from '../src/Runtime/API'
+import { Pad, IV, GlobSlot } from '../src/Runtime/API'
 import { Interpreter, StackFrame } from '../src/Runtime'
 
 /*

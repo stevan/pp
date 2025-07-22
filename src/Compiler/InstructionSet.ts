@@ -21,7 +21,7 @@ import {
     assertIsGlob, assertIsBool,
 
     SVtoPV, AnytoPV, isUndef, isTrue,
-    setGlobScalar, setGlobCode, getGlobSlot,
+    setGlobScalar, setGlobCode, getGlobSlot, GlobSlot,
 
     OP, LOGOP, DECLARE, MaybeOP, OpTree,
 
@@ -29,8 +29,6 @@ import {
 
     InstructionSet, Opcode,
 } from '../Runtime/API'
-
-import { GlobSlot } from '../Parser/AST'
 
 // -----------------------------------------------------------------------------
 // Utils to lift some BinOps

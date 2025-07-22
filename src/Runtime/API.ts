@@ -278,8 +278,6 @@ export type HV = { type : 'HASH',  contents : Hash }
 export type CV = { type : 'CODE',  contents : OpTree }
 export type RV = { type : 'REF',   value : Any }
 
-export type GlobSlotName = 'SCALAR' | 'ARRAY' | 'HASH' | 'CODE';
-
 export type Glob = {
     type  : 'GLOB',
     name  : Identifier,
@@ -502,6 +500,13 @@ export function assertIsCV (cv : Any) : asserts cv is CV {
 
 // =============================================================================
 
+export enum GlobSlot {
+    SCALAR = '$',
+    ARRAY  = '@',
+    HASH   = '%',
+    CODE   = '&',
+}
+
 export function newGlob (name : Identifier) : Glob {
     return {
         type  : 'GLOB',
@@ -531,12 +536,12 @@ export function getGlobArray  (gv : Glob) : AV | Undef { return gv.slots.ARRAY  
 export function getGlobHash   (gv : Glob) : HV | Undef { return gv.slots.HASH   }
 export function getGlobCode   (gv : Glob) : CV | Undef { return gv.slots.CODE   }
 
-export function getGlobSlot (gv : Glob, slot : GlobSlotName) : Any {
+export function getGlobSlot (gv : Glob, slot : GlobSlot) : Any {
     switch (slot) {
-    case 'SCALAR': return getGlobScalar(gv);
-    case 'ARRAY' : return getGlobArray(gv);
-    case 'HASH'  : return getGlobHash(gv);
-    case 'CODE'  : return getGlobCode(gv);
+    case GlobSlot.SCALAR : return getGlobScalar(gv);
+    case GlobSlot.ARRAY  : return getGlobArray(gv);
+    case GlobSlot.HASH   : return getGlobHash(gv);
+    case GlobSlot.CODE   : return getGlobCode(gv);
     default:
         throw new Error('Never gonna happen');
     }

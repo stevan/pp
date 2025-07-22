@@ -6,12 +6,12 @@ import {
     Program, Statement,
     ScalarStore, ScalarFetch, ScalarDeclare,
     ConstInt,
-    Add, Block, ConstUndef, GlobVar, GlobSlot, GlobDeclare, GlobFetch
+    Add, Block, ConstUndef, GlobVar, GlobDeclare, GlobFetch
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
 
-import { Pad, IV } from '../src/Runtime/API'
+import { Pad, IV, GlobSlot } from '../src/Runtime/API'
 import { Interpreter, StackFrame } from '../src/Runtime'
 
 /*

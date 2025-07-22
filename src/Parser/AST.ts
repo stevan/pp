@@ -3,38 +3,36 @@
 // -----------------------------------------------------------------------------
 // This will be the result of the Parse phase (when written) and represents the
 // abstract syntax tree, with deparsing functionality
-//
-// Currently this also implements kind of the first phase of a Compiler
-// through the emit() method which constructions OpTree segments and
-// stiches them together.
 // =============================================================================
 
-import {
-    OP, COP, UNOP, BINOP, LOGOP, LISTOP, LOOPOP,
-    NOOP, DECLARE,
-    OpTree
-} from '../Runtime/API'
+import { GlobSlot } from '../Runtime/API'
 
 // -----------------------------------------------------------------------------
-// AST Node
+// Node Kind
 // -----------------------------------------------------------------------------
-
 // So we have a bunch of generic Node kinds (which are different than the
 // node "type" (which is basically the class)), a kind is more of a category
 // to which the Node fits. This should make dispatching in an AST visitor
 // cleaner since often times the same code will be shared across the same
 // kinds of AST nodes (ex - most all bin-ops will be processed the same).
 // And if specialization is needed, then it can be more localized and not
-// require complex code paths. (in theory)
+// require complex code paths.
+// -----------------------------------------------------------------------------
 
 export enum NodeKind {
+    ABSTRACT = 'ABSTRACT',
     // ------------------------------------
     // generic node types
     // ------------------------------------
-    SCOPE              = 'SCOPE',
-    CONST              = 'CONST',
-    BUILTIN            = 'BUILTIN',
-    BINARYOP           = 'BINARYOP',
+    SCOPE         = 'SCOPE',
+    CONST         = 'CONST',
+    BUILTIN       = 'BUILTIN',
+    BINARYOP      = 'BINARYOP',
+    FETCH         = 'FETCH',
+    STORE         = 'STORE',
+    DECLARE       = 'DECLARE',
+    ELEMFETCH     = 'ELEMFETCH',
+    ELEMSTORE     = 'ELEMSTORE',
 
     // ------------------------------------
     // Subroutines
@@ -44,68 +42,56 @@ export enum NodeKind {
     // made generic, and CALL/RETURN could
     // be generic once we have methods.
     // ------------------------------------
-    SUBDEFINITION      = 'SUBDEFINITION',
-    SUBCALL            = 'SUBCALL',
-    SUBRETURN          = 'SUBRETURN',
+    SUBDEFINITION = 'SUBDEFINITION',
+    SUBCALL       = 'SUBCALL',
+    SUBRETURN     = 'SUBRETURN',
 
     // ------------------------------------
     // Statements
     // ------------------------------------
-    STATEMENT          = 'STATEMENT',
+    STATEMENT     = 'STATEMENT',
 
     // ------------------------------------
     // Constrol structures
     // ------------------------------------
-    CONDITIONAL        = 'CONDITIONAL',
-    FOREACHLOOP        = 'FOREACHLOOP',
+    CONDITIONAL   = 'CONDITIONAL',
+    FOREACHLOOP   = 'FOREACHLOOP',
 
     // ------------------------------------
-    // Variables
+    // Glob operations
     // ------------------------------------
-    // NOTE:
-    // This should probably be broken into
-    // generic categories like FETCH,STORE,
-    // and DECLARE for regular vars, and
-    // ELEMFETCH, ELEMSTORE for containers.
-    // ------------------------------------
-
-    GLOBVAR            = 'GLOBVAR',
-
-    GLOBFETCH          = 'GLOBFETCH',
-    GLOBSTORE          = 'GLOBSTORE',
-    GLOBDECLARE        = 'GLOBDECLARE',
-
-    SCALARFETCH        = 'SCALARFETCH',
-    SCALARSTORE        = 'SCALARSTORE',
-    SCALARDECLARE      = 'SCALARDECLARE',
-
-    ARRAYELEMFETCH     = 'ARRAYELEMFETCH',
-    ARRAYELEMSTORE     = 'ARRAYELEMSTORE',
-
-    ARRAYFETCH         = 'ARRAYFETCH',
-    ARRAYSTORE         = 'ARRAYSTORE',
-    ARRAYDECLARE       = 'ARRAYDECLARE',
+    GLOBVAR       = 'GLOBVAR',
+    GLOBFETCH     = 'GLOBFETCH',
+    GLOBSTORE     = 'GLOBSTORE',
+    GLOBDECLARE   = 'GLOBDECLARE',
 }
 
-export interface Visitor<T> {
+// -----------------------------------------------------------------------------
+// Interfaces
+// -----------------------------------------------------------------------------
+
+export interface NodeVisitor<T> {
     visit(n : Node) : T;
 }
 
 export interface Node {
-    kind       : NodeKind;
-    deparse () : string;
-    emit    () : OpTree;
+    kind : NodeKind;
 
-    accept<T>(v : Visitor<T>) : T;
+    deparse () : string;
+
+    accept<T>(v : NodeVisitor<T>) : T;
 }
 
+// -----------------------------------------------------------------------------
+// Nodes
+// -----------------------------------------------------------------------------
+
 export abstract class AbstractNode implements Node {
-    abstract kind : NodeKind;
+    kind : NodeKind = NodeKind.ABSTRACT;
 
     abstract deparse () : string;
-    abstract emit    () : OpTree;
 
-    accept<T>(v : Visitor<T>) : T { return v.visit(this) }
+    accept<T>(v : NodeVisitor<T>) : T { return v.visit(this) }
 }
 
 // -----------------------------------------------------------------------------
@@ -124,40 +110,11 @@ export abstract class Scope extends AbstractNode {
                 .filter((s) => s.length > 0)
                 .join('\n');
     }
-
-    abstract enter () : OP;
-    abstract leave () : UNOP;
-
-    emit () : OpTree {
-        let enter = this.enter();
-        let leave = this.leave();
-
-        leave.first = enter;
-
-        let curr = enter;
-        for (const statement of this.statements) {
-            let s = statement.emit();
-
-            curr.next    = s.enter;
-            curr.sibling = s.enter;
-            curr         = s.leave;
-        }
-
-        curr.next = leave;
-
-        return new OpTree(enter, leave);
-    }
 }
 
-export class Program extends Scope {
-    enter () : OP   { return new OP('enter', {}) }
-    leave () : UNOP { return new UNOP('leave', {}) }
-}
+export class Program extends Scope {}
 
 export class Block extends Scope {
-    enter () : OP   { return new OP('enterscope', {}) }
-    leave () : UNOP { return new UNOP('leavescope', {}) }
-
     override deparse() : string {
         let src = super.deparse();
         return '{\n' + src + '\n}';
@@ -169,9 +126,6 @@ export class Block extends Scope {
 // -----------------------------------------------------------------------------
 
 export class SubBody extends Scope {
-    enter () : OP   { return new OP('entersub', {}) }
-    leave () : UNOP { return new UNOP('leavesub', {}) }
-
     override deparse() : string {
         let src = super.deparse();
         return '{\n' + src + '\n}';
@@ -206,16 +160,6 @@ export class SubDefinition extends AbstractNode {
     deparse() : string {
         return `sub ${this.name} (${this.params.join(', ')}) ${this.body.deparse()}`
     }
-
-    emit () : OpTree {
-        let body = this.body.emit();
-
-        body.enter.config.name   = this.name;
-        body.enter.config.params = this.params;
-
-        let op = new DECLARE( body, { name : this.name } );
-        return new OpTree(op, op)
-    }
 }
 
 export class SubCall extends AbstractNode {
@@ -229,30 +173,6 @@ export class SubCall extends AbstractNode {
     deparse() : string {
         return `${this.glob.name}(${this.args.map((a) => a.deparse()).join(', ')})`
     }
-
-    emit () : OpTree {
-        let glob     = this.glob.emit();
-        let op       = new LISTOP('callsub', { name : this.glob.name });
-        let pushmark = new OP('pushmark', {});
-
-        op.first = pushmark;
-
-        let curr = pushmark;
-        for (const arg of this.args) {
-            let a = arg.emit();
-
-            curr.next    = a.enter;
-            curr.sibling = a.leave;
-
-            curr = a.leave;
-        }
-        curr.next    = glob.enter;
-        curr.sibling = glob.leave;
-
-        glob.leave.next = op;
-
-        return new OpTree(pushmark, op);
-    }
 }
 
 export class SubReturn extends AbstractNode {
@@ -261,17 +181,6 @@ export class SubReturn extends AbstractNode {
     constructor(public result : Node) { super() }
 
     deparse() : string { return `return ${this.result.deparse()}` }
-
-    emit () : OpTree {
-        let result = this.result.emit();
-        let op     = new UNOP('return', {})
-
-        result.leave.next = op;
-
-        op.first = result.leave;
-
-        return new OpTree(result.enter, op)
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -292,14 +201,6 @@ export class Statement extends AbstractNode {
             src = src + ';';
         }
         return src;
-    }
-
-    emit () : OpTree {
-        let s = new COP();
-        let n = this.body.emit();
-        s.next    = n.enter;
-        s.sibling = n.leave;
-        return new OpTree(s, n.leave);
     }
 }
 
@@ -325,32 +226,6 @@ export class Conditional extends AbstractNode {
         ]
         .join('\n')
     }
-
-    emit () : OpTree {
-        let condition   = this.predicate.emit();
-        let trueBranch  = this.ifTrue.emit();
-        let falseBranch = this.ifFalse.emit();
-
-        let op = new LOGOP('cond_expr', {});
-
-        condition.leave.next = op;
-
-        op.first = condition.leave;
-        op.other = trueBranch.enter;
-        op.next  = falseBranch.enter;
-
-        let goto = new UNOP('goto', {});
-
-        trueBranch.leave.next  = goto;
-        falseBranch.leave.next = goto;
-
-        condition.leave.sibling = trueBranch.leave;
-        trueBranch.leave.sibling = falseBranch.leave;
-
-        goto.first = op;
-
-        return new OpTree(condition.enter, goto);
-    }
 }
 
 export class ForEachLoop extends AbstractNode {
@@ -369,10 +244,6 @@ export class ForEachLoop extends AbstractNode {
         ]
         .join('\n')
     }
-
-    emit () : OpTree {
-        throw new Error('TODO');
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -385,14 +256,6 @@ export class ConstInt extends AbstractNode {
     constructor(public literal : number) { super() }
 
     deparse() : string { return String(this.literal) }
-
-    emit () : OpTree {
-        let op = new OP('const', {
-            literal : this.literal,
-            type    : 'IV'
-        })
-        return new OpTree(op, op)
-    }
 }
 
 export class ConstFloat extends AbstractNode {
@@ -401,14 +264,6 @@ export class ConstFloat extends AbstractNode {
     constructor(public literal : number) { super() }
 
     deparse() : string { return String(this.literal) }
-
-    emit () : OpTree {
-        let op = new OP('const', {
-            literal : this.literal,
-            type    : 'NV'
-        })
-        return new OpTree(op, op)
-    }
 }
 
 export class ConstStr extends AbstractNode {
@@ -417,11 +272,6 @@ export class ConstStr extends AbstractNode {
     constructor(public literal : string) { super() }
 
     deparse() : string { return `'${this.literal}'` }
-
-    emit () : OpTree {
-        let op = new OP('const', { literal : this.literal, type : 'PV' })
-        return new OpTree(op, op)
-    }
 }
 
 export class ConstTrue extends AbstractNode {
@@ -430,11 +280,6 @@ export class ConstTrue extends AbstractNode {
     constructor() { super() }
 
     deparse() : string { return 'true' }
-
-    emit () : OpTree {
-        let op = new OP('true', {})
-        return new OpTree(op, op)
-    }
 }
 
 export class ConstFalse extends AbstractNode {
@@ -443,11 +288,6 @@ export class ConstFalse extends AbstractNode {
     constructor() { super() }
 
     deparse() : string { return 'false' }
-
-    emit () : OpTree {
-        let op = new OP('false', {})
-        return new OpTree(op, op)
-    }
 }
 
 export class ConstUndef extends AbstractNode {
@@ -456,34 +296,11 @@ export class ConstUndef extends AbstractNode {
     constructor() { super() }
 
     deparse() : string { return 'undef' }
-
-    emit () : OpTree {
-        let op = new OP('undef', {})
-        return new OpTree(op, op)
-    }
 }
 
 // -----------------------------------------------------------------------------
 // Glob Ops
 // -----------------------------------------------------------------------------
-
-export enum GlobSlot {
-    SCALAR = '$',
-    ARRAY  = '@',
-    HASH   = '%',
-    CODE   = '&',
-}
-
-function SigilToSlot (sigil : GlobSlot) : string {
-    switch (sigil) {
-    case '$' : return 'SCALAR';
-    case '@' : return 'ARRAY';
-    case '%' : return 'HASH';
-    case '&' : return 'CODE';
-    default:
-        throw new Error("WTF");
-    }
-}
 
 export class GlobVar extends AbstractNode {
     override kind : NodeKind = NodeKind.GLOBVAR;
@@ -494,14 +311,6 @@ export class GlobVar extends AbstractNode {
     ) { super() }
 
     deparse() : string { return this.slot + this.name }
-
-    emit () : OpTree {
-        let op =  new OP('gv', {
-            name : this.name,
-            slot : SigilToSlot(this.slot),
-        });
-        return new OpTree(op, op)
-    }
 }
 
 export class GlobFetch extends AbstractNode {
@@ -513,16 +322,6 @@ export class GlobFetch extends AbstractNode {
     ) { super() }
 
     deparse() : string { return this.slot + this.name }
-
-    emit () : OpTree {
-        let op =  new OP('gv_fetch', {
-            target : {
-                name : this.name,
-                slot : SigilToSlot(this.slot),
-            }
-        });
-        return new OpTree(op, op)
-    }
 }
 
 export class GlobStore extends AbstractNode {
@@ -536,25 +335,6 @@ export class GlobStore extends AbstractNode {
     deparse() : string {
         return `${this.ident.deparse()} = ${this.value.deparse()}`
     }
-
-    emit () : OpTree {
-        let value    = this.value.emit();
-        let variable = this.ident.emit();
-        let binding  = new BINOP('gv_store', {
-            target    : variable.enter.config,
-            introduce : false,
-        });
-
-        value.leave.next    = variable.enter;
-        variable.leave.next = binding;
-
-        binding.first = value.leave;
-        binding.last  = variable.leave;
-
-        value.leave.sibling = variable.leave;
-
-        return new OpTree(value.enter, binding);
-    }
 }
 
 export class GlobDeclare extends GlobStore {
@@ -564,12 +344,6 @@ export class GlobDeclare extends GlobStore {
         let src = super.deparse();
         return `our ${src}`
     }
-
-    override emit () : OpTree {
-        let tree = super.emit();
-        tree.leave.config.introduce = true;
-        return tree;
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -577,22 +351,15 @@ export class GlobDeclare extends GlobStore {
 // -----------------------------------------------------------------------------
 
 export class ScalarFetch extends AbstractNode {
-    override kind : NodeKind = NodeKind.SCALARFETCH;
+    override kind : NodeKind = NodeKind.FETCH;
 
     constructor(public name : string) { super() }
 
     deparse() : string { return '$' + this.name }
-
-    emit () : OpTree {
-        let op =  new OP('padsv_fetch', {
-            target : { name : this.name },
-        });
-        return new OpTree(op, op)
-    }
 }
 
 export class ScalarStore extends AbstractNode {
-    override kind : NodeKind = NodeKind.SCALARSTORE;
+    override kind : NodeKind = NodeKind.STORE;
 
     constructor(
         public name  : string,
@@ -602,33 +369,14 @@ export class ScalarStore extends AbstractNode {
     deparse() : string {
         return `$${this.name} = ${this.value.deparse()}`
     }
-
-    emit () : OpTree {
-        let value    = this.value.emit();
-        let binding  = new UNOP('padsv_store', {
-            target    : { name : this.name },
-            introduce : false,
-        });
-
-        value.leave.next = binding;
-        binding.first    = value.leave;
-
-        return new OpTree(value.enter, binding);
-    }
 }
 
 export class ScalarDeclare extends ScalarStore {
-    override kind : NodeKind = NodeKind.SCALARDECLARE;
+    override kind : NodeKind = NodeKind.DECLARE;
 
     override deparse () : string {
         let src = super.deparse();
         return `my ${src}`
-    }
-
-    override emit () : OpTree {
-        let tree = super.emit();
-        tree.leave.config.introduce = true;
-        return tree;
     }
 }
 
@@ -637,7 +385,7 @@ export class ScalarDeclare extends ScalarStore {
 // -----------------------------------------------------------------------------
 
 export class ArrayElemFetch extends AbstractNode {
-    override kind : NodeKind = NodeKind.ARRAYELEMFETCH;
+    override kind : NodeKind = NodeKind.ELEMFETCH;
 
     constructor(
         public name  : string,
@@ -645,22 +393,10 @@ export class ArrayElemFetch extends AbstractNode {
     ) { super() }
 
     deparse() : string { return `@${this.name}[${this.index.deparse()}]` }
-
-    emit () : OpTree {
-        let index = this.index.emit();
-        let op    = new UNOP('padav_elem_fetch', {
-            target : { name : this.name },
-        });
-
-        index.leave.next = op;
-        op.first         = index.leave;
-
-        return new OpTree(index.enter, op);
-    }
 }
 
 export class ArrayElemStore extends AbstractNode {
-    override kind : NodeKind = NodeKind.ARRAYELEMSTORE;
+    override kind : NodeKind = NodeKind.ELEMSTORE;
 
     constructor(
         public name  : string,
@@ -671,41 +407,18 @@ export class ArrayElemStore extends AbstractNode {
     deparse() : string {
         return `@${this.name}[${this.index.deparse()}] = ${this.value.deparse()}`
     }
-
-    emit () : OpTree {
-        let index   = this.index.emit();
-        let value   = this.value.emit();
-        let binding = new BINOP('padav_elem_store', {
-            target    : { name : this.name },
-            introduce : false,
-        });
-
-        index.leave.next    = value.enter;
-        index.leave.sibling = value.leave;
-        value.leave.next    = binding;
-        binding.first       = index.leave;
-
-        return new OpTree(index.enter, binding);
-    }
 }
 
 export class ArrayFetch extends AbstractNode {
-    override kind : NodeKind = NodeKind.ARRAYFETCH;
+    override kind : NodeKind = NodeKind.FETCH;
 
     constructor(public name : string) { super() }
 
     deparse() : string { return '@' + this.name }
-
-    emit () : OpTree {
-        let op =  new OP('padav_fetch', {
-            target : { name : this.name },
-        });
-        return new OpTree(op, op)
-    }
 }
 
 export class ArrayStore extends AbstractNode {
-    override kind : NodeKind = NodeKind.ARRAYSTORE;
+    override kind : NodeKind = NodeKind.STORE;
 
     constructor(
         public name  : string,
@@ -715,23 +428,10 @@ export class ArrayStore extends AbstractNode {
     deparse() : string {
         return `@${this.name} = ${this.value.deparse()}`
     }
-
-    emit () : OpTree {
-        let value    = this.value.emit();
-        let binding  = new UNOP('padav_store', {
-            target    : { name : this.name },
-            introduce : false,
-        });
-
-        value.leave.next = binding;
-        binding.first    = value.leave;
-
-        return new OpTree(value.enter, binding);
-    }
 }
 
 export class ArrayDeclare extends AbstractNode {
-    override kind : NodeKind = NodeKind.ARRAYDECLARE;
+    override kind : NodeKind = NodeKind.DECLARE;
 
     constructor(
         public name  : string,
@@ -741,31 +441,6 @@ export class ArrayDeclare extends AbstractNode {
     deparse() : string {
         return `my @${this.name} = (${this.items.map((i) => i.deparse()).join(', ')})`
     }
-
-    emit () : OpTree {
-        let op = new UNOP('padav_init', {
-            target    : { name : this.name },
-            introduce : true,
-        });
-
-        let pushmark = new OP('pushmark', {});
-
-        op.first = pushmark;
-
-        let curr = pushmark;
-        for (const item of this.items) {
-            let i = item.emit();
-
-            curr.next    = i.enter;
-            curr.sibling = i.leave;
-
-            curr = i.leave;
-        }
-        curr.next = op;
-
-        return new OpTree(pushmark, op);
-    }
-
 }
 
 // -----------------------------------------------------------------------------
@@ -776,45 +451,21 @@ export abstract class BuiltIn extends AbstractNode {
     override kind : NodeKind = NodeKind.BUILTIN;
 
     constructor(
-        public op   : LISTOP,
+        public name : string, // TODO: make this an enum or something
         public args : Node[],
     ) { super() }
 
     deparse() : string {
-        return `${this.op.config.builtin}(${this.args.map((a) => a.deparse()).join(', ')})`
-    }
-
-    emit () : OpTree {
-        let op       = this.op;
-        let pushmark = new OP('pushmark', {});
-
-        op.first = pushmark;
-
-        let curr = pushmark;
-        for (const arg of this.args) {
-            let a = arg.emit();
-
-            curr.next    = a.enter;
-            curr.sibling = a.leave;
-
-            curr = a.leave;
-        }
-        curr.next = op;
-
-        return new OpTree(pushmark, op);
+        return `${this.name}(${this.args.map((a) => a.deparse()).join(', ')})`
     }
 }
 
 export class Say extends BuiltIn {
-    constructor(args : Node[]) {
-        super(new LISTOP('say', { builtin : 'say' }), args)
-    }
+    constructor(args : Node[]) { super('say', args) }
 }
 
 export class Join extends BuiltIn {
-    constructor(args : Node[]) {
-        super(new LISTOP('join', { builtin : 'join' }), args)
-    }
+    constructor(args : Node[]) { super('join', args) }
 }
 
 // -----------------------------------------------------------------------------
@@ -825,29 +476,14 @@ export class BinaryOp extends AbstractNode {
     override kind : NodeKind = NodeKind.BINARYOP;
 
     constructor(
-        public op  : BINOP,
-        public lhs : Node,
-        public rhs : Node,
+        public name     : string, // TODO: make this an enum or something
+        public operator : string, // TODO: make this an enum or something
+        public lhs      : Node,
+        public rhs      : Node,
     ) { super() }
 
     deparse() : string {
-        return `${this.lhs.deparse()} ${this.op.config.operation} ${this.rhs.deparse()}`
-    }
-
-    emit () : OpTree {
-        let lhs = this.lhs.emit();
-        let rhs = this.rhs.emit();
-        let op  = this.op;
-
-        lhs.leave.next = rhs.enter;
-        rhs.leave.next = op;
-
-        op.first = lhs.leave;
-        op.last  = rhs.leave;
-
-        lhs.leave.sibling = rhs.leave;
-
-        return new OpTree(lhs.enter, op);
+        return `${this.lhs.deparse()} ${this.operator} ${this.rhs.deparse()}`
     }
 }
 
@@ -856,27 +492,19 @@ export class BinaryOp extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class Add extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('add', { operation : '+' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('add', '+', lhs, rhs) }
 }
 
 export class Multiply extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('multiply', { operation : '*' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('multiply', '*', lhs, rhs) }
 }
 
 export class Subtract extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('subtract', { operation : '-' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('subtract', '-', lhs, rhs) }
 }
 
 export class Modulus extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('modulus', { operation : '%' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('modulus', '%', lhs, rhs) }
 }
 
 // -----------------------------------------------------------------------------
@@ -884,15 +512,11 @@ export class Modulus extends BinaryOp {
 // -----------------------------------------------------------------------------
 
 export class Equal extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('eq', { operation : '==' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('eq', '==', lhs, rhs) }
 }
 
 export class NotEqual extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('ne', { operation : '!=' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('ne', '!=', lhs, rhs) }
 }
 
 // -----------------------------------------------------------------------------
@@ -900,27 +524,19 @@ export class NotEqual extends BinaryOp {
 // -----------------------------------------------------------------------------
 
 export class LessThan extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('lt', { operation : '<' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('lt', '<', lhs, rhs) }
 }
 
 export class GreaterThan extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('gt', { operation : '>' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('gt', '>', lhs, rhs) }
 }
 
 export class LessThanOrEqual extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('le', { operation : '<=' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('le', '<=', lhs, rhs) }
 }
 
 export class GreaterThanOrEqual extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {
-        super(new BINOP('ge', { operation : '>=' }), lhs, rhs)
-    }
+    constructor(lhs : Node, rhs : Node) {super('ge', '>=', lhs, rhs) }
 }
 
 // -----------------------------------------------------------------------------
