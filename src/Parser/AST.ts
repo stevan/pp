@@ -19,11 +19,74 @@ import {
 // AST Node
 // -----------------------------------------------------------------------------
 
+export enum NodeType {
+    // unused ... should never exist
+    ABSTRACT           = 'ABSTRACT',
+    // ------------------------------------
+    // generic node types
+    // ------------------------------------
+    SCOPE              = 'SCOPE',
+    CONST              = 'CONST',
+    BUILTIN            = 'BUILTIN',
+    BINARYOP           = 'BINARYOP',
+
+    // ------------------------------------
+    // Subroutines
+    // ------------------------------------
+    // NOTE:
+    // The DEFINITION type should also be
+    // made generic, and CALL/RETURN could
+    // be generic once we have methods.
+    // ------------------------------------
+    SUBDEFINITION      = 'SUBDEFINITION',
+    SUBCALL            = 'SUBCALL',
+    SUBRETURN          = 'SUBRETURN',
+
+    // ------------------------------------
+    // Statements
+    // ------------------------------------
+    STATEMENT          = 'STATEMENT',
+
+    // ------------------------------------
+    // Constrol structures
+    // ------------------------------------
+    CONDITIONAL        = 'CONDITIONAL',
+    FOREACHLOOP        = 'FOREACHLOOP',
+
+    // ------------------------------------
+    // Variables
+    // ------------------------------------
+    // NOTE:
+    // This should probably be broken into
+    // generic categories like FETCH,STORE,
+    // and DECLARE for regular vars, and
+    // ELEMFETCH, ELEMSTORE for containers.
+    // ------------------------------------
+
+    GLOBVAR            = 'GLOBVAR',
+
+    GLOBFETCH          = 'GLOBFETCH',
+    GLOBSTORE          = 'GLOBSTORE',
+    GLOBDECLARE        = 'GLOBDECLARE',
+
+    SCALARFETCH        = 'SCALARFETCH',
+    SCALARSTORE        = 'SCALARSTORE',
+    SCALARDECLARE      = 'SCALARDECLARE',
+
+    ARRAYELEMFETCH     = 'ARRAYELEMFETCH',
+    ARRAYELEMSTORE     = 'ARRAYELEMSTORE',
+
+    ARRAYFETCH         = 'ARRAYFETCH',
+    ARRAYSTORE         = 'ARRAYSTORE',
+    ARRAYDECLARE       = 'ARRAYDECLARE',
+}
+
 export interface Visitor<T> {
     visit(n : Node) : T;
 }
 
 export interface Node {
+    type       : NodeType;
     deparse () : string;
     emit    () : OpTree;
 
@@ -31,6 +94,8 @@ export interface Node {
 }
 
 export abstract class AbstractNode implements Node {
+    abstract type : NodeType;
+
     abstract deparse () : string;
     abstract emit    () : OpTree;
 
@@ -42,6 +107,8 @@ export abstract class AbstractNode implements Node {
 // -----------------------------------------------------------------------------
 
 export abstract class Scope extends AbstractNode {
+    override type : NodeType = NodeType.SCOPE;
+
     constructor(public statements : Statement[]) { super() }
 
     deparse() : string {
@@ -113,6 +180,8 @@ export class SubBody extends Scope {
 // But this is good enough for now.
 
 export class SubDefinition extends AbstractNode {
+    override type : NodeType = NodeType.SUBDEFINITION;
+
     public name   : string;
     public params : string[];
     public body   : SubBody;
@@ -144,6 +213,8 @@ export class SubDefinition extends AbstractNode {
 }
 
 export class SubCall extends AbstractNode {
+    override type : NodeType = NodeType.SUBCALL;
+
     constructor(
         public glob : GlobFetch,
         public args : Node[],
@@ -179,6 +250,8 @@ export class SubCall extends AbstractNode {
 }
 
 export class SubReturn extends AbstractNode {
+    override type : NodeType = NodeType.SUBRETURN;
+
     constructor(public result : Node) { super() }
 
     deparse() : string { return `return ${this.result.deparse()}` }
@@ -200,6 +273,8 @@ export class SubReturn extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class Statement extends AbstractNode {
+    override type : NodeType = NodeType.STATEMENT;
+
     constructor(public body : Node, public internal : boolean = false) {
         super();
     }
@@ -227,6 +302,8 @@ export class Statement extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class Conditional extends AbstractNode {
+    override type : NodeType = NodeType.CONDITIONAL;
+
     constructor(
         public predicate : Node,
         public ifTrue    : Block,
@@ -271,6 +348,8 @@ export class Conditional extends AbstractNode {
 }
 
 export class ForEachLoop extends AbstractNode {
+    override type : NodeType = NodeType.FOREACHLOOP;
+
     constructor(
         public local : string, // TODO: make this Var object
         public iter  : Node,   // TODO: make this something
@@ -295,6 +374,8 @@ export class ForEachLoop extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class ConstInt extends AbstractNode {
+    override type : NodeType = NodeType.CONST;
+
     constructor(public literal : number) { super() }
 
     deparse() : string { return String(this.literal) }
@@ -309,6 +390,8 @@ export class ConstInt extends AbstractNode {
 }
 
 export class ConstFloat extends AbstractNode {
+    override type : NodeType = NodeType.CONST;
+
     constructor(public literal : number) { super() }
 
     deparse() : string { return String(this.literal) }
@@ -323,6 +406,8 @@ export class ConstFloat extends AbstractNode {
 }
 
 export class ConstStr extends AbstractNode {
+    override type : NodeType = NodeType.CONST;
+
     constructor(public literal : string) { super() }
 
     deparse() : string { return `'${this.literal}'` }
@@ -334,6 +419,8 @@ export class ConstStr extends AbstractNode {
 }
 
 export class ConstTrue extends AbstractNode {
+    override type : NodeType = NodeType.CONST;
+
     constructor() { super() }
 
     deparse() : string { return 'true' }
@@ -345,6 +432,8 @@ export class ConstTrue extends AbstractNode {
 }
 
 export class ConstFalse extends AbstractNode {
+    override type : NodeType = NodeType.CONST;
+
     constructor() { super() }
 
     deparse() : string { return 'false' }
@@ -356,6 +445,8 @@ export class ConstFalse extends AbstractNode {
 }
 
 export class ConstUndef extends AbstractNode {
+    override type : NodeType = NodeType.CONST;
+
     constructor() { super() }
 
     deparse() : string { return 'undef' }
@@ -389,6 +480,8 @@ function SigilToSlot (sigil : GlobSlot) : string {
 }
 
 export class GlobVar extends AbstractNode {
+    override type : NodeType = NodeType.GLOBVAR;
+
     constructor(
         public name : string,
         public slot : GlobSlot
@@ -406,6 +499,8 @@ export class GlobVar extends AbstractNode {
 }
 
 export class GlobFetch extends AbstractNode {
+    override type : NodeType = NodeType.GLOBFETCH;
+
     constructor(
         public name : string,
         public slot : GlobSlot
@@ -425,6 +520,8 @@ export class GlobFetch extends AbstractNode {
 }
 
 export class GlobStore extends AbstractNode {
+    override type : NodeType = NodeType.GLOBSTORE;
+
     constructor(
         public ident : GlobVar,
         public value : Node,
@@ -455,6 +552,7 @@ export class GlobStore extends AbstractNode {
 }
 
 export class GlobDeclare extends GlobStore {
+    override type : NodeType = NodeType.GLOBDECLARE;
 
     override deparse () : string {
         let src = super.deparse();
@@ -473,6 +571,8 @@ export class GlobDeclare extends GlobStore {
 // -----------------------------------------------------------------------------
 
 export class ScalarFetch extends AbstractNode {
+    override type : NodeType = NodeType.SCALARFETCH;
+
     constructor(public name : string) { super() }
 
     deparse() : string { return '$' + this.name }
@@ -486,6 +586,8 @@ export class ScalarFetch extends AbstractNode {
 }
 
 export class ScalarStore extends AbstractNode {
+    override type : NodeType = NodeType.SCALARSTORE;
+
     constructor(
         public name  : string,
         public value : Node,
@@ -510,6 +612,7 @@ export class ScalarStore extends AbstractNode {
 }
 
 export class ScalarDeclare extends ScalarStore {
+    override type : NodeType = NodeType.SCALARDECLARE;
 
     override deparse () : string {
         let src = super.deparse();
@@ -528,6 +631,8 @@ export class ScalarDeclare extends ScalarStore {
 // -----------------------------------------------------------------------------
 
 export class ArrayElemFetch extends AbstractNode {
+    override type : NodeType = NodeType.ARRAYELEMFETCH;
+
     constructor(
         public name  : string,
         public index : Node,
@@ -549,6 +654,8 @@ export class ArrayElemFetch extends AbstractNode {
 }
 
 export class ArrayElemStore extends AbstractNode {
+    override type : NodeType = NodeType.ARRAYELEMSTORE;
+
     constructor(
         public name  : string,
         public index : Node,
@@ -577,6 +684,8 @@ export class ArrayElemStore extends AbstractNode {
 }
 
 export class ArrayFetch extends AbstractNode {
+    override type : NodeType = NodeType.ARRAYFETCH;
+
     constructor(public name : string) { super() }
 
     deparse() : string { return '@' + this.name }
@@ -590,6 +699,8 @@ export class ArrayFetch extends AbstractNode {
 }
 
 export class ArrayStore extends AbstractNode {
+    override type : NodeType = NodeType.ARRAYSTORE;
+
     constructor(
         public name  : string,
         public value : Node,
@@ -614,6 +725,8 @@ export class ArrayStore extends AbstractNode {
 }
 
 export class ArrayDeclare extends AbstractNode {
+    override type : NodeType = NodeType.ARRAYDECLARE;
+
     constructor(
         public name  : string,
         public items : Node[],
@@ -654,6 +767,8 @@ export class ArrayDeclare extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export abstract class BuiltIn extends AbstractNode {
+    override type : NodeType = NodeType.BUILTIN;
+
     constructor(
         public op   : LISTOP,
         public args : Node[],
@@ -701,6 +816,8 @@ export class Join extends BuiltIn {
 // -----------------------------------------------------------------------------
 
 export class BinaryOp extends AbstractNode {
+    override type : NodeType = NodeType.BINARYOP;
+
     constructor(
         public op  : BINOP,
         public lhs : Node,
