@@ -8,7 +8,7 @@ import { Console } from 'console';
 
 import {
     OP, COP, UNOP, BINOP, LOGOP, LISTOP, MaybeOP,
-} from './API'
+} from './Runtime/API'
 
 export const logger = new Console({
     stdout         : process.stdout,

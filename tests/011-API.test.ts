@@ -16,7 +16,7 @@ import {
     SymbolTable,
     isGlob, isStash,
     assertIsGlob,
-} from '../src/API'
+} from '../src/Runtime/API'
 
 test("... simple Runtime test", (t) => {
     let main = new SymbolTable('main');

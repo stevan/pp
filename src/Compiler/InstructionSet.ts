@@ -28,7 +28,7 @@ import {
     Executor, MaybeActivationRecord, ActivationRecord,
 
     InstructionSet, Opcode,
-} from '../API'
+} from '../Runtime/API'
 
 import { GlobSlot } from '../Parser/AST'
 

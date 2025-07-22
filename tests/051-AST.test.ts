@@ -20,7 +20,7 @@ import {
     Compiler,
 } from '../src/Compiler'
 
-import { Pad, IV, AV } from '../src/API'
+import { Pad, IV, AV } from '../src/Runtime/API'
 import { Interpreter, StackFrame } from '../src/Runtime'
 
 /*

@@ -11,7 +11,7 @@ import {
     Pad,
     Executor, ActivationRecord, MaybeActivationRecord,
     InstructionSet, Opcode,
-} from './API'
+} from './Runtime/API'
 
 // -----------------------------------------------------------------------------
 

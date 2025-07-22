@@ -5,7 +5,7 @@ import { Program } from './Parser/AST'
 import {
     OP, COP, UNOP, BINOP, LOGOP, LISTOP,
     MaybeOP, OpTree, InstructionSet
-} from './API'
+} from './Runtime/API'
 
 import { loadInstructionSet } from './Compiler/InstructionSet'
 
