@@ -19,17 +19,30 @@ import {
 // AST Node
 // -----------------------------------------------------------------------------
 
+export interface Visitor<T> {
+    visit(n : Node) : T;
+}
+
 export interface Node {
     deparse () : string;
     emit    () : OpTree;
+
+    accept<T>(v : Visitor<T>) : T;
+}
+
+export abstract class AbstractNode implements Node {
+    abstract deparse () : string;
+    abstract emit    () : OpTree;
+
+    accept<T>(v : Visitor<T>) : T { return v.visit(this) }
 }
 
 // -----------------------------------------------------------------------------
 // Compilation Unit
 // -----------------------------------------------------------------------------
 
-export abstract class Scope implements Node {
-    constructor(public statements : Statement[]) { }
+export abstract class Scope extends AbstractNode {
+    constructor(public statements : Statement[]) { super() }
 
     deparse() : string {
         return this.statements
@@ -99,7 +112,7 @@ export class SubBody extends Scope {
 // can handle different types as well as slurpy args.
 // But this is good enough for now.
 
-export class SubDefinition implements Node {
+export class SubDefinition extends AbstractNode {
     public name   : string;
     public params : string[];
     public body   : SubBody;
@@ -109,6 +122,7 @@ export class SubDefinition implements Node {
         params : string[],
         body   : Statement[],
     ) {
+        super();
         this.name   = name;
         this.params = params;
         this.body   = new SubBody(body);
@@ -129,11 +143,11 @@ export class SubDefinition implements Node {
     }
 }
 
-export class SubCall implements Node {
+export class SubCall extends AbstractNode {
     constructor(
         public glob : GlobFetch,
         public args : Node[],
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return `${this.glob.name}(${this.args.map((a) => a.deparse()).join(', ')})`
@@ -164,8 +178,8 @@ export class SubCall implements Node {
     }
 }
 
-export class SubReturn implements Node {
-    constructor(public result : Node) {}
+export class SubReturn extends AbstractNode {
+    constructor(public result : Node) { super() }
 
     deparse() : string { return `return ${this.result.deparse()}` }
 
@@ -185,8 +199,10 @@ export class SubReturn implements Node {
 // Statements
 // -----------------------------------------------------------------------------
 
-export class Statement implements Node {
-    constructor(public body : Node, public internal : boolean = false) {}
+export class Statement extends AbstractNode {
+    constructor(public body : Node, public internal : boolean = false) {
+        super();
+    }
 
     deparse() : string {
         if (this.internal) return '';
@@ -210,12 +226,12 @@ export class Statement implements Node {
 // Control Structures
 // -----------------------------------------------------------------------------
 
-export class Conditional implements Node {
+export class Conditional extends AbstractNode {
     constructor(
         public predicate : Node,
         public ifTrue    : Block,
         public ifFalse   : Block,
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return [
@@ -254,12 +270,12 @@ export class Conditional implements Node {
     }
 }
 
-export class ForEachLoop implements Node {
+export class ForEachLoop extends AbstractNode {
     constructor(
         public local : string, // TODO: make this Var object
         public iter  : Node,   // TODO: make this something
         public body  : Block,
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return [
@@ -278,8 +294,8 @@ export class ForEachLoop implements Node {
 // Constants
 // -----------------------------------------------------------------------------
 
-export class ConstInt implements Node {
-    constructor(public literal : number) {}
+export class ConstInt extends AbstractNode {
+    constructor(public literal : number) { super() }
 
     deparse() : string { return String(this.literal) }
 
@@ -292,8 +308,8 @@ export class ConstInt implements Node {
     }
 }
 
-export class ConstFloat implements Node {
-    constructor(public literal : number) {}
+export class ConstFloat extends AbstractNode {
+    constructor(public literal : number) { super() }
 
     deparse() : string { return String(this.literal) }
 
@@ -306,8 +322,8 @@ export class ConstFloat implements Node {
     }
 }
 
-export class ConstStr implements Node {
-    constructor(public literal : string) {}
+export class ConstStr extends AbstractNode {
+    constructor(public literal : string) { super() }
 
     deparse() : string { return `'${this.literal}'` }
 
@@ -317,7 +333,9 @@ export class ConstStr implements Node {
     }
 }
 
-export class ConstTrue implements Node {
+export class ConstTrue extends AbstractNode {
+    constructor() { super() }
+
     deparse() : string { return 'true' }
 
     emit () : OpTree {
@@ -326,7 +344,9 @@ export class ConstTrue implements Node {
     }
 }
 
-export class ConstFalse implements Node {
+export class ConstFalse extends AbstractNode {
+    constructor() { super() }
+
     deparse() : string { return 'false' }
 
     emit () : OpTree {
@@ -335,7 +355,9 @@ export class ConstFalse implements Node {
     }
 }
 
-export class ConstUndef implements Node {
+export class ConstUndef extends AbstractNode {
+    constructor() { super() }
+
     deparse() : string { return 'undef' }
 
     emit () : OpTree {
@@ -366,11 +388,11 @@ function SigilToSlot (sigil : GlobSlot) : string {
     }
 }
 
-export class GlobVar implements Node {
+export class GlobVar extends AbstractNode {
     constructor(
         public name : string,
         public slot : GlobSlot
-    ) {}
+    ) { super() }
 
     deparse() : string { return this.slot + this.name }
 
@@ -383,11 +405,11 @@ export class GlobVar implements Node {
     }
 }
 
-export class GlobFetch implements Node {
+export class GlobFetch extends AbstractNode {
     constructor(
         public name : string,
         public slot : GlobSlot
-    ) {}
+    ) { super() }
 
     deparse() : string { return this.slot + this.name }
 
@@ -402,11 +424,11 @@ export class GlobFetch implements Node {
     }
 }
 
-export class GlobStore implements Node {
+export class GlobStore extends AbstractNode {
     constructor(
         public ident : GlobVar,
         public value : Node,
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return `${this.ident.deparse()} = ${this.value.deparse()}`
@@ -450,8 +472,8 @@ export class GlobDeclare extends GlobStore {
 // Scalar Ops
 // -----------------------------------------------------------------------------
 
-export class ScalarFetch implements Node {
-    constructor(public name : string) {}
+export class ScalarFetch extends AbstractNode {
+    constructor(public name : string) { super() }
 
     deparse() : string { return '$' + this.name }
 
@@ -463,11 +485,11 @@ export class ScalarFetch implements Node {
     }
 }
 
-export class ScalarStore implements Node {
+export class ScalarStore extends AbstractNode {
     constructor(
         public name  : string,
         public value : Node,
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return `$${this.name} = ${this.value.deparse()}`
@@ -505,11 +527,11 @@ export class ScalarDeclare extends ScalarStore {
 // Array Ops
 // -----------------------------------------------------------------------------
 
-export class ArrayElemFetch implements Node {
+export class ArrayElemFetch extends AbstractNode {
     constructor(
         public name  : string,
         public index : Node,
-    ) {}
+    ) { super() }
 
     deparse() : string { return `@${this.name}[${this.index.deparse()}]` }
 
@@ -526,12 +548,12 @@ export class ArrayElemFetch implements Node {
     }
 }
 
-export class ArrayElemStore implements Node {
+export class ArrayElemStore extends AbstractNode {
     constructor(
         public name  : string,
         public index : Node,
         public value : Node,
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return `@${this.name}[${this.index.deparse()}] = ${this.value.deparse()}`
@@ -554,8 +576,8 @@ export class ArrayElemStore implements Node {
     }
 }
 
-export class ArrayFetch implements Node {
-    constructor(public name : string) {}
+export class ArrayFetch extends AbstractNode {
+    constructor(public name : string) { super() }
 
     deparse() : string { return '@' + this.name }
 
@@ -567,11 +589,11 @@ export class ArrayFetch implements Node {
     }
 }
 
-export class ArrayStore implements Node {
+export class ArrayStore extends AbstractNode {
     constructor(
         public name  : string,
         public value : Node,
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return `@${this.name} = ${this.value.deparse()}`
@@ -591,11 +613,11 @@ export class ArrayStore implements Node {
     }
 }
 
-export class ArrayDeclare implements Node {
+export class ArrayDeclare extends AbstractNode {
     constructor(
         public name  : string,
         public items : Node[],
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return `my @${this.name} = (${this.items.map((i) => i.deparse()).join(', ')})`
@@ -631,11 +653,11 @@ export class ArrayDeclare implements Node {
 // Builtins
 // -----------------------------------------------------------------------------
 
-export abstract class BuiltIn implements Node {
+export abstract class BuiltIn extends AbstractNode {
     constructor(
         public op   : LISTOP,
         public args : Node[],
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return `${this.op.config.builtin}(${this.args.map((a) => a.deparse()).join(', ')})`
@@ -678,12 +700,12 @@ export class Join extends BuiltIn {
 // Binary Ops
 // -----------------------------------------------------------------------------
 
-export class BinaryOp implements Node {
+export class BinaryOp extends AbstractNode {
     constructor(
         public op  : BINOP,
         public lhs : Node,
         public rhs : Node,
-    ) {}
+    ) { super() }
 
     deparse() : string {
         return `${this.lhs.deparse()} ${this.op.config.operation} ${this.rhs.deparse()}`
