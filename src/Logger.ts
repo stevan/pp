@@ -13,7 +13,10 @@ import {
 export const logger = new Console({
     stdout         : process.stdout,
     stderr         : process.stderr,
-    inspectOptions : { depth : 4 },
+    inspectOptions : {
+        depth       : 4,
+        breakLength : 180,
+    },
 });
 
 
