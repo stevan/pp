@@ -1,7 +1,7 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger, prettyPrinter } from '../src/Tools'
+import { logger, prettyPrinter, walkExecOrder, walkTraversalOrder } from '../src/Tools'
 import {
     Program, Statement,
     ScalarStore, ScalarFetch, ScalarDeclare,
@@ -10,11 +10,7 @@ import {
     Conditional, Equal, Say, ConstStr, Join,
 } from '../src/Parser/AST'
 
-import {
-    walkExecOrder,
-    walkTraversalOrder,
-    Compiler,
-} from '../src/Compiler'
+import { Compiler } from '../src/Compiler'
 
 import { Pad, IV } from '../src/Runtime/API'
 import { Interpreter, StackFrame } from '../src/Runtime'

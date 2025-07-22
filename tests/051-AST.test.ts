@@ -1,7 +1,7 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger, prettyPrinter } from '../src/Tools'
+import { logger, prettyPrinter, walkExecOrder, walkTraversalOrder } from '../src/Tools'
 
 import {
     Program,
@@ -14,11 +14,7 @@ import {
     Say, Join,
 } from '../src/Parser/AST'
 
-import {
-    walkExecOrder,
-    walkTraversalOrder,
-    Compiler,
-} from '../src/Compiler'
+import { Compiler } from '../src/Compiler'
 
 import { Pad, IV, AV } from '../src/Runtime/API'
 import { Interpreter, StackFrame } from '../src/Runtime'

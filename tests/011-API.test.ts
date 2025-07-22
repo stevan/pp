@@ -2,7 +2,7 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger, prettyPrinter } from '../src/Tools'
+import { logger, prettyPrinter, walkExecOrder, walkTraversalOrder } from '../src/Tools'
 import {
     newStash,
     newGlob,
