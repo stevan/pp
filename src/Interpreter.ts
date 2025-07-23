@@ -1,8 +1,7 @@
 
-
 import { logger } from './Tools'
-import { RuntimeConfig, Thread, ThreadID } from './Runtime'
-import { SymbolTable } from './Runtime'
+
+import { RuntimeConfig, Thread, ThreadID, SymbolTable } from './Runtime'
 import { OpTree } from './Runtime/API'
 
 class ThreadMap extends Map<ThreadID, Thread> {
