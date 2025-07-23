@@ -3,6 +3,7 @@
     "@types/node": "^22.13.17"
   },
   "scripts": {
+    "build": "rm -rf ./js && tsc",
     "test": "tsc && node --test js/tests/*.js"
   }
 }

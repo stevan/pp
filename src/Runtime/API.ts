@@ -16,47 +16,6 @@
 
 export type Identifier = string // [A-Za-z_][A-Za-z0-9_]+
 
-export type MaybeOP     = OP     | undefined
-export type MaybeOpcode = Opcode | undefined
-
-export class Pad            extends Map<string, Any> {}
-export class InstructionSet extends Map<string, Opcode> {}
-
-export type MaybeActivationRecord = ActivationRecord | undefined
-
-export interface ActivationRecord {
-    stack      : Any[];
-    padlist    : Pad[];
-    optree     : OpTree;
-    return_to  : MaybeOP;
-    current_op : MaybeOP;
-
-    currentScope () : Pad;
-    enterScope   () : void;
-    leaveScope   () : void;
-
-    createLexical (name : string, value : Any) : void;
-    setLexical    (name : string, value : Any) : void;
-    getLexical    (name : string) : Any;
-
-    executor () : Executor;
-}
-
-export interface Executor {
-    frames  : ActivationRecord[];
-    root    : SymbolTable;
-
-    invokeCV (cv : CV, args : Any[]) : MaybeOP;
-    returnFromCV () : MaybeOP;
-
-    run (root : OpTree) : void;
-
-    toSTDOUT (args : PV[]) : void;
-    toSTDERR (args : PV[]) : void;
-}
-
-export type Opcode = (i : ActivationRecord, op : OP) => MaybeOP;
-
 export type OpConfig = any;
 export type CompMeta = any;
 export type JITMeta  = any;
@@ -66,6 +25,8 @@ export type OpMetadata = {
     compiler : CompMeta,
     JIT      : JITMeta,
 }
+
+export type MaybeOP = OP | undefined
 
 // =============================================================================
 // OPs
@@ -87,10 +48,6 @@ export class OP {
             compiler : {},
             JIT      : {},
         }
-    }
-
-    getOpcode () : MaybeOpcode {
-        return this.metadata.compiler.opcode;
     }
 }
 
@@ -177,74 +134,6 @@ export class OpTree {
     constructor(enter : OP, leave : OP) {
         this.enter = enter;
         this.leave = leave;
-    }
-}
-
-// =============================================================================
-// Symbol Table
-// =============================================================================
-
-export class SymbolTable {
-    public root : Stash;
-
-    constructor(name : string) {
-        this.root = newStash(name);
-    }
-
-    name () : string { return this.root.name }
-
-    // NOTE:
-    // This works for now, but I do not like the
-    // return values being so different, even though
-    // they are from the same type. And the :: postfix
-    // being important is also kinda janky and not
-    // ideal. So this should eventually change to
-    // be something less DWIM-ey, but yeah, kinda
-    // works for now.
-    autovivify (symbol : string) : GV {
-        let path = symbol.split('::');
-        if (path.length == 0) throw new Error('Autovivify path is empty');
-
-        let wantStash = false;
-        if (path[ path.length - 1 ] == '') {
-            path.pop();
-            wantStash = true;
-        }
-
-        let current = this.root;
-        while (path.length > 0) {
-            let segment = path.shift() as string;
-            if (current.stash.has(segment)) {
-                let next = current.stash.get(segment) as GV;
-                // terminal case for lookup ...
-                if (isGlob(next) && path.length == 0 && !wantStash) {
-                    return next;
-                }
-                else {
-                    current = next as Stash;
-                }
-            } else {
-                // terminal case for auto creation ... we want a glob
-                if (path.length == 0 && !wantStash) {
-                    let glob = newGlob(segment);
-                    current.stash.set(segment, glob);
-                    return glob;
-                }
-                else {
-                    let stash = newStash(segment);
-                    current.stash.set(segment, stash);
-                    current = stash;
-                }
-            }
-        }
-
-        // XXX:
-        // perhaps add something here to check wantStash
-        // and the type of current, to make sure we aren't
-        // sending back the wrong type. Just an example of
-        // the issues with this, but meh, I will come back.
-
-        return current;
     }
 }
 

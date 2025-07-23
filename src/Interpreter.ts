@@ -1,8 +1,13 @@
 
 
 import { logger } from './Tools'
-import { RuntimeConfig, Thread, ThreadMap, ThreadID } from './Runtime'
-import { SymbolTable, OpTree } from './Runtime/API'
+import { RuntimeConfig, Thread, ThreadID } from './Runtime'
+import { SymbolTable } from './Runtime'
+import { OpTree } from './Runtime/API'
+
+class ThreadMap extends Map<ThreadID, Thread> {
+    addThread(t : Thread) : void { this.set(t.tid, t) }
+}
 
 export class Interpreter {
     public config  : RuntimeConfig;

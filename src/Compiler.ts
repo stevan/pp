@@ -4,10 +4,10 @@ import { logger, walkTraversalOrder } from './Tools'
 import { Program } from './Parser/AST'
 import {
     OP, COP, UNOP, BINOP, LOGOP, LISTOP,
-    MaybeOP, OpTree, InstructionSet
+    MaybeOP, OpTree
 } from './Runtime/API'
 
-import { loadInstructionSet } from './Compiler/InstructionSet'
+import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
 
 export class Compiler {

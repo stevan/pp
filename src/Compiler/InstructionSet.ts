@@ -7,7 +7,7 @@
 
 import { logger } from '../Tools'
 import {
-    Any, SV, IV, NV, PV, CV, Stash, SymbolTable,
+    Any, SV, IV, NV, PV, CV, Stash,
 
     SV_True, SV_False, SV_Undef,
 
@@ -24,79 +24,15 @@ import {
     setGlobScalar, setGlobCode, getGlobSlot, GlobSlot,
 
     OP, LOGOP, DECLARE, MaybeOP, OpTree,
-
-    Executor, MaybeActivationRecord, ActivationRecord,
-
-    InstructionSet, Opcode,
 } from '../Runtime/API'
 
-// -----------------------------------------------------------------------------
-// Utils to lift some BinOps
-// -----------------------------------------------------------------------------
-
-function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
-    // FIXME:
-    // This currenly only works for IVs, it should
-    // detect if either check the lhs/rhs values at
-    // runtime and DWIM, or the compiler should figure
-    // it out and use the correct opcode. But this is
-    // an MVP, so this is fine for now.
-    return (i, op) => {
-        let rhs = i.stack.pop() as Any;
-        let lhs = i.stack.pop() as Any;
-        assertIsIV(lhs);
-        assertIsIV(rhs);
-        i.stack.push(newIV( f(lhs.value, rhs.value) ));
-        return op.next;
-    }
-}
-
-function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
-    // FIXME:
-    // This currenly only works for IVs, it should
-    // detect if either check the lhs/rhs values at
-    // runtime and DWIM, or the compiler should figure
-    // it out and use the correct opcode. But this is
-    // an MVP, so this is fine for now.
-    return (i, op) => {
-        let rhs = i.stack.pop() as Any;
-        let lhs = i.stack.pop() as Any;
-        assertIsIV(lhs);
-        assertIsIV(rhs);
-        i.stack.push( f(lhs.value, rhs.value) ? SV_True : SV_False );
-        return op.next;
-    }
-}
-
-// -----------------------------------------------------------------------------
-// Subroutine calls
-// -----------------------------------------------------------------------------
-
-const PUSHMARK = newPV('*PUSHMARK*');
-
-function collectArgumentsFromStack (i : ActivationRecord) : Any[] {
-    let args = [];
-    while (true) {
-        let arg = i.stack.pop();
-        if (arg == undefined) throw new Error('Stack Underflow!');
-        if (arg === PUSHMARK) {
-            break;
-        } else {
-            // NOTE:
-            // This may be wrong, not sure, and I
-            // might then be correcting for this
-            // elsewhere, but I can't figure out
-            // where it is. And since things work
-            // I am just gonna leave this here.
-            args.unshift(arg);
-        }
-    }
-    return args;
-}
+import { Opcode, SymbolTable, ActivationRecord } from '../Runtime'
 
 // -----------------------------------------------------------------------------
 // the instruction set ...
 // -----------------------------------------------------------------------------
+
+export class InstructionSet extends Map<string, Opcode> {}
 
 export function loadInstructionSet () : InstructionSet {
 
@@ -423,3 +359,69 @@ export function loadInstructionSet () : InstructionSet {
 
     return opcodes;
 }
+
+// -----------------------------------------------------------------------------
+// Subroutine calls
+// -----------------------------------------------------------------------------
+
+const PUSHMARK = newPV('*PUSHMARK*');
+
+function collectArgumentsFromStack (i : ActivationRecord) : Any[] {
+    let args = [];
+    while (true) {
+        let arg = i.stack.pop();
+        if (arg == undefined) throw new Error('Stack Underflow!');
+        if (arg === PUSHMARK) {
+            break;
+        } else {
+            // NOTE:
+            // This may be wrong, not sure, and I
+            // might then be correcting for this
+            // elsewhere, but I can't figure out
+            // where it is. And since things work
+            // I am just gonna leave this here.
+            args.unshift(arg);
+        }
+    }
+    return args;
+}
+
+// -----------------------------------------------------------------------------
+// Utils to lift some BinOps
+// -----------------------------------------------------------------------------
+
+function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
+    // FIXME:
+    // This currenly only works for IVs, it should
+    // detect if either check the lhs/rhs values at
+    // runtime and DWIM, or the compiler should figure
+    // it out and use the correct opcode. But this is
+    // an MVP, so this is fine for now.
+    return (i, op) => {
+        let rhs = i.stack.pop() as Any;
+        let lhs = i.stack.pop() as Any;
+        assertIsIV(lhs);
+        assertIsIV(rhs);
+        i.stack.push(newIV( f(lhs.value, rhs.value) ));
+        return op.next;
+    }
+}
+
+function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
+    // FIXME:
+    // This currenly only works for IVs, it should
+    // detect if either check the lhs/rhs values at
+    // runtime and DWIM, or the compiler should figure
+    // it out and use the correct opcode. But this is
+    // an MVP, so this is fine for now.
+    return (i, op) => {
+        let rhs = i.stack.pop() as Any;
+        let lhs = i.stack.pop() as Any;
+        assertIsIV(lhs);
+        assertIsIV(rhs);
+        i.stack.push( f(lhs.value, rhs.value) ? SV_True : SV_False );
+        return op.next;
+    }
+}
+
+// -----------------------------------------------------------------------------

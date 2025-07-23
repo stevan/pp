@@ -14,8 +14,8 @@ import {
 
 import { Compiler } from '../src/Compiler'
 
-import { Pad, IV, AV } from '../src/Runtime/API'
-import { StackFrame } from '../src/Runtime'
+import { IV, AV } from '../src/Runtime/API'
+import { Pad, StackFrame } from '../src/Runtime'
 import { Interpreter } from '../src/Interpreter'
 
 /*

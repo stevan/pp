@@ -10,10 +10,13 @@ import { Lexer                   } from '../src/Parser/Lexer'
 let source = SourceStream([
 `
 
-my @foo = (1, 2, 3);
-@foo[0] = @foo[2];
-@foo[ @foo[1] ] = @foo[2] - 1;
-@foo[ @foo[1] - 1 ] = 1;
+sub gcd ($a, $b) {
+    if ($b == 0) {
+        return $a
+    } else {
+        return gcd($b, $a % $b)
+    }
+}
 
 `
 ]);

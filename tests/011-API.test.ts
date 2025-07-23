@@ -13,10 +13,10 @@ import {
     SV_True,
     SV_Undef,
     newRV,
-    SymbolTable,
     isGlob, isStash,
     assertIsGlob,
 } from '../src/Runtime/API'
+import { SymbolTable } from '../src/Runtime'
 
 test("... simple Runtime test", (t) => {
     let main = new SymbolTable('main');
