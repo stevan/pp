@@ -15,6 +15,10 @@ import {
 
 // -----------------------------------------------------------------------------
 
+export type RuntimeConfig = any;
+
+// -----------------------------------------------------------------------------
+
 export class StackFrame implements ActivationRecord {
     public stack      : Any[];
     public padlist    : Pad[];
@@ -93,7 +97,7 @@ export class StackFrame implements ActivationRecord {
     }
 }
 
-export type InterpreterOptions = any;
+// -----------------------------------------------------------------------------
 
 export type ThreadID = number;
 
@@ -101,38 +105,14 @@ export class ThreadMap extends Map<ThreadID, Thread> {
     addThread(t : Thread) : void { this.set(t.tid, t) }
 }
 
-export class Interpreter {
-    public options : InterpreterOptions;
-    public main    : Thread;
-    public root    : SymbolTable;
-    public threads : ThreadMap;
-
-    private tid_seq : ThreadID = 0;
-
-    constructor (options : InterpreterOptions = {}) {
-        this.options = options;
-        this.root    = new SymbolTable('main');
-        this.threads = new ThreadMap();
-        this.main    = this.initializeMainThread();
-    }
-
-    private initializeMainThread () : Thread {
-        let thread = new Thread(++this.tid_seq, this.root);
-        this.threads.addThread(thread);
-        return thread;
-    }
-
-    run (root : OpTree) : void {
-        this.main.run(root, this.options);
-    }
-}
-
 export class Thread implements Executor {
+    public config  : RuntimeConfig;
     public tid     : ThreadID;
     public frames  : StackFrame[];
     public root    : SymbolTable;
 
-    constructor (tid : ThreadID, root : SymbolTable) {
+    constructor (tid : ThreadID, root : SymbolTable, config : RuntimeConfig) {
+        this.config  = config;
         this.tid     = tid;
         this.frames  = [];
         this.root    = root;
@@ -190,7 +170,7 @@ export class Thread implements Executor {
         this.frames.unshift(frame);
     }
 
-    run (root : OpTree, options : InterpreterOptions = {}) : void {
+    run (root : OpTree) : void {
         this.prepareRootFrame(root);
 
         let frame = this.frames[0] as StackFrame;
@@ -206,16 +186,16 @@ export class Thread implements Executor {
 
             let depth  = this.frames.length;
 
-            if (options.DEBUG)
+            if (this.config.DEBUG)
                 logger.group(`[${depth}] {${frame.optree.enter.config.name}} -> OP[${op.name}] = ${JSON.stringify(op.config)}`);
 
             let next_op = opcode(frame, op);
             if (next_op == undefined) {
-                if (options.DEBUG) logger.groupEnd();
+                if (this.config.DEBUG) logger.groupEnd();
                 break;
             }
 
-            if (options.DEBUG) {
+            if (this.config.DEBUG) {
                 if (this.frames.length > depth) {
                     logger.log('ARGS    :', this.frames[0]?.stack);
                 }
@@ -234,7 +214,7 @@ export class Thread implements Executor {
             frame.current_op = next_op;
         }
 
-        if (options.DEBUG) {
+        if (this.config.DEBUG) {
             logger.log('HALT!');
         }
     }

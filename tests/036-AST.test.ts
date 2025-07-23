@@ -15,7 +15,8 @@ import {
 import { Compiler } from '../src/Compiler'
 
 import { Pad, IV, GlobSlot } from '../src/Runtime/API'
-import { Interpreter, StackFrame } from '../src/Runtime'
+import { StackFrame } from '../src/Runtime'
+import { Interpreter } from '../src/Interpreter'
 
 
 /*
