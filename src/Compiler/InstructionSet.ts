@@ -26,7 +26,7 @@ import {
     OP, LOGOP, DECLARE, MaybeOP, OpTree,
 } from '../Runtime/API'
 
-import { Opcode, SymbolTable, ActivationRecord } from '../Runtime'
+import { Opcode, SymbolTable, StackFrame } from '../Runtime'
 
 // -----------------------------------------------------------------------------
 // the instruction set ...
@@ -366,7 +366,7 @@ export function loadInstructionSet () : InstructionSet {
 
 const PUSHMARK = newPV('*PUSHMARK*');
 
-function collectArgumentsFromStack (i : ActivationRecord) : Any[] {
+function collectArgumentsFromStack (i : StackFrame) : Any[] {
     let args = [];
     while (true) {
         let arg = i.stack.pop();

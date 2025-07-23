@@ -17,44 +17,27 @@ export type RuntimeConfig = any;
 
 export type ThreadID = number;
 
-export class Pad extends Map<string, Any> {}
-
-export type Opcode = (i : ActivationRecord, op : OP) => MaybeOP;
-
-export interface ActivationRecord {
-    stack      : Any[];
-    padlist    : Pad[];
-    optree     : OpTree;
-    return_to  : MaybeOP;
-    current_op : MaybeOP;
-
-    currentScope () : Pad;
-    enterScope   () : void;
-    leaveScope   () : void;
-
-    createLexical (name : string, value : Any) : void;
-    setLexical    (name : string, value : Any) : void;
-    getLexical    (name : string) : Any;
-
-    executor () : Executor;
-}
-
-export interface Executor {
-    frames  : ActivationRecord[];
-    root    : SymbolTable;
-
-    invokeCV (cv : CV, args : Any[]) : MaybeOP;
-    returnFromCV () : MaybeOP;
-
-    run (root : OpTree) : void;
-
-    toSTDOUT (args : PV[]) : void;
-    toSTDERR (args : PV[]) : void;
-}
+export type Opcode = (i : StackFrame, op : OP) => MaybeOP;
 
 export type MaybeOpcode = Opcode | undefined
-export type MaybeActivationRecord = ActivationRecord | undefined
+export type MaybeStackFrame = StackFrame | undefined
 
+export class Pad extends Map<string, Any> {}
+
+// -----------------------------------------------------------------------------
+// Symbol Table
+// -----------------------------------------------------------------------------
+// This is very basic at the moment, but this should ultimately be kind of a
+// in-memory NOSQL database. Passing a fully qualified symbol is the same as
+// doing an primary key lookup, and it would be possible to have kind of a
+// "query" syntax, which would be able to replace dynamically creating symbols
+// at runtime. No idea what that might look like yet, but it is an idea.
+//
+// But treating this as a database allows us to save state, similar to an
+// image file in Smalltalk or Forth, and be able to bypass the compilation
+// and composition of a symbol table which won't change unless the file
+// changes. This would also make it easier to have an interactive development
+// environment similar to Unison and others.
 // -----------------------------------------------------------------------------
 
 export class SymbolTable {
@@ -123,21 +106,21 @@ export class SymbolTable {
 
 // -----------------------------------------------------------------------------
 
-export class StackFrame implements ActivationRecord {
+export class StackFrame {
     public stack      : Any[];
     public padlist    : Pad[];
     public optree     : OpTree; // the CV basically
     public current_op : MaybeOP;
     public return_to  : MaybeOP;
 
-    private parent : MaybeActivationRecord;
-    private thread : Executor;
+    private parent : MaybeStackFrame;
+    private thread : Thread;
 
     constructor(
             optree    : OpTree,
             return_to : MaybeOP,
-            thread    : Executor,
-            parent?   : MaybeActivationRecord,
+            thread    : Thread,
+            parent?   : MaybeStackFrame,
         ) {
         this.stack       = [];
         this.padlist     = [ new Pad() ];
@@ -152,7 +135,7 @@ export class StackFrame implements ActivationRecord {
     // Symbol Table
     // -------------------------------------------------------------------------
 
-    executor () : Executor { return this.thread }
+    executor () : Thread { return this.thread }
 
     // -------------------------------------------------------------------------
     // Lexicals
@@ -203,7 +186,7 @@ export class StackFrame implements ActivationRecord {
 
 // -----------------------------------------------------------------------------
 
-export class Thread implements Executor {
+export class Thread {
     public config  : RuntimeConfig;
     public tid     : ThreadID;
     public frames  : StackFrame[];
@@ -252,7 +235,7 @@ export class Thread implements Executor {
     private prepareRootFrame (optree : OpTree) : void {
         let halt = new OP('halt', {});
         // XXX: gross ... do better
-        halt.metadata.compiler.opcode = (i : ActivationRecord, op : OP) => undefined;
+        halt.metadata.compiler.opcode = (i : StackFrame, op : OP) => undefined;
 
         optree.leave.next = halt;
 
