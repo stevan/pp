@@ -1,13 +1,8 @@
 
 
 import { logger } from './Tools'
-import {
-    RuntimeConfig,
-    Thread, ThreadMap, ThreadID,
-} from './Runtime'
-import {
-    SymbolTable, OpTree,
-} from './Runtime/API'
+import { RuntimeConfig, Thread, ThreadMap, ThreadID } from './Runtime'
+import { SymbolTable, OpTree } from './Runtime/API'
 
 export class Interpreter {
     public config  : RuntimeConfig;
