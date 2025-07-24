@@ -25,17 +25,17 @@ Some stuff to do ...
 */
 
 
-export type Term = { type : 'TERM', body : Lexed   }
-export type Stmt = { type : 'STMT', body : Expr }
-export type Expr = { type : 'EXPR', body : Parsed[], parens : boolean }
-export type Blck = { type : 'BLCK', body : Parsed[] }
+export type Term       = { type : 'TERM',       body : Lexed   }
+export type Statement  = { type : 'STATEMENT',  body : Expression }
+export type Expression = { type : 'EXPRESSION', body : ParseTree[], parens : boolean }
+export type Block      = { type : 'BLOCK',      body : ParseTree[] }
 
-export type Parsed = Term | Expr | Stmt | Blck
+export type ParseTree = Term | Expression | Statement | Block
 
 export class TreeParser {
 
-    *run (source : Generator<Lexed, void, void>) : Generator<Parsed, void, void> {
-        let stack : Parsed[] = [{ type : 'EXPR', body : [], parens : false }];
+    *run (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
+        let stack : ParseTree[] = [{ type : 'EXPRESSION', body : [], parens : false }];
         for (const lexed of source) {
             //logger.log('GOT', lexed);
             let term : Term = { type : 'TERM', body : lexed };
@@ -47,57 +47,57 @@ export class TreeParser {
             case 'OPERATOR':
             case 'SEPERATOR':
                 if (stack.length == 0) {
-                    stack.push({ type : 'EXPR', body : [], parens : false });
+                    stack.push({ type : 'EXPRESSION', body : [], parens : false });
                 }
-                (stack.at(-1) as Expr).body.push(term);
+                (stack.at(-1) as Expression).body.push(term);
                 break;
             case 'OPEN_PAREN':
-                stack.push({ type : 'EXPR', body : [], parens : true });
+                stack.push({ type : 'EXPRESSION', body : [], parens : true });
                 break;
             case 'CLOSE_PAREN':
-                let expr = stack.pop() as Expr;
+                let expr = stack.pop() as Expression;
                 if (stack.length == 0) {
                     throw new Error("THIS SHOULDNOT HAPPEN ))");
                 } else {
-                    let parent = stack.at(-1) as Expr;
+                    let parent = stack.at(-1) as Expression;
                     parent.body.push(expr);
                 }
                 break;
             case 'OPEN_CURLY':
                 stack.push(
-                    { type : 'BLCK', body : [] },
-                    { type : 'EXPR', body : [], parens : false }
+                    { type : 'BLOCK', body : [] },
+                    { type : 'EXPRESSION', body : [], parens : false }
                 );
                 break;
             case 'CLOSE_CURLY':
                 //logger.log('CLOSE CURLY STACK', stack);
-                let last = stack.pop() as Expr;
+                let last = stack.pop() as Expression;
 
                 if (stack.length == 0) throw new Error("THIS SHOULDNOT HAPPEN ;}");
 
-                let parent = stack.pop() as Expr;
+                let parent = stack.pop() as Expression;
                 if (last.body.length != 0) {
-                    parent.body.push({ type : 'STMT', body : last } as Stmt);
+                    parent.body.push({ type : 'STATEMENT', body : last } as Statement);
                 }
 
                 if (stack.length == 0) throw new Error("THIS SHOULDNOT HAPPEN }}");
 
-                let block = stack.at(-1) as Expr;
+                let block = stack.at(-1) as Expression;
                 block.body.push(parent);
                 //logger.log('END>>>> CLOSE CURLY STACK', stack);
                 break;
             case 'TERMINATOR':
                 //logger.log('TERM STACK', stack);
-                let stmt = { type : 'STMT', body : stack.pop() as Expr } as Stmt;
+                let stmt = { type : 'STATEMENT', body : stack.pop() as Expression } as Statement;
                 if (stack.length == 0) {
                     //logger.log('yield TERMINATOR', stmt);
                     yield stmt;
                 } else {
                     //logger.log('push TERMINATOR', stmt);
-                    let parent = stack.at(-1) as Expr;
+                    let parent = stack.at(-1) as Expression;
                     parent.body.push(stmt);
                 }
-                stack.push({ type : 'EXPR', body : [], parens : false });
+                stack.push({ type : 'EXPRESSION', body : [], parens : false });
                 break;
             case 'OPEN_SQUARE':
             case 'CLOSE_SQUARE':
@@ -110,7 +110,7 @@ export class TreeParser {
         //logger.log('END STACK', stack);
 
         while (stack.length > 0) {
-            yield stack.pop() as Parsed;
+            yield stack.pop() as ParseTree;
         }
     }
 }
