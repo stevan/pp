@@ -112,17 +112,23 @@ export class TreeParser {
             }
         }
 
-        while (stack.length > 0) {
-            console.log('... emptying stack');
-            let t = stack.pop() as ParseTree;
-            if (t.type == 'EXPRESSION') {
-                if (t.body.length > 0) {
-                    yield { type : 'STATEMENT', body : t } as Statement;
-                }
-            } else {
-                throw new Error(`We were expecting an Expression and got (${JSON.stringify(t)})`);
-            }
-        }
+        if (stack.length > 1)
+            throw new Error(`Unpopped stack [${JSON.stringify(stack)}]`);
+
+        if (stack[0]?.type == 'EXPRESSION' && (stack[0] as Expression).body.length > 0)
+            throw new Error(`Unfinsihed Expression on stack [${JSON.stringify(stack)}]`);
+
+        //while (stack.length > 0) {
+        //    console.log('... emptying stack');
+        //    let t = stack.pop() as ParseTree;
+        //    if (t.type == 'EXPRESSION') {
+        //        if (t.body.length > 0) {
+        //            yield { type : 'STATEMENT', body : t } as Statement;
+        //        }
+        //    } else {
+        //        throw new Error(`We were expecting an Expression and got (${JSON.stringify(t)})`);
+        //    }
+        //}
     }
 }
 

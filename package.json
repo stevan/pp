@@ -4,6 +4,6 @@
   },
   "scripts": {
     "build": "rm -rf ./js && tsc",
-    "test": "tsc && node --test js/tests/*.js"
+    "test": "tsc && node --test-reporter=tap --test js/tests/*.js"
   }
 }
