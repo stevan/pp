@@ -8,6 +8,8 @@ export type LexedType =
     | 'CLOSE_CURLY'
     | 'OPEN_SQUARE'
     | 'CLOSE_SQUARE'
+    | 'BLOCK_ENTER'
+    | 'BLOCK_LEAVE'
     | 'LITERAL'
     | 'OPERATOR'
     | 'KEYWORD'
@@ -28,23 +30,33 @@ export class Lexer {
             switch (token.type) {
             case 'BRACKET' :
                 switch (token.source) {
-                case '['  :
-                    yield { type : 'OPEN_SQUARE', token : token }
-                    break;
+                // expressions of many kinds ...
                 case '('  :
                     yield { type : 'OPEN_PAREN', token : token }
-                    break;
-                case '{'  :
-                    yield { type : 'OPEN_CURLY', token : token }
-                    break;
-                case ']'  :
-                    yield { type : 'CLOSE_SQUARE', token : token }
                     break;
                 case ')'  :
                     yield { type : 'CLOSE_PAREN', token : token }
                     break;
+                // blocks and hash stuff
+                // NOTE:
+                // we need to be able to detect the different types of
+                // usages of the {}'s ... I am not sure how but since
+                // we don't have hashes yet, I am just hacking this
+                // for now.
+                case '{'  :
+                    //yield { type : 'OPEN_CURLY', token : token }
+                    yield { type : 'BLOCK_ENTER', token : token }
+                    break;
                 case '}'  :
-                    yield { type : 'CLOSE_CURLY', token : token }
+                    //yield { type : 'CLOSE_CURLY', token : token }
+                    yield { type : 'BLOCK_LEAVE', token : token }
+                    break;
+                // array stuff
+                case '['  :
+                    yield { type : 'OPEN_SQUARE', token : token }
+                    break;
+                case ']'  :
+                    yield { type : 'CLOSE_SQUARE', token : token }
                     break;
                 default:
                     throw new Error(`Unknown open/close ${JSON.stringify(token)}`);
@@ -70,11 +82,12 @@ export class Lexer {
             case 'ATOM':
                 let src = token.source;
 
-                if (src.startsWith('$') ||
+                if (src.length > 1 &&
+                   (src.startsWith('$') ||
                     src.startsWith('@') ||
                     src.startsWith('%') ||
                     src.startsWith('&') ||
-                    src.startsWith('*')) {
+                    src.startsWith('*'))) {
                     yield { type : 'IDENTIFIER', token : token };
                 }
                 else {

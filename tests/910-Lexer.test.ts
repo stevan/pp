@@ -17,6 +17,17 @@ if ($foo == 0) {
     $foo = 10;
 }
 
+my $x = $foo * 10;
+say $x;
+
+foreach my $x (0 .. 10) {
+    if ($x > 5) {
+        say $x;
+    } else {
+        say "HEY!";
+    }
+}
+
 `
 ]);
 

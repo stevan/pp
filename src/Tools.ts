@@ -14,7 +14,7 @@ export const logger = new Console({
     stdout         : process.stdout,
     stderr         : process.stderr,
     inspectOptions : {
-        depth       : 10,
+        depth       : 20,
         breakLength : 180,
     },
 });

@@ -31,7 +31,7 @@ export type Expression       = { type : 'EXPRESSION', body : ParseTree[], parens
 export type Block            = { type : 'BLOCK',      body : ParseTree[] }
 export type ControlStructure = { type : 'CONTROL',    body : ParseTree[] }
 
-export type ParseTree = Term | Expression | Statement | Block
+export type ParseTree = Term | Expression | Statement | Block | ControlStructure
 
 export class TreeParser {
 
@@ -42,18 +42,13 @@ export class TreeParser {
             let term : Term = { type : 'TERM', body : lexed };
             switch (lexed.type) {
             case 'LITERAL':
+            case 'KEYWORD':
             case 'BAREWORD':
             case 'IDENTIFIER':
             case 'OPERATOR':
             case 'SEPERATOR':
                 if (stack.length == 0) {
                     stack.push({ type : 'EXPRESSION', body : [], parens : false });
-                }
-                (stack.at(-1) as Expression).body.push(term);
-                break;
-            case 'KEYWORD':
-                if (stack.length == 0) {
-                    stack.push({ type : 'CONTROL', body : [] });
                 }
                 (stack.at(-1) as Expression).body.push(term);
                 break;
@@ -69,14 +64,13 @@ export class TreeParser {
                     parent.body.push(expr);
                 }
                 break;
-            case 'OPEN_CURLY':
+            case 'BLOCK_ENTER':
                 stack.push(
                     { type : 'BLOCK', body : [] },
                     { type : 'EXPRESSION', body : [], parens : false }
                 );
                 break;
-            case 'CLOSE_CURLY':
-                //logger.log('CLOSE CURLY STACK', stack);
+            case 'BLOCK_LEAVE':
                 let last = stack.pop() as Expression;
 
                 if (stack.length == 0) throw new Error("THIS SHOULDNOT HAPPEN ;}");
@@ -90,21 +84,25 @@ export class TreeParser {
 
                 let block = stack.at(-1) as Expression;
                 block.body.push(parent);
-                //logger.log('END>>>> CLOSE CURLY STACK', stack);
-                break;
+                // FIXME:
+                // the fallthrough is on purpose, closing a block should end the
+                // statement. This will get annoying when we need to use curlies
+                // for hash indexing, but we can try to detect this in the
+                // lexer and differentiate between bracket usages. Otherwise we
+                // might need to rethink this.
+                //break;
             case 'TERMINATOR':
-                //logger.log('TERM STACK', stack);
                 let stmt = { type : 'STATEMENT', body : stack.pop() as Expression } as Statement;
                 if (stack.length == 0) {
-                    //logger.log('yield TERMINATOR', stmt);
                     yield stmt;
                 } else {
-                    //logger.log('push TERMINATOR', stmt);
                     let parent = stack.at(-1) as Expression;
                     parent.body.push(stmt);
                 }
                 stack.push({ type : 'EXPRESSION', body : [], parens : false });
                 break;
+            case 'OPEN_CURLY':
+            case 'CLOSE_CURLY':
             case 'OPEN_SQUARE':
             case 'CLOSE_SQUARE':
                 throw new Error('TODO');
@@ -113,10 +111,16 @@ export class TreeParser {
             }
         }
 
-        //logger.log('END STACK', stack);
-
         while (stack.length > 0) {
-            yield stack.pop() as ParseTree;
+            console.log('... emptying stack');
+            let t = stack.pop() as ParseTree;
+            if (t.type == 'EXPRESSION') {
+                if (t.body.length > 0) {
+                    yield { type : 'STATEMENT', body : t } as Statement;
+                }
+            } else {
+                throw new Error(`We were expecting an Expression and got (${JSON.stringify(t)})`);
+            }
         }
     }
 }
