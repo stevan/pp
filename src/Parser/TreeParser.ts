@@ -7,31 +7,22 @@ import { Lexed } from './Lexer'
 
 So the lexer should provide more clarity, ...
 
-- OPEN/CLOSE is too generic, we need ones for each brack type
 - OPERATOR is too generic as well, binary and unary ops are needed
 
 Some other things to think about ...
 
 - SEPERATOR will end an expression and needs to be handled correctly
 - OPERATOR should also create an expression.
-- CLOSE on a block might need to wrap it's body in a statement
-    - this will happen if the ; is left off the last expresion
-
-Some stuff to do ...
-
-- KEYWORD if it starts with one, it is probably a control structure
-    - this can mostly be handled like the others ...
 
 */
 
 
-export type Term             = { type : 'TERM',       body : Lexed   }
-export type Statement        = { type : 'STATEMENT',  body : Expression }
-export type Expression       = { type : 'EXPRESSION', body : ParseTree[], parens : boolean }
-export type Block            = { type : 'BLOCK',      body : ParseTree[] }
-export type ControlStructure = { type : 'CONTROL',    body : ParseTree[] }
+export type Term       = { type : 'TERM',       body : Lexed   }
+export type Statement  = { type : 'STATEMENT',  body : Expression }
+export type Expression = { type : 'EXPRESSION', body : ParseTree[], parens : boolean }
+export type Block      = { type : 'BLOCK',      body : ParseTree[] }
 
-export type ParseTree = Term | Expression | Statement | Block | ControlStructure
+export type ParseTree = Term | Expression | Statement | Block
 
 export class TreeParser {
 
@@ -46,11 +37,21 @@ export class TreeParser {
             case 'BAREWORD':
             case 'IDENTIFIER':
             case 'OPERATOR':
-            case 'SEPERATOR':
                 if (stack.length == 0) {
                     stack.push({ type : 'EXPRESSION', body : [], parens : false });
                 }
                 (stack.at(-1) as Expression).body.push(term);
+                break;
+            case 'SEPERATOR':
+                //logger.log("SEP STACK", stack);
+                let prev = stack.pop() as Expression;
+                if (stack.length == 0) {
+                    throw new Error("THIS SHOULDNOT HAPPEN ))");
+                } else {
+                    let parent = stack.at(-1) as Expression;
+                    parent.body.push(prev);
+                    stack.push({ type : 'EXPRESSION', body : [], parens : false });
+                }
                 break;
             case 'OPEN_PAREN':
                 stack.push({ type : 'EXPRESSION', body : [], parens : true });

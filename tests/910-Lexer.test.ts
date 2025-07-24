@@ -10,23 +10,7 @@ import { TreeParser } from '../src/Parser/TreeParser'
 
 let source = SourceStream([
 `
-my $foo = 0;
-if ($foo == 0) {
-    $foo = 20;
-} else {
-    $foo = 10;
-}
-
-my $x = $foo * 10;
-say $x;
-
-foreach my $x (0 .. 10) {
-    if ($x > 5) {
-        say $x;
-    } else {
-        say "HEY!";
-    }
-}
+my @foo = (1 + 3, 2, 3 * 10);
 
 `
 ]);
