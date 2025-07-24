@@ -2,14 +2,8 @@
 import { Token } from './Tokenizer'
 
 export type LexedType =
-    | 'OPEN_PAREN'
-    | 'CLOSE_PAREN'
-    | 'OPEN_CURLY'
-    | 'CLOSE_CURLY'
-    | 'OPEN_SQUARE'
-    | 'CLOSE_SQUARE'
-    | 'BLOCK_ENTER'
-    | 'BLOCK_LEAVE'
+    | 'OPEN'
+    | 'CLOSE'
     | 'LITERAL'
     | 'OPERATOR'
     | 'KEYWORD'
@@ -30,36 +24,18 @@ export class Lexer {
             switch (token.type) {
             case 'BRACKET' :
                 switch (token.source) {
-                // expressions of many kinds ...
                 case '('  :
-                    yield { type : 'OPEN_PAREN', token : token }
+                case '['  :
+                case '{'  :
+                    yield { type : 'OPEN', token : token }
                     break;
                 case ')'  :
-                    yield { type : 'CLOSE_PAREN', token : token }
-                    break;
-                // blocks and hash stuff
-                // NOTE:
-                // we need to be able to detect the different types of
-                // usages of the {}'s ... I am not sure how but since
-                // we don't have hashes yet, I am just hacking this
-                // for now.
-                case '{'  :
-                    //yield { type : 'OPEN_CURLY', token : token }
-                    yield { type : 'BLOCK_ENTER', token : token }
-                    break;
-                case '}'  :
-                    //yield { type : 'CLOSE_CURLY', token : token }
-                    yield { type : 'BLOCK_LEAVE', token : token }
-                    break;
-                // array stuff
-                case '['  :
-                    yield { type : 'OPEN_SQUARE', token : token }
-                    break;
                 case ']'  :
-                    yield { type : 'CLOSE_SQUARE', token : token }
+                case '}'  :
+                    yield { type : 'CLOSE', token : token }
                     break;
                 default:
-                    throw new Error(`Unknown open/close ${JSON.stringify(token)}`);
+                    throw new Error(`Unknown bracket ${JSON.stringify(token)}`);
                 }
                 break;
             case 'DIVIDER' :
@@ -71,18 +47,17 @@ export class Lexer {
                     yield { type : 'SEPERATOR', token : token }
                     break;
                 default:
-                    throw new Error(`Unknown atom ${JSON.stringify(token)}`);
+                    throw new Error(`Unknown divider ${JSON.stringify(token)}`);
                 }
                 break;
             case 'STRING':
             case 'NUMBER':
-            case 'BOOLEAN':
                 yield { type : 'LITERAL', token : token }
                 break;
             case 'ATOM':
                 let src = token.source;
 
-                if (src == 'undef') {
+                if (src == 'undef' || src == 'true' || src == 'false') {
                     yield { type : 'LITERAL', token : token };
                 }
                 else if (src.length > 1 &&
@@ -100,6 +75,7 @@ export class Lexer {
                     // ---------------------------------------------------------
                     // Logical
                     case '!'   :
+                    case 'not' :
                     case '&&'  : case '||' :
                     case 'and' : case 'or' :
                     // Equality

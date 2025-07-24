@@ -15,8 +15,9 @@ let runner = new ParserTestRunner();
 runner.run([
 new ParserTestCase('... simple literals',
     [`
-        my $x = 10;
-        say $x;
+        if (@foo[0] == 10) {
+            @foo[ 10 + 20 ] = $bar{"100"};
+        }
     `],
     [
     ],

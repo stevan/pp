@@ -3,7 +3,6 @@ import { logger } from '../Tools'
 
 const IS_NUMBER   = /^-?[0-9][0-9_]*(\.[0-9]+)?$/;
 const IS_STRING   = /^"[^"\n]*"|'[^'\n]*'$/;
-const IS_BOOLEAN  = /^true|false$/;
 const IS_BRACKET  = /^\[|\]|\{|\}|\(|\)$/;
 const IS_DIVIDER  = /^\,|\;$/;
 
@@ -12,7 +11,6 @@ const SPLITTER = /[\;\,\[\]\{\}\(\)]{1}|"([^"])*"|'([^'])*'|[^\;\s\,\[\]\{\}\(\)
 export type TokenType =
     | 'STRING'    // single and double quoted strings
     | 'NUMBER'    // basic int & float parsing only
-    | 'BOOLEAN'   // true false
     | 'BRACKET'   // [] {} ()
     | 'DIVIDER'   // , ;
     | 'ATOM'      // ... everything else
@@ -45,9 +43,6 @@ export class Tokenizer {
                     break;
                 case IS_NUMBER.test(m):
                     yield newToken('NUMBER', m);
-                    break;
-                case IS_BOOLEAN.test(m):
-                    yield newToken('BOOLEAN', m);
                     break;
                 case IS_BRACKET.test(m):
                     yield newToken('BRACKET', m);
