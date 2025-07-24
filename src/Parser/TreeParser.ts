@@ -25,10 +25,11 @@ Some stuff to do ...
 */
 
 
-export type Term       = { type : 'TERM',       body : Lexed   }
-export type Statement  = { type : 'STATEMENT',  body : Expression }
-export type Expression = { type : 'EXPRESSION', body : ParseTree[], parens : boolean }
-export type Block      = { type : 'BLOCK',      body : ParseTree[] }
+export type Term             = { type : 'TERM',       body : Lexed   }
+export type Statement        = { type : 'STATEMENT',  body : Expression }
+export type Expression       = { type : 'EXPRESSION', body : ParseTree[], parens : boolean }
+export type Block            = { type : 'BLOCK',      body : ParseTree[] }
+export type ControlStructure = { type : 'CONTROL',    body : ParseTree[] }
 
 export type ParseTree = Term | Expression | Statement | Block
 
@@ -41,13 +42,18 @@ export class TreeParser {
             let term : Term = { type : 'TERM', body : lexed };
             switch (lexed.type) {
             case 'LITERAL':
-            case 'KEYWORD':
             case 'BAREWORD':
             case 'IDENTIFIER':
             case 'OPERATOR':
             case 'SEPERATOR':
                 if (stack.length == 0) {
                     stack.push({ type : 'EXPRESSION', body : [], parens : false });
+                }
+                (stack.at(-1) as Expression).body.push(term);
+                break;
+            case 'KEYWORD':
+                if (stack.length == 0) {
+                    stack.push({ type : 'CONTROL', body : [] });
                 }
                 (stack.at(-1) as Expression).body.push(term);
                 break;
