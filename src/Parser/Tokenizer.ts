@@ -2,12 +2,12 @@
 import { logger } from '../Tools'
 
 const IS_NUMBER   = /^-?[0-9][0-9_]*(\.[0-9]+)?$/;
-const IS_STRING   = /^"[^"]*"|'[^']*'$/;
+const IS_STRING   = /^"[^"\n]*"|'[^'\n]*'$/;
 const IS_BOOLEAN  = /^true|false$/;
 const IS_BRACKET  = /^\[|\]|\{|\}|\(|\)$/;
 const IS_DIVIDER  = /^\,|\;$/;
 
-const SPLITTER = /[\;\,\.\[\]\{\}\(\)]{1}|"([^"])*"|'([^'])*'|[^\;\s\,\.\[\]\{\}\(\)]+/g;
+const SPLITTER = /[\;\,\[\]\{\}\(\)]{1}|"([^"])*"|'([^'])*'|[^\;\s\,\[\]\{\}\(\)]+/g;
 
 export type TokenType =
     | 'STRING'    // single and double quoted strings

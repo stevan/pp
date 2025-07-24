@@ -4,8 +4,8 @@ import  assert  from "node:assert"
 
 import { Console } from 'console';
 
-import { Tokenizer, Token }     from '../Parser/Tokenizer'
-import { Lexer, Lexed }     from '../Parser/Lexer'
+import { Tokenizer, Token }      from '../Parser/Tokenizer'
+import { Lexer, Lexed }          from '../Parser/Lexer'
 import { TreeParser, ParseTree } from '../Parser/TreeParser'
 
 // -----------------------------------------------------------------------------
@@ -29,15 +29,11 @@ export class ParserTestRunner {
 
     run (testCases : ParserTestCase[]) : void {
         for (const testCase of testCases) {
-            test(`test case (${testCase.name})`, async (t) => {
-                await t.test("... checking parse tree", (t) => {
-                    testCase.compareParseTree(
-                        this.treeParser.run(
-                            this.lexer.run(
-                                this.tokenizer.run(
-                                    this.createSourceStream(testCase.source)))));
-                });
-            });
+            testCase.compareParseTree(
+                this.treeParser.run(
+                    this.lexer.run(
+                        this.tokenizer.run(
+                            this.createSourceStream(testCase.source)))));
         }
     }
 }
@@ -45,13 +41,13 @@ export class ParserTestRunner {
 // -----------------------------------------------------------------------------
 
 export class ParserTestCase {
-    public config : any = { verbose : false };
     public output : any = defaultOutput;
 
     constructor(
         public name   : string,
         public source : string[],
         public tree   : ParseTree[],
+        public config : any = { verbose : false, develop : false }
     ) {}
 
     private diag (...msg : any[]) : void {
@@ -60,14 +56,26 @@ export class ParserTestCase {
     }
 
     compareParseTree(tree : Generator<ParseTree, void, void>) : void {
-        let i = 0;
-        for (const got of tree) {
-            //logger.log(got);
-            this.diag('GOT      : ', got);
-            this.diag('EXPECTED : ', this.tree[i]);
-            assert.deepStrictEqual(got, this.tree[i], `... tree(${i}) matches`);
-            this.diag(`... tree(${i}) matches`);
-            i++;
+        if (this.tree.length == 0 || this.config.develop) {
+            this.diag('Development Mode: here is what you got ...');
+            let i = 0;
+            for (const got of tree) {
+                this.diag(got);
+                i++;
+            }
+        }
+        else {
+            test(`compareParseTree for (${this.name})`, (t) => {
+                let i = 0;
+                for (const got of tree) {
+                    //logger.log(got);
+                    this.diag('GOT      : ', got);
+                    this.diag('EXPECTED : ', this.tree[i]);
+                    assert.deepStrictEqual(got, this.tree[i], `... tree(${i}) matches`);
+                    this.diag(`... tree(${i}) matches`);
+                    i++;
+                }
+            })
         }
     }
 }
@@ -85,7 +93,38 @@ export const defaultOutput = new Console({
 
 // -----------------------------------------------------------------------------
 
+export const Statement  = (body : any) : any => {
+    return { type: 'STATEMENT', body }
+}
 
+export const Expression = (body : any[], parens : boolean = false) : any => {
+    return { type: 'EXPRESSION', parens, body }
+}
 
+export const Term = (body : any) : any => {
+    return { type: 'TERM', body }
+}
+
+export const ExprStatement = (body : any[]) : any => {
+    return Statement(Expression(body));
+}
+
+export const TermLiteral = (seq_id : number, literalType : any, source : string) : any => {
+    return Term({ type: 'LITERAL', token: { type: literalType, source: source, seq_id: seq_id }})
+}
+
+export const TermOperator = (seq_id : number, source : string) : any => {
+    return Term({ type: 'OPERATOR', token: { type: 'ATOM', source: source, seq_id: seq_id }})
+}
+
+export const TermIdentifier = (seq_id : number, source : string) : any => {
+    return Term({ type : 'IDENTIFIER', token : { type : 'ATOM', source : source, seq_id : seq_id }})
+}
+
+export const TermKeyword = (seq_id : number, source : string) : any => {
+    return Term({ type : 'KEYWORD', token : { type : 'ATOM', source : source, seq_id : seq_id }})
+}
+
+// -----------------------------------------------------------------------------
 
 

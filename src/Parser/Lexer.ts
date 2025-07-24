@@ -82,12 +82,15 @@ export class Lexer {
             case 'ATOM':
                 let src = token.source;
 
-                if (src.length > 1 &&
-                   (src.startsWith('$') ||
-                    src.startsWith('@') ||
-                    src.startsWith('%') ||
-                    src.startsWith('&') ||
-                    src.startsWith('*'))) {
+                if (src == 'undef') {
+                    yield { type : 'LITERAL', token : token };
+                }
+                else if (src.length > 1 &&
+                        (src.startsWith('$') ||
+                         src.startsWith('@') ||
+                         src.startsWith('%') ||
+                         src.startsWith('&') ||
+                         src.startsWith('*'))) {
                     yield { type : 'IDENTIFIER', token : token };
                 }
                 else {
@@ -97,7 +100,6 @@ export class Lexer {
                     // ---------------------------------------------------------
                     // Logical
                     case '!'   :
-                    case 'not' :
                     case '&&'  : case '||' :
                     case 'and' : case 'or' :
                     // Equality
@@ -109,7 +111,7 @@ export class Lexer {
                     // Maths
                     case '+'  : case '-'  : case '*'  : case '/'  : case '%':
                     // String
-                    case '.'  : case 'x'  :
+                    case '.'  :
                     // Assignment
                     case '='  :
                         yield { type : 'OPERATOR', token : token }
