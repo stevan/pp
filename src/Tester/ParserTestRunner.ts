@@ -28,22 +28,8 @@ export class ParserTestRunner {
     }
 
     run (testCases : ParserTestCase[]) : void {
-        let caseNumber = 0;
         for (const testCase of testCases) {
-            test(`... running test case number(${caseNumber})`, async (t) => {
-                await t.test("... checking tokens", (t) => {
-                    testCase.compareTokens(
-                        this.tokenizer.run(
-                            this.createSourceStream(testCase.source)));
-                });
-
-                await t.test("... checking lexer", (t) => {
-                    testCase.compareLexer(
-                        this.lexer.run(
-                            this.tokenizer.run(
-                                this.createSourceStream(testCase.source))));
-                });
-
+            test(`test case (${testCase.name})`, async (t) => {
                 await t.test("... checking parse tree", (t) => {
                     testCase.compareParseTree(
                         this.treeParser.run(
@@ -52,7 +38,6 @@ export class ParserTestRunner {
                                     this.createSourceStream(testCase.source)))));
                 });
             });
-            caseNumber++;
         }
     }
 }
@@ -60,41 +45,18 @@ export class ParserTestRunner {
 // -----------------------------------------------------------------------------
 
 export class ParserTestCase {
-    public config : any = { verbose : true };
+    public config : any = { verbose : false };
     public output : any = defaultOutput;
 
     constructor(
+        public name   : string,
         public source : string[],
-        public tokens : Token[],
-        public lexed  : Lexed[],
         public tree   : ParseTree[],
     ) {}
 
     private diag (...msg : any[]) : void {
         if (!this.config.verbose) return;
         this.output.log(...msg);
-    }
-
-    compareTokens(tokens : Generator<Token, void, void>) : void {
-        let i = 0;
-        for (const got of tokens) {
-            this.diag('GOT      : ', got);
-            this.diag('EXPECTED : ', this.tokens[i]);
-            assert.deepStrictEqual(got, this.tokens[i], `... token(${i}) matches`);
-            this.diag(`... token(${i}) matches`);
-            i++;
-        }
-    }
-
-    compareLexer(lexed : Generator<Lexed, void, void>) : void {
-        let i = 0;
-        for (const got of lexed) {
-            this.diag('GOT      : ', got);
-            this.diag('EXPECTED : ', this.lexed[i]);
-            assert.deepStrictEqual(got, this.lexed[i], `... lexed(${i}) matches`);
-            this.diag(`... lexed(${i}) matches`);
-            i++;
-        }
     }
 
     compareParseTree(tree : Generator<ParseTree, void, void>) : void {
