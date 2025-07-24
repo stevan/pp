@@ -6,7 +6,11 @@ import { Console } from 'console';
 
 import { Tokenizer, Token }      from '../Parser/Tokenizer'
 import { Lexer, Lexed }          from '../Parser/Lexer'
-import { TreeParser, ParseTree } from '../Parser/TreeParser'
+import {
+    TreeParser,
+    ParseTree,
+    ExpressionKind,
+} from '../Parser/TreeParser'
 
 // -----------------------------------------------------------------------------
 
@@ -93,20 +97,16 @@ export const defaultOutput = new Console({
 
 // -----------------------------------------------------------------------------
 
-export const Statement  = (body : any) : any => {
-    return { type: 'STATEMENT', body }
-}
-
-export const Expression = (body : any[], parens : boolean = false) : any => {
-    return { type: 'EXPRESSION', parens, body }
-}
-
 export const Term = (body : any) : any => {
     return { type: 'TERM', body }
 }
 
 export const ExprStatement = (body : any[]) : any => {
-    return Statement(Expression(body));
+    return { type: 'EXPRESSION', body, kind : ExpressionKind.STATEMENT }
+}
+
+export const ExprList = (body : any[]) : any => {
+    return { type: 'EXPRESSION', body, kind : ExpressionKind.LIST }
 }
 
 export const TermLiteral = (seq_id : number, literalType : any, source : string) : any => {
