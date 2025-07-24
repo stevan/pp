@@ -2,29 +2,28 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger } from '../src/Tools'
+import { logger, SourceStream } from '../src/Tools'
 
-import { SourceStream, Tokenizer } from '../src/Parser/Tokenizer'
-import { Lexer                   } from '../src/Parser/Lexer'
+import { Tokenizer  } from '../src/Parser/Tokenizer'
+import { Lexer      } from '../src/Parser/Lexer'
+import { TreeParser } from '../src/Parser/TreeParser'
 
 let source = SourceStream([
 `
-
-sub gcd ($a, $b) {
-    if ($b == 0) {
-        return $a
-    } else {
-        return gcd($b, $a % $b)
-    }
+my $x = 1;
+my $y = 2;
+foreach my $x (@foo) {
+    say $x;
+    say $y;
 }
-
 `
 ]);
 
 
 let tokenizer = new Tokenizer();
 let lexer     = new Lexer();
+let parser    = new TreeParser();
 
-for (const got of lexer.run(tokenizer.run(source))) {
+for (const got of parser.run(lexer.run(tokenizer.run(source)))) {
     logger.log(got);
 }

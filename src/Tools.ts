@@ -14,11 +14,50 @@ export const logger = new Console({
     stdout         : process.stdout,
     stderr         : process.stderr,
     inspectOptions : {
-        depth       : 4,
+        depth       : 10,
         breakLength : 180,
     },
 });
 
+// -----------------------------------------------------------------------------
+// Parser Helpers
+// -----------------------------------------------------------------------------
+
+export function *SourceStream (source : string[]) : Generator<string, void, void> {
+    while (source.length) {
+        yield source.shift() as string;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Compiler Helpers
+// -----------------------------------------------------------------------------
+
+export function walkExecOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
+    while (op != undefined) {
+        f(op, depth);
+
+        if (op.name == 'goto' && depth > 0) return;
+
+        if (op instanceof LOGOP && op.other) {
+            walkExecOrder(f, op.other, depth + 1);
+        }
+
+        if (op.next == undefined) return;
+        op = op.next;
+    }
+}
+
+export function walkTraversalOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
+    f(op, depth);
+    if (op instanceof UNOP) {
+        for (let k : MaybeOP = op.first; k != undefined; k = k.sibling) {
+            walkTraversalOrder(f, k, depth + 1);
+        }
+    }
+}
+
+// can be uses for both exec and traversal order
 
 export function prettyPrinter (op : OP, depth : number) : void {
     const opType = (op : OP) : string => {
@@ -55,26 +94,3 @@ export function prettyPrinter (op : OP, depth : number) : void {
     );
 }
 
-export function walkExecOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
-    while (op != undefined) {
-        f(op, depth);
-
-        if (op.name == 'goto' && depth > 0) return;
-
-        if (op instanceof LOGOP && op.other) {
-            walkExecOrder(f, op.other, depth + 1);
-        }
-
-        if (op.next == undefined) return;
-        op = op.next;
-    }
-}
-
-export function walkTraversalOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
-    f(op, depth);
-    if (op instanceof UNOP) {
-        for (let k : MaybeOP = op.first; k != undefined; k = k.sibling) {
-            walkTraversalOrder(f, k, depth + 1);
-        }
-    }
-}

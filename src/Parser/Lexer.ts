@@ -2,8 +2,12 @@
 import { Token } from './Tokenizer'
 
 export type LexedType =
-    | 'OPEN'
-    | 'CLOSE'
+    | 'OPEN_PAREN'
+    | 'CLOSE_PAREN'
+    | 'OPEN_CURLY'
+    | 'CLOSE_CURLY'
+    | 'OPEN_SQUARE'
+    | 'CLOSE_SQUARE'
     | 'LITERAL'
     | 'OPERATOR'
     | 'KEYWORD'
@@ -25,14 +29,22 @@ export class Lexer {
             case 'BRACKET' :
                 switch (token.source) {
                 case '['  :
+                    yield { type : 'OPEN_SQUARE', token : token }
+                    break;
                 case '('  :
+                    yield { type : 'OPEN_PAREN', token : token }
+                    break;
                 case '{'  :
-                    yield { type : 'OPEN', token : token }
+                    yield { type : 'OPEN_CURLY', token : token }
                     break;
                 case ']'  :
+                    yield { type : 'CLOSE_SQUARE', token : token }
+                    break;
                 case ')'  :
+                    yield { type : 'CLOSE_PAREN', token : token }
+                    break;
                 case '}'  :
-                    yield { type : 'CLOSE', token : token }
+                    yield { type : 'CLOSE_CURLY', token : token }
                     break;
                 default:
                     throw new Error(`Unknown open/close ${JSON.stringify(token)}`);
@@ -72,6 +84,7 @@ export class Lexer {
                     // ---------------------------------------------------------
                     // Logical
                     case '!'   :
+                    case 'not' :
                     case '&&'  : case '||' :
                     case 'and' : case 'or' :
                     // Equality

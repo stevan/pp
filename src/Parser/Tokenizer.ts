@@ -63,15 +63,6 @@ export class Tokenizer {
     }
 }
 
-// ... helpers
-
-export function *SourceStream (source : string[]) : Generator<string, void, void> {
-    while (source.length) {
-        yield source.shift() as string;
-    }
-}
-
-
 
 
 
