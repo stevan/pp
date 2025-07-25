@@ -14,12 +14,37 @@ import {
 let runner = new ParserTestRunner();
 
 runner.run([
-new ParserTestCase('... simple list expressions',
+new ParserTestCase('... simple identifiers',
     [`
-
+        $x;
+        $hello;
+        $hello_world;
+        @a;
+        @array_of_stuff;
+        @arrayOfStuff;
+        @ArrayOfStuff;
+        %h;
+        %hashes;
+        %HASHOFTHINGS;
+        &foo;
+        &FooBar;
+        *Testing;
+        *foo;
     `],
     [
     ],
-    { verbose : true, develop : true }
+    { verbose : false, develop : true }
 ),
 ]);
+
+/*
+
+        my $x = 10;
+        if ($x == 0) {
+            say $x . " is zero";
+        } else {
+            say $x . " is not zero";
+        }
+        say "All done!";
+
+*/

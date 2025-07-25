@@ -54,7 +54,7 @@ export class ParserTestCase {
     ) {}
 
     private diag (...msg : any[]) : void {
-        if (!this.config.verbose) return;
+        if (!this.config.develop) return;
         this.output.log(...msg);
     }
 
