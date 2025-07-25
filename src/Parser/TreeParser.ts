@@ -9,6 +9,7 @@ export enum ExpressionKind {
     // implicit
     BARE      = 'BARE',
     STATEMENT = 'STATEMENT',
+    CONTROL   = 'CONTROL',
     // explicit
     PARENS    = 'PARENS',
     SQUARE    = 'SQUARE',
@@ -125,17 +126,65 @@ export class TreeParser {
                 this.spillOperatorStack(expr);
                 top = stack.at(-1) as Expression;
 
-                // check to see if this is a slice
+
                 switch (expr.kind) {
                 case ExpressionKind.CURLY:
                 case ExpressionKind.SQUARE:
                     let prev = top.stack.at(-1) as ParseTree;
+
+                    // check to see if this is a slice
                     if (prev.type == 'TERM' && prev.value.type == 'IDENTIFIER') {
                         top.stack.push(newSlice(top.stack.pop() as Term, expr));
                         // we've pushed the wrapped experssion on the stack
                         // so we can break out of this now
                         break;
                     }
+
+                    let is_control_structure = false;
+                    // Most control structures follow a pattern ...
+                    if (prev.type == 'TERM' && prev.value.type == 'KEYWORD') {
+                        // ------------------------
+                        // KEYWORD {BLOCK}
+                        // ------------------------
+                        // - else {}
+                        // ------------------------
+                        is_control_structure = true;
+                    }
+                    else if (prev.type == 'EXPRESSION' && prev.kind == ExpressionKind.PARENS) {
+                        let prev_prev = top.stack.at(-2) as ParseTree;
+                        if (prev_prev.type == 'TERM' && prev_prev.value.type == 'KEYWORD') {
+                            // ------------------------
+                            // KEYWORD (PARENS) {BLOCK}
+                            // ------------------------
+                            // - if    () {}
+                            // - elsif () {}
+                            // - while () {}
+                            // - until () {}
+                            // - for   () {}
+                            // ------------------------
+                            is_control_structure = true;
+                        }
+                        else if (prev_prev.type == 'TERM' && prev_prev.value.type == 'IDENTIFIER') {
+                            // TODO: add the check for the keyword ...
+                            // -----------------------------------
+                            // KEYWORD IDENTIFIER (PARENS) {BLOCK}
+                            // -----------------------------------
+                            // - foreach my $x () {}
+                            // ------------------------
+                            is_control_structure = true;
+                        }
+                    }
+
+                    // if we found a control structure ...
+                    if (is_control_structure) {
+                        top.stack.push(expr);
+                        top.stack.push(this.spillIntoExpression(top, ExpressionKind.CONTROL));
+                        if (stack.length == 1) {
+                            yield top.stack.pop() as ParseTree;
+                        }
+                        break;
+                    }
+
                     // here, we will fall through ...
                 case ExpressionKind.PARENS: // and we ignore these for now
                 default:                    // and this is where we fall

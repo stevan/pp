@@ -14,37 +14,30 @@ import {
 let runner = new ParserTestRunner();
 
 runner.run([
-new ParserTestCase('... simple identifiers',
+new ParserTestCase('... qualified identifiers',
     [`
-        $x;
-        $hello;
-        $hello_world;
-        @a;
-        @array_of_stuff;
-        @arrayOfStuff;
-        @ArrayOfStuff;
-        %h;
-        %hashes;
-        %HASHOFTHINGS;
-        &foo;
-        &FooBar;
-        *Testing;
-        *foo;
+        foreach my $x (@foo) {
+            say $x;
+        }
+
+
     `],
     [
     ],
-    { verbose : false, develop : true }
+    { verbose : true, develop : true }
 ),
 ]);
 
 /*
 
-        my $x = 10;
-        if ($x == 0) {
-            say $x . " is zero";
-        } else {
-            say $x . " is not zero";
-        }
-        say "All done!";
+        elsif (0 == 0) {}
+        else {}
+
+        while (0 == 0) {}
+        until (0 == 0) {}
+
+        for (my $i = 0; i < 10; $i++) {}
+
+        foreach my $x (@foo) {}
 
 */
