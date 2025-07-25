@@ -17,12 +17,10 @@ import {
 export class ParserTestRunner {
     public tokenizer  : Tokenizer;
     public lexer      : Lexer;
-    public treeParser : TreeParser;
 
     constructor () {
-        this.tokenizer  = new Tokenizer();
-        this.lexer      = new Lexer();
-        this.treeParser = new TreeParser();
+        this.tokenizer = new Tokenizer();
+        this.lexer     = new Lexer();
     }
 
     private *createSourceStream (source : string[]) : Generator<string, void, void> {
@@ -33,8 +31,9 @@ export class ParserTestRunner {
 
     run (testCases : ParserTestCase[]) : void {
         for (const testCase of testCases) {
+            let treeParser = new TreeParser(testCase.config);
             testCase.compareParseTree(
-                this.treeParser.run(
+                treeParser.run(
                     this.lexer.run(
                         this.tokenizer.run(
                             this.createSourceStream(testCase.source)))));
@@ -64,7 +63,7 @@ export class ParserTestCase {
             this.diag('Development Mode: here is what you got ...');
             let i = 0;
             for (const got of tree) {
-                this.diag(got);
+                this.diag(i.toString().padStart(3, '0'), '->', got);
                 i++;
             }
         }
@@ -96,33 +95,27 @@ export const defaultOutput = new Console({
 });
 
 // -----------------------------------------------------------------------------
+// Some util functions for testing
+// -----------------------------------------------------------------------------
 
-export const Term = (body : any) : any => {
-    return { type: 'TERM', body }
+export const MockLiteral = (seq_id : number, literalType : any, source : string) : Lexed => {
+    return { type: 'LITERAL', token: { type: literalType, source: source, seq_id: seq_id }} as Lexed
 }
 
-export const ExprStatement = (body : any[]) : any => {
-    return { type: 'EXPRESSION', body, kind : ExpressionKind.STATEMENT }
+export const MockBinOp = (seq_id : number, source : string) : Lexed => {
+    return { type: 'BINOP', token: { type: 'ATOM', source: source, seq_id: seq_id }} as Lexed
 }
 
-export const ExprList = (body : any[]) : any => {
-    return { type: 'EXPRESSION', body, kind : ExpressionKind.LIST }
+export const MockUnOp = (seq_id : number, source : string) : Lexed => {
+    return { type: 'UNOP', token: { type: 'ATOM', source: source, seq_id: seq_id }} as Lexed
 }
 
-export const TermLiteral = (seq_id : number, literalType : any, source : string) : any => {
-    return Term({ type: 'LITERAL', token: { type: literalType, source: source, seq_id: seq_id }})
+export const MockIdentifier = (seq_id : number, source : string) : Lexed => {
+    return { type : 'IDENTIFIER', token : { type : 'ATOM', source : source, seq_id : seq_id }} as Lexed
 }
 
-export const TermOperator = (seq_id : number, source : string) : any => {
-    return Term({ type: 'OPERATOR', token: { type: 'ATOM', source: source, seq_id: seq_id }})
-}
-
-export const TermIdentifier = (seq_id : number, source : string) : any => {
-    return Term({ type : 'IDENTIFIER', token : { type : 'ATOM', source : source, seq_id : seq_id }})
-}
-
-export const TermKeyword = (seq_id : number, source : string) : any => {
-    return Term({ type : 'KEYWORD', token : { type : 'ATOM', source : source, seq_id : seq_id }})
+export const MockKeyword = (seq_id : number, source : string) : Lexed => {
+    return { type : 'KEYWORD', token : { type : 'ATOM', source : source, seq_id : seq_id }} as Lexed
 }
 
 // -----------------------------------------------------------------------------

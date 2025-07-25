@@ -4,6 +4,8 @@
   },
   "scripts": {
     "build": "rm -rf ./js && tsc",
-    "test": "tsc && node --test js/tests/*.js"
+    "test-all": "tsc && node --test js/tests/*.js",
+    "test-parser": "tsc && node --test js/tests/*-Parser.test.js",
+    "parser-devel": "tsc && node --test js/tests/999-Parser.playground.js"
   }
 }

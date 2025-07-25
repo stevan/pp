@@ -5,7 +5,8 @@ export type LexedType =
     | 'OPEN'
     | 'CLOSE'
     | 'LITERAL'
-    | 'OPERATOR'
+    | 'BINOP'
+    | 'UNOP'
     | 'KEYWORD'
     | 'BAREWORD'
     | 'IDENTIFIER'
@@ -38,18 +39,6 @@ export class Lexer {
                     throw new Error(`Unknown bracket ${JSON.stringify(token)}`);
                 }
                 break;
-            case 'DIVIDER' :
-                switch (token.source) {
-                case ';'  :
-                    yield { type : 'TERMINATOR', token : token }
-                    break;
-                case ','  :
-                    yield { type : 'SEPERATOR', token : token }
-                    break;
-                default:
-                    throw new Error(`Unknown divider ${JSON.stringify(token)}`);
-                }
-                break;
             case 'STRING':
             case 'NUMBER':
                 yield { type : 'LITERAL', token : token }
@@ -57,25 +46,40 @@ export class Lexer {
             case 'ATOM':
                 let src = token.source;
 
-                if (src == 'undef' || src == 'true' || src == 'false') {
-                    yield { type : 'LITERAL', token : token };
-                }
-                else if (src.length > 1 &&
-                        (src.startsWith('$') ||
-                         src.startsWith('@') ||
-                         src.startsWith('%') ||
-                         src.startsWith('&') ||
-                         src.startsWith('*'))) {
+                if (src.length > 1 &&
+                    (src.startsWith('$') ||
+                     src.startsWith('@') ||
+                     src.startsWith('%') ||
+                     src.startsWith('&') ||
+                     src.startsWith('*'))) {
                     yield { type : 'IDENTIFIER', token : token };
                 }
                 else {
                     switch (src) {
+                    // ---------------------------------------------------------
+                    // Stuff
+                    // ---------------------------------------------------------
+                    // literals ...
+                    case 'undef':
+                    case 'true':
+                    case 'false':
+                        yield { type : 'LITERAL', token : token };
+                        break;
+                    // Dividers
+                    case ';' :
+                        yield { type : 'TERMINATOR', token : token }
+                        break;
+                    case ','  :
+                        yield { type : 'SEPERATOR', token : token }
+                        break;
                     // ---------------------------------------------------------
                     // Operators
                     // ---------------------------------------------------------
                     // Logical
                     case '!'   :
                     case 'not' :
+                        yield { type : 'UNOP', token : token }
+                        break;
                     case '&&'  : case '||' :
                     case 'and' : case 'or' :
                     // Equality
@@ -90,7 +94,7 @@ export class Lexer {
                     case '.'  :
                     // Assignment
                     case '='  :
-                        yield { type : 'OPERATOR', token : token }
+                        yield { type : 'BINOP', token : token }
                         break;
                     // ---------------------------------------------------------
                     // Keywords
