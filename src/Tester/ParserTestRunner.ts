@@ -10,6 +10,7 @@ import {
     TreeParser,
     ParseTree,
     ExpressionKind,
+    newExpression,
 } from '../Parser/TreeParser'
 
 // -----------------------------------------------------------------------------
@@ -98,24 +99,32 @@ export const defaultOutput = new Console({
 // Some util functions for testing
 // -----------------------------------------------------------------------------
 
-export const MockLiteral = (seq_id : number, literalType : any, source : string) : Lexed => {
-    return { type: 'LITERAL', token: { type: literalType, source: source, seq_id: seq_id }} as Lexed
+export const MockStatement = (body : ParseTree[]) : ParseTree => {
+    return newExpression(ExpressionKind.STATEMENT, MockTerminator(), body);
 }
 
-export const MockBinOp = (seq_id : number, source : string) : Lexed => {
-    return { type: 'BINOP', token: { type: 'ATOM', source: source, seq_id: seq_id }} as Lexed
+export const MockTerminator = () : Lexed => {
+    return { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' }} as Lexed
 }
 
-export const MockUnOp = (seq_id : number, source : string) : Lexed => {
-    return { type: 'UNOP', token: { type: 'ATOM', source: source, seq_id: seq_id }} as Lexed
+export const MockLiteral = (literalType : any, source : string) : Lexed => {
+    return { type: 'LITERAL', token: { type: literalType, source: source }} as Lexed
 }
 
-export const MockIdentifier = (seq_id : number, source : string) : Lexed => {
-    return { type : 'IDENTIFIER', token : { type : 'ATOM', source : source, seq_id : seq_id }} as Lexed
+export const MockBinOp = (source : string) : Lexed => {
+    return { type: 'BINOP', token: { type: 'ATOM', source: source }} as Lexed
 }
 
-export const MockKeyword = (seq_id : number, source : string) : Lexed => {
-    return { type : 'KEYWORD', token : { type : 'ATOM', source : source, seq_id : seq_id }} as Lexed
+export const MockUnOp = (source : string) : Lexed => {
+    return { type: 'UNOP', token: { type: 'ATOM', source: source }} as Lexed
+}
+
+export const MockIdentifier = (source : string) : Lexed => {
+    return { type : 'IDENTIFIER', token : { type : 'ATOM', source : source }} as Lexed
+}
+
+export const MockKeyword = (source : string) : Lexed => {
+    return { type : 'KEYWORD', token : { type : 'ATOM', source : source }} as Lexed
 }
 
 // -----------------------------------------------------------------------------

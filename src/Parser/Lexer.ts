@@ -8,6 +8,7 @@ export type LexedType =
     | 'BINOP'
     | 'UNOP'
     | 'KEYWORD'
+    | 'CONTROL'
     | 'BAREWORD'
     | 'IDENTIFIER'
     | 'SEPERATOR'
@@ -97,15 +98,25 @@ export class Lexer {
                         yield { type : 'BINOP', token : token }
                         break;
                     // ---------------------------------------------------------
+                    // Control structures
+                    // ---------------------------------------------------------
+                    case 'if'      :
+                    //case 'elsif'   :
+                    case 'else'    :
+                    case 'unless'  :
+                    case 'while'   :
+                    case 'until'   :
+                    //case 'for'     :
+                    //case 'foreach' :
+                        yield { type : 'CONTROL', token : token }
+                        break;
+                    // ---------------------------------------------------------
                     // Keywords
                     // ---------------------------------------------------------
                     // declarations
                     case 'my'     :
                     case 'our'    :
                     case 'sub'    :
-                    // control structures
-                    case 'if'     :
-                    case 'else'   :
                     // misc ...
                     case 'return' :
                         yield { type : 'KEYWORD', token : token }

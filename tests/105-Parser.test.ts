@@ -26,8 +26,9 @@ new ParserTestCase('... qualified identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$Hello::World', seq_id: 1 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$Hello::World' } } },
   ],
   opers: []
 },
@@ -35,8 +36,9 @@ new ParserTestCase('... qualified identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'Hello::World', seq_id: 3 } } }
+    { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'Hello::World' } } },
   ],
   opers: []
 },
@@ -44,15 +46,17 @@ new ParserTestCase('... qualified identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
     {
       type: 'SLICE',
-      value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@Hello::World', seq_id: 5 } } },
+      value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@Hello::World' } } },
       slice: {
         type: 'EXPRESSION',
         kind: ExpressionKind.SQUARE,
+        lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '[' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ']' } } ],
         stack: [
-          { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '0', seq_id: 7 } } }
+          { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '0' } } },
         ],
         opers: []
       }
@@ -64,8 +68,9 @@ new ParserTestCase('... qualified identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*Hello::World', seq_id: 10 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*Hello::World' } } },
   ],
   opers: []
 }

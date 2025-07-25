@@ -35,8 +35,9 @@ new ParserTestCase('... basic identifiers',
  {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$x', seq_id: 1 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$x' } } },
   ],
   opers: []
 },
@@ -44,8 +45,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$hello', seq_id: 3 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$hello' } } },
   ],
   opers: []
 },
@@ -53,8 +55,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$hello_world', seq_id: 5 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$hello_world' } } },
   ],
   opers: []
 },
@@ -62,8 +65,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@a', seq_id: 7 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@a' } } },
   ],
   opers: []
 },
@@ -71,8 +75,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array_of_stuff', seq_id: 9 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array_of_stuff' } } },
   ],
   opers: []
 },
@@ -80,8 +85,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@arrayOfStuff', seq_id: 11 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@arrayOfStuff' } } },
   ],
   opers: []
 },
@@ -89,8 +95,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@ArrayOfStuff', seq_id: 13 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@ArrayOfStuff' } } },
   ],
   opers: []
 },
@@ -98,8 +105,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%h', seq_id: 15 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%h' } } },
   ],
   opers: []
 },
@@ -107,8 +115,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hashes', seq_id: 17 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hashes' } } },
   ],
   opers: []
 },
@@ -116,8 +125,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%HASHOFTHINGS', seq_id: 19 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%HASHOFTHINGS' } } },
   ],
   opers: []
 },
@@ -125,8 +135,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '&foo', seq_id: 21 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '&foo' } } },
   ],
   opers: []
 },
@@ -134,8 +145,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '&FooBar', seq_id: 23 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '&FooBar' } } },
   ],
   opers: []
 },
@@ -143,8 +155,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*Testing', seq_id: 25 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*Testing' } } },
   ],
   opers: []
 },
@@ -152,8 +165,9 @@ new ParserTestCase('... basic identifiers',
 {
   type: 'EXPRESSION',
   kind: ExpressionKind.STATEMENT,
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   stack: [
-    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*foo', seq_id: 27 } } }
+    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*foo' } } },
   ],
   opers: []
 }

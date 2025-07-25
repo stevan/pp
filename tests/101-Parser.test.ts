@@ -7,6 +7,10 @@ import {
 import {
     ParserTestRunner,
     ParserTestCase,
+
+    MockLiteral,
+    MockTerminator,
+    MockStatement,
 } from '../src/Tester/ParserTestRunner'
 
 // -----------------------------------------------------------------------------
@@ -27,14 +31,15 @@ new ParserTestCase('... binary expressions with parens',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '+', seq_id: 2 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '+' } },
       operands: [
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1', seq_id: 1 } } },
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2', seq_id: 3 } } }
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
       ]
     }
   ],
@@ -43,19 +48,20 @@ new ParserTestCase('... binary expressions with parens',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '+', seq_id: 6 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '+' } },
       operands: [
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1', seq_id: 5 } } },
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
         {
           type: 'OPERATION',
-          operator: { type: 'BINOP', token: { type: 'ATOM', source: '-', seq_id: 8 } },
+          operator: { type: 'BINOP', token: { type: 'ATOM', source: '-' } },
           operands: [
-            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2', seq_id: 7 } } },
-            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3', seq_id: 9 } } }
+            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } },
+            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
           ]
         }
       ]
@@ -66,23 +72,25 @@ new ParserTestCase('... binary expressions with parens',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '+', seq_id: 12 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '+' } },
       operands: [
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1', seq_id: 11 } } },
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
         {
           type: 'EXPRESSION',
+          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '(' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ')' } } ],
           kind: ExpressionKind.PARENS,
           stack: [
             {
               type: 'OPERATION',
-              operator: { type: 'BINOP', token: { type: 'ATOM', source: '-', seq_id: 15 } },
+              operator: { type: 'BINOP', token: { type: 'ATOM', source: '-' } },
               operands: [
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2', seq_id: 14 } } },
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3', seq_id: 16 } } }
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } },
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
               ]
             }
           ],
@@ -96,28 +104,30 @@ new ParserTestCase('... binary expressions with parens',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '-', seq_id: 24 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '-' } },
       operands: [
         {
           type: 'EXPRESSION',
+          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '(' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ')' } } ],
           kind: ExpressionKind.PARENS,
           stack: [
             {
               type: 'OPERATION',
-              operator: { type: 'BINOP', token: { type: 'ATOM', source: '+', seq_id: 21 } },
+              operator: { type: 'BINOP', token: { type: 'ATOM', source: '+' } },
               operands: [
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1', seq_id: 20 } } },
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2', seq_id: 22 } } }
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
               ]
             }
           ],
           opers: []
         },
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3', seq_id: 25 } } }
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
       ]
     }
   ],
@@ -126,22 +136,24 @@ new ParserTestCase('... binary expressions with parens',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '-', seq_id: 32 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '-' } },
       operands: [
         {
           type: 'EXPRESSION',
+          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '(' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ')' } } ],
           kind: ExpressionKind.PARENS,
           stack: [
             {
               type: 'OPERATION',
-              operator: { type: 'BINOP', token: { type: 'ATOM', source: '+', seq_id: 29 } },
+              operator: { type: 'BINOP', token: { type: 'ATOM', source: '+' } },
               operands: [
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1', seq_id: 28 } } },
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2', seq_id: 30 } } }
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
               ]
             }
           ],
@@ -149,14 +161,15 @@ new ParserTestCase('... binary expressions with parens',
         },
         {
           type: 'EXPRESSION',
+          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '(' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ')' } } ],
           kind: ExpressionKind.PARENS,
           stack: [
             {
               type: 'OPERATION',
-              operator: { type: 'BINOP', token: { type: 'ATOM', source: '+', seq_id: 35 } },
+              operator: { type: 'BINOP', token: { type: 'ATOM', source: '+' } },
               operands: [
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3', seq_id: 34 } } },
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '4', seq_id: 36 } } }
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } },
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '4' } } }
               ]
             }
           ],
@@ -170,26 +183,29 @@ new ParserTestCase('... binary expressions with parens',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'EXPRESSION',
+      lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '(' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ')' } } ],
       kind: ExpressionKind.PARENS,
       stack: [
         {
           type: 'OPERATION',
-          operator: { type: 'BINOP', token: { type: 'ATOM', source: '-', seq_id: 45 } },
+          operator: { type: 'BINOP', token: { type: 'ATOM', source: '-' } },
           operands: [
             {
               type: 'EXPRESSION',
+              lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '(' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ')' } } ],
               kind: ExpressionKind.PARENS,
               stack: [
                 {
                   type: 'OPERATION',
-                  operator: { type: 'BINOP', token: { type: 'ATOM', source: '+', seq_id: 42 } },
+                  operator: { type: 'BINOP', token: { type: 'ATOM', source: '+' } },
                   operands: [
-                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1', seq_id: 41 } } },
-                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2', seq_id: 43 } } }
+                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
+                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
                   ]
                 }
               ],
@@ -197,28 +213,30 @@ new ParserTestCase('... binary expressions with parens',
             },
             {
               type: 'EXPRESSION',
+              lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '(' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ')' } } ],
               kind: ExpressionKind.PARENS,
               stack: [
                 {
                   type: 'OPERATION',
-                  operator: { type: 'BINOP', token: { type: 'ATOM', source: '/', seq_id: 52 } },
+                  operator: { type: 'BINOP', token: { type: 'ATOM', source: '/' } },
                   operands: [
                     {
                       type: 'EXPRESSION',
+                      lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '(' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ')' } } ],
                       kind: ExpressionKind.PARENS,
                       stack: [
                         {
                           type: 'OPERATION',
-                          operator: { type: 'BINOP', token: { type: 'ATOM', source: '*', seq_id: 49 } },
+                          operator: { type: 'BINOP', token: { type: 'ATOM', source: '*' } },
                           operands: [
-                            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3', seq_id: 48 } } },
-                            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '4', seq_id: 50 } } }
+                            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } },
+                            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '4' } } }
                           ]
                         }
                       ],
                       opers: []
                     },
-                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '5', seq_id: 53 } } }
+                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '5' } } }
                   ]
                 }
               ],

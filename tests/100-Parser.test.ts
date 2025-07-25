@@ -4,6 +4,8 @@ import {
     ParserTestCase,
 
     MockLiteral,
+    MockTerminator,
+    MockStatement,
 } from '../src/Tester/ParserTestRunner'
 
 import {
@@ -24,10 +26,10 @@ new ParserTestCase('... number literals',
         55.003;
     `],
     [
-       newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(1,  'NUMBER', '123'))]),
-       newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(3,  'NUMBER', '1234567890198'))]),
-       newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(5,  'NUMBER', '0.001'))]),
-       newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(7,  'NUMBER', '55.003'))]),
+       MockStatement([ newTerm(MockLiteral('NUMBER', '123'))           ]),
+       MockStatement([ newTerm(MockLiteral('NUMBER', '1234567890198')) ]),
+       MockStatement([ newTerm(MockLiteral('NUMBER', '0.001'))         ]),
+       MockStatement([ newTerm(MockLiteral('NUMBER', '55.003'))        ]),
     ],
     { verbose : false, develop : false }
 ),
@@ -37,8 +39,8 @@ new ParserTestCase('... string literals',
         "hello world";
     `],
     [
-        newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(1,  'STRING', 'hello'))]),
-        newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(3, 'STRING', 'hello world'))]),
+        MockStatement([ newTerm(MockLiteral('STRING', 'hello'))       ]),
+        MockStatement([ newTerm(MockLiteral('STRING', 'hello world')) ]),
     ],
     { verbose : false, develop : false }
 ),
@@ -49,9 +51,9 @@ new ParserTestCase('... constant literals',
         undef;
     `],
     [
-        newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(1, 'ATOM', 'true'))]),
-        newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(3, 'ATOM', 'false'))]),
-        newExpression(ExpressionKind.STATEMENT, [ newTerm(MockLiteral(5, 'ATOM', 'undef'))]),
+        MockStatement([ newTerm(MockLiteral('ATOM', 'true'))  ]),
+        MockStatement([ newTerm(MockLiteral('ATOM', 'false')) ]),
+        MockStatement([ newTerm(MockLiteral('ATOM', 'undef')) ]),
     ],
     { verbose : false, develop : false }
 ),

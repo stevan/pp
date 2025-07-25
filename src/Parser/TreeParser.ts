@@ -39,18 +39,20 @@ export type Operation  = {
 
 export type Expression = {
     type  : 'EXPRESSION',
+    lexed : Lexed[],
     kind  : ExpressionKind,
     stack : ParseTree[],
     opers : Operation[],
-}
+  }
 
 export type ParseTree = Term | Expression | Operation
 
 // -----------------------------------------------------------------------------
 
-export function newExpression (kind: ExpressionKind, body: ParseTree[] = []) : Expression {
+export function newExpression (kind: ExpressionKind, orig : Lexed, body: ParseTree[] = []) : Expression {
     return {
         type  : 'EXPRESSION',
+        lexed : [ orig ],
         kind  : kind,
         stack : body,
         opers : [],
@@ -95,8 +97,8 @@ export class TreeParser {
         }
     }
 
-    spillIntoExpression (from: Expression, to: ExpressionKind) : Expression {
-        let destination = newExpression(to);
+    spillIntoExpression (from: Expression, to: ExpressionKind, orig: Lexed) : Expression {
+        let destination = newExpression(to, orig);
         destination.opers.push(...from.opers.splice(0));
         while (from.stack.length > 0) {
             if ((from.stack.at(-1) as Expression).kind == ExpressionKind.STATEMENT) break;
@@ -107,7 +109,16 @@ export class TreeParser {
     }
 
     *run (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
-        let stack : Expression[] = [ newExpression(ExpressionKind.BARE) ];
+        let stack : Expression[] = [
+            {
+                type  : 'EXPRESSION',
+                lexed : [],
+                kind  : ExpressionKind.BARE,
+                stack : [],
+                opers : [],
+            } as Expression
+        ];
+
         for (const lexed of source) {
             if (this.config.verbose) {
                 logger.log('== BEFORE ===========================================');
@@ -117,82 +128,75 @@ export class TreeParser {
             }
 
             let top = stack.at(-1) as Expression;
+
+            if (top.kind == ExpressionKind.CONTROL  &&
+                top.lexed[0]?.token.source == 'if'  &&
+                (top.stack[0]?.type == 'EXPRESSION' && top.stack[0]?.kind == ExpressionKind.PARENS) &&
+                (top.stack[1]?.type == 'EXPRESSION' && top.stack[1]?.kind == ExpressionKind.CURLY ) &&
+                lexed.token.source != 'else'
+            ) {
+                let ifExpr = stack.pop() as Expression;
+                top = stack.at(-1) as Expression;
+                if (stack.length == 1) {
+                    yield ifExpr;
+                } else {
+                    top.stack.push(ifExpr);
+                }
+            }
+
             switch (lexed.type) {
+            case 'CONTROL':
+                stack.push(newExpression(ExpressionKind.CONTROL, lexed));
+                break;
             case 'OPEN':
-                stack.push(newExpression(BracketToKind(lexed.token.source)));
+                stack.push(newExpression(BracketToKind(lexed.token.source), lexed));
                 break;
             case 'CLOSE':
                 let expr = stack.pop() as Expression;
                 this.spillOperatorStack(expr);
-                top = stack.at(-1) as Expression;
+                expr.lexed.push(lexed);
 
+                // restore the top variable ...
+                top = stack.at(-1) as Expression;
 
                 switch (expr.kind) {
                 case ExpressionKind.CURLY:
-                case ExpressionKind.SQUARE:
-                    let prev = top.stack.at(-1) as ParseTree;
+                    if (top.kind == ExpressionKind.CONTROL) {
+                        top.stack.push(expr);
 
+                        let src = (top.lexed[0] as Lexed).token.source;
+                        if (src != 'if') {
+                            if (src == 'else') {
+                                let elseExpr = stack.pop()  as Expression;
+                                let ifExpr   = stack.at(-1) as Expression;
+                                if (ifExpr.kind == ExpressionKind.CONTROL) {
+                                    ifExpr.stack.push(elseExpr);
+                                } else {
+                                    throw new Error('An else expressions must be preceeded by if');
+                                }
+                            }
+
+                            yield stack.pop() as Expression;
+                        }
+                        break;
+                    }
+                case ExpressionKind.SQUARE:
                     // check to see if this is a slice
+                    let prev = top.stack.at(-1) as ParseTree;
                     if (prev.type == 'TERM' && prev.value.type == 'IDENTIFIER') {
                         top.stack.push(newSlice(top.stack.pop() as Term, expr));
                         // we've pushed the wrapped experssion on the stack
                         // so we can break out of this now
                         break;
                     }
-
-                    let is_control_structure = false;
-                    // Most control structures follow a pattern ...
-                    if (prev.type == 'TERM' && prev.value.type == 'KEYWORD') {
-                        // ------------------------
-                        // KEYWORD {BLOCK}
-                        // ------------------------
-                        // - else {}
-                        // ------------------------
-                        is_control_structure = true;
-                    }
-                    else if (prev.type == 'EXPRESSION' && prev.kind == ExpressionKind.PARENS) {
-                        let prev_prev = top.stack.at(-2) as ParseTree;
-                        if (prev_prev.type == 'TERM' && prev_prev.value.type == 'KEYWORD') {
-                            // ------------------------
-                            // KEYWORD (PARENS) {BLOCK}
-                            // ------------------------
-                            // - if    () {}
-                            // - elsif () {}
-                            // - while () {}
-                            // - until () {}
-                            // - for   () {}
-                            // ------------------------
-                            is_control_structure = true;
-                        }
-                        else if (prev_prev.type == 'TERM' && prev_prev.value.type == 'IDENTIFIER') {
-                            // TODO: add the check for the keyword ...
-                            // -----------------------------------
-                            // KEYWORD IDENTIFIER (PARENS) {BLOCK}
-                            // -----------------------------------
-                            // - foreach my $x () {}
-                            // ------------------------
-                            is_control_structure = true;
-                        }
-                    }
-
-                    // if we found a control structure ...
-                    if (is_control_structure) {
-                        top.stack.push(expr);
-                        top.stack.push(this.spillIntoExpression(top, ExpressionKind.CONTROL));
-                        if (stack.length == 1) {
-                            yield top.stack.pop() as ParseTree;
-                        }
-                        break;
-                    }
-
-                    // here, we will fall through ...
+                    // otherwise, we will fall through ...
                 case ExpressionKind.PARENS: // and we ignore these for now
                 default:                    // and this is where we fall
                     top.stack.push(expr);   // which is the default action
                 }
                 break;
             case 'TERMINATOR':
-                top.stack.push(this.spillIntoExpression(top, ExpressionKind.STATEMENT));
+                top.stack.push(this.spillIntoExpression(top, ExpressionKind.STATEMENT, lexed));
                 if (stack.length == 1) {
                     yield top.stack.pop() as ParseTree;
                 }
@@ -219,6 +223,10 @@ export class TreeParser {
                 logger.log('STACK :', stack);
                 logger.log('=====================================================\n');
             }
+        }
+
+        if ((stack.at(-1) as Expression).kind == ExpressionKind.CONTROL) {
+            yield stack.pop() as Expression;
         }
 
         if (this.config.verbose) {

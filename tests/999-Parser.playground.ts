@@ -16,11 +16,11 @@ let runner = new ParserTestRunner();
 runner.run([
 new ParserTestCase('... qualified identifiers',
     [`
-        foreach my $x (@foo) {
-            say $x;
+        if (0 == 0) {
+            if (1 == 1) {
+                10;
+            }
         }
-
-
     `],
     [
     ],
@@ -29,15 +29,5 @@ new ParserTestCase('... qualified identifiers',
 ]);
 
 /*
-
-        elsif (0 == 0) {}
-        else {}
-
-        while (0 == 0) {}
-        until (0 == 0) {}
-
-        for (my $i = 0; i < 10; $i++) {}
-
-        foreach my $x (@foo) {}
 
 */

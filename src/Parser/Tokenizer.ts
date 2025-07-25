@@ -16,18 +16,15 @@ export type TokenType =
 export interface Token {
     type   : TokenType,
     source : string,
-    seq_id : number,
 }
 
 export class Tokenizer {
     *run (source : Generator<string, void, void>) : Generator<Token, void, void> {
-        let TOKEN_ID_SEQ = 0;
 
         const newToken = (tokenType : TokenType, src : string) : Token => {
             return {
                 type   : tokenType,
                 source : src,
-                seq_id : ++TOKEN_ID_SEQ
             }
         }
 

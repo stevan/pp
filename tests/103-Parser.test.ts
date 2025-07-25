@@ -28,25 +28,27 @@ new ParserTestCase('... hash/array slices',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=', seq_id: 5 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
       operands: [
         {
           type: 'SLICE',
-          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash', seq_id: 1 } } },
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
           slice: {
             type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
             kind: ExpressionKind.CURLY,
             stack: [
-              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello', seq_id: 3 } } }
+              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello' } } }
             ],
             opers: []
           }
         },
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10', seq_id: 6 } } }
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10' } } }
       ]
     }
   ],
@@ -55,37 +57,40 @@ new ParserTestCase('... hash/array slices',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=', seq_id: 12 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
       operands: [
         {
           type: 'SLICE',
-          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash', seq_id: 8 } } },
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
           slice: {
             type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
             kind: ExpressionKind.CURLY,
             stack: [
-              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello', seq_id: 10 } } }
+              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello' } } }
             ],
             opers: []
           }
         },
         {
           type: 'SLICE',
-          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash', seq_id: 13 } } },
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
           slice: {
             type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
             kind: ExpressionKind.CURLY,
             stack: [
               {
                 type: 'OPERATION',
-                operator: { type: 'BINOP', token: { type: 'ATOM', source: '.', seq_id: 16 } },
+                operator: { type: 'BINOP', token: { type: 'ATOM', source: '.' } },
                 operands: [
-                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello', seq_id: 15 } } },
-                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'goodbye', seq_id: 17 } } }
+                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello' } } },
+                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'goodbye' } } }
                 ]
               }
             ],
@@ -100,25 +105,27 @@ new ParserTestCase('... hash/array slices',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=', seq_id: 24 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
       operands: [
         {
           type: 'SLICE',
-          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array', seq_id: 20 } } },
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array' } } },
           slice: {
             type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '[' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ']' } } ],
             kind: ExpressionKind.SQUARE,
             stack: [
-              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '0', seq_id: 22 } } }
+              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '0' } } }
             ],
             opers: []
           }
         },
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '100', seq_id: 25 } } }
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '100' } } }
       ]
     }
   ],
@@ -127,33 +134,35 @@ new ParserTestCase('... hash/array slices',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=', seq_id: 35 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
       operands: [
         {
           type: 'SLICE',
-          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array', seq_id: 27 } } },
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array' } } },
           slice: {
             type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '[' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ']' } } ],
             kind: ExpressionKind.SQUARE,
             stack: [
               {
                 type: 'OPERATION',
-                operator: { type: 'BINOP', token: { type: 'ATOM', source: '+', seq_id: 30 } },
+                operator: { type: 'BINOP', token: { type: 'ATOM', source: '+' } },
                 operands: [
-                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1', seq_id: 29 } } },
-                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2', seq_id: 31 } } }
+                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
+                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
                 ]
               },
-              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3', seq_id: 33 } } }
+              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
             ],
             opers: []
           }
         },
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10', seq_id: 36 } } }
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10' } } }
       ]
     }
   ],
@@ -162,27 +171,30 @@ new ParserTestCase('... hash/array slices',
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=', seq_id: 45 } },
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
       operands: [
         {
           type: 'SLICE',
-          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array', seq_id: 38 } } },
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array' } } },
           slice: {
             type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '[' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: ']' } } ],
             kind: ExpressionKind.SQUARE,
             stack: [
               {
                 type: 'SLICE',
-                value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash', seq_id: 40 } } },
+                value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
                 slice: {
                   type: 'EXPRESSION',
+                  lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
                   kind: ExpressionKind.CURLY,
                   stack: [
-                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'one', seq_id: 42 } } }
+                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'one' } } }
                   ],
                   opers: []
                 }
@@ -191,7 +203,7 @@ new ParserTestCase('... hash/array slices',
             opers: []
           }
         },
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10', seq_id: 46 } } }
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10' } } }
       ]
     }
   ],
