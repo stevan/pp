@@ -15,7 +15,7 @@ export const logger = new Console({
     stderr         : process.stderr,
     inspectOptions : {
         depth       : 20,
-        breakLength : 180,
+        breakLength : process.stdout.columns - (process.stdout.columns / 4), // 75% of the screen
     },
 });
 

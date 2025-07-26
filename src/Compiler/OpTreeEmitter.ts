@@ -10,7 +10,7 @@ import {
     Program, Block, Statement,
     SubBody, SubDefinition, SubCall, SubReturn,
     Conditional, ForEachLoop,
-    ConstInt, ConstFloat, ConstStr, ConstTrue, ConstFalse, ConstUndef,
+    ConstInt, ConstNumber, ConstStr, ConstTrue, ConstFalse, ConstUndef,
     GlobFetch, GlobStore, GlobDeclare, GlobVar,
     ScalarFetch, ScalarStore, ScalarDeclare,
     ArrayFetch, ArrayStore, ArrayDeclare,
@@ -77,7 +77,7 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         case node instanceof ConstInt:
             op = new OP('const', { literal : node.literal, type : 'IV' });
             break;
-        case node instanceof ConstFloat:
+        case node instanceof ConstNumber:
             op = new OP('const', { literal : node.literal, type : 'NV' });
             break;
         case node instanceof ConstStr:

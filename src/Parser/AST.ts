@@ -86,12 +86,30 @@ export interface Node {
 // Nodes
 // -----------------------------------------------------------------------------
 
+// the base of everything ...
 export abstract class AbstractNode implements Node {
     kind : NodeKind = NodeKind.ABSTRACT;
 
     abstract deparse () : string;
 
     accept<T>(v : NodeVisitor<T>) : T { return v.visit(this) }
+}
+
+// these are nodes which are needed in the AST, but
+// are not used by the emitter, so we mark them as
+// being abstact
+
+export class Identifier extends AbstractNode {
+    override kind : NodeKind = NodeKind.ABSTRACT;
+
+    constructor(public name : string) { super() }
+
+    deparse() : string { return this.name }
+
+    // TODO:
+    // add methods to parse the identifier to
+    // extract the needed metadata for the
+    // optree emitter.
 }
 
 // -----------------------------------------------------------------------------
@@ -258,7 +276,7 @@ export class ConstInt extends AbstractNode {
     deparse() : string { return String(this.literal) }
 }
 
-export class ConstFloat extends AbstractNode {
+export class ConstNumber extends AbstractNode {
     override kind : NodeKind = NodeKind.CONST;
 
     constructor(public literal : number) { super() }
@@ -501,6 +519,10 @@ export class Multiply extends BinaryOp {
 
 export class Subtract extends BinaryOp {
     constructor(lhs : Node, rhs : Node) {super('subtract', '-', lhs, rhs) }
+}
+
+export class Divide extends BinaryOp {
+    constructor(lhs : Node, rhs : Node) {super('modulus', '%', lhs, rhs) }
 }
 
 export class Modulus extends BinaryOp {
