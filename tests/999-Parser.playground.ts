@@ -1,6 +1,7 @@
 
 
 import {
+    ParseTree,
     ExpressionKind
 } from '../src/Parser/TreeParser'
 
@@ -18,12 +19,17 @@ new ParserTestCase('... nested control structures',
     [`
         %hash{ "hello" } = %hash { "hello" . "goodbye" };
         %hash{two} = 3;
+    `,`
         my %hash = { one => 1, two => 2 };
         %hash{two} = 100;
     `],
     [
     ],
-    { verbose : true, develop : true }
+    {
+        verbose : false,
+        develop : true,
+        pretty_print : true
+    }
 ),
 ]);
 

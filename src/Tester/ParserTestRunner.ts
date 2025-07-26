@@ -15,6 +15,50 @@ import {
 
 // -----------------------------------------------------------------------------
 
+function prettyPrintLexed(lexed: Lexed) : string {
+    return `${lexed.type}['${lexed.token.source}', ${lexed.token.type}]`;
+}
+
+export function prettyPrintParseTree (tree: ParseTree, depth : number = 0) : string {
+    let indent = "  ".repeat(depth);
+
+    let out = '';
+    switch (tree.type) {
+    case 'TERM':
+        out = `${indent}Term:${prettyPrintLexed(tree.value)}`;
+        break;
+    case 'SLICE':
+        out = [
+            `${indent}Slice(\n`,
+                prettyPrintParseTree(tree.value, depth + 1),
+                prettyPrintParseTree(tree.slice, depth + 1),
+            `${indent})`
+            ].join('');
+        break;
+    case 'OPERATION':
+        out = [
+            `${indent}Operation(\n`,
+                `${indent}  ${prettyPrintLexed(tree.operator)}\n`,
+                tree.operands.map((o) => prettyPrintParseTree(o, depth + 1)).join(''),
+            `${indent})`
+            ].join('')
+        break;
+    case 'EXPRESSION':
+        out = [
+            `${indent}Expression:${tree.kind}[${tree.lexed.map((o) => `'${o.token.source}'`).join(' ')}](\n`,
+                tree.stack.map((o) => prettyPrintParseTree(o, depth + 1)).join(''),
+            `${indent})`
+            ].join('')
+        break;
+    default:
+        throw new Error(`Unknown ParseTree type ${JSON.stringify(tree)}`);
+    }
+
+    return out + "\n";
+}
+
+// -----------------------------------------------------------------------------
+
 export class ParserTestRunner {
     public tokenizer  : Tokenizer;
     public lexer      : Lexer;
@@ -62,9 +106,29 @@ export class ParserTestCase {
     compareParseTree(tree : Generator<ParseTree, void, void>) : void {
         if (this.tree.length == 0 || this.config.develop) {
             this.diag('Development Mode: here is what you got ...');
+            if (this.config.pretty_print) {
+                this.diag('-'.repeat(80));
+                this.diag('# SOURCE:');
+                this.diag('-'.repeat(80));
+                let line_num = 0;
+                this.source.forEach((s) => {
+                    this.diag(
+                        s.split("\n")
+                            .map((l) => `# ${(++line_num).toString().padStart(3, '0')}: ${l}`)
+                            .join('\n')
+                    );
+                });
+            }
             let i = 0;
             for (const got of tree) {
-                this.diag(i.toString().padStart(3, '0'), '->', got);
+                if (this.config.pretty_print) {
+                    this.diag('-'.repeat(80));
+                    this.diag(`# STATEMENT : ${i.toString().padStart(3, '0')}`);
+                    this.diag(prettyPrintParseTree(got));
+                    this.diag('-'.repeat(80));
+                } else {
+                    this.diag(i.toString().padStart(3, '0'), '->', got);
+                }
                 i++;
             }
         }
