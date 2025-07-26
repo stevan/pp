@@ -109,6 +109,45 @@ export class TreeParser {
     }
 
     *run (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
+        yield* this.fixupControlStructures(source);
+    }
+
+    *fixupControlStructures (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
+        let stack : Expression[] = [];
+        for (const parseTree of this.constructParseTree(source)) {
+            switch (parseTree.type) {
+            case 'EXPRESSION':
+                if (parseTree.kind == ExpressionKind.CONTROL) {
+                    switch ((parseTree.lexed[0] as Lexed).token.source) {
+                    case 'if':
+                        if (stack.length > 0) {
+                            yield stack.pop() as Expression;
+                        }
+                        stack.push(parseTree);
+                        break;
+                    case 'else':
+                        if (stack.length > 0) {
+                            let ifExpr = stack.pop() as Expression;
+                            ifExpr.stack.push(parseTree);
+                            yield ifExpr;
+                        }
+                        break;
+                    default:
+                        yield parseTree;
+                    }
+                    break;
+                }
+            default:
+                yield parseTree;
+            }
+        }
+
+        while (stack.length > 0) {
+            yield stack.pop() as ParseTree;
+        }
+    }
+
+    private *constructParseTree (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
         let stack : Expression[] = [
             {
                 type  : 'EXPRESSION',
@@ -129,21 +168,6 @@ export class TreeParser {
 
             let top = stack.at(-1) as Expression;
 
-            if (top.kind == ExpressionKind.CONTROL  &&
-                top.lexed[0]?.token.source == 'if'  &&
-                (top.stack[0]?.type == 'EXPRESSION' && top.stack[0]?.kind == ExpressionKind.PARENS) &&
-                (top.stack[1]?.type == 'EXPRESSION' && top.stack[1]?.kind == ExpressionKind.CURLY ) &&
-                lexed.token.source != 'else'
-            ) {
-                let ifExpr = stack.pop() as Expression;
-                top = stack.at(-1) as Expression;
-                if (stack.length == 1) {
-                    yield ifExpr;
-                } else {
-                    top.stack.push(ifExpr);
-                }
-            }
-
             switch (lexed.type) {
             case 'CONTROL':
                 stack.push(newExpression(ExpressionKind.CONTROL, lexed));
@@ -163,20 +187,11 @@ export class TreeParser {
                 case ExpressionKind.CURLY:
                     if (top.kind == ExpressionKind.CONTROL) {
                         top.stack.push(expr);
-
-                        let src = (top.lexed[0] as Lexed).token.source;
-                        if (src != 'if') {
-                            if (src == 'else') {
-                                let elseExpr = stack.pop()  as Expression;
-                                let ifExpr   = stack.at(-1) as Expression;
-                                if (ifExpr.kind == ExpressionKind.CONTROL) {
-                                    ifExpr.stack.push(elseExpr);
-                                } else {
-                                    throw new Error('An else expressions must be preceeded by if');
-                                }
-                            }
-
-                            yield stack.pop() as Expression;
+                        let control = stack.pop() as Expression;
+                        if (stack.length == 1) {
+                            yield control;
+                        } else {
+                            (stack.at(-1) as Expression).stack.push(control);
                         }
                         break;
                     }
@@ -223,10 +238,6 @@ export class TreeParser {
                 logger.log('STACK :', stack);
                 logger.log('=====================================================\n');
             }
-        }
-
-        if ((stack.at(-1) as Expression).kind == ExpressionKind.CONTROL) {
-            yield stack.pop() as Expression;
         }
 
         if (this.config.verbose) {
