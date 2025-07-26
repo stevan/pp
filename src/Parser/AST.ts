@@ -99,35 +99,6 @@ export abstract class AbstractNode implements Node {
 // are not used by the emitter, so we mark them as
 // being abstact
 
-export class Identifier extends AbstractNode {
-    override kind : NodeKind = NodeKind.ABSTRACT;
-
-    constructor(public ident : string) { super() }
-
-    deparse() : string { return this.ident }
-
-    get name () : string { return this.ident.slice(1) }
-
-    isScalar () : boolean { return this.ident.startsWith('$') }
-    isArray  () : boolean { return this.ident.startsWith('@') }
-    isHash   () : boolean { return this.ident.startsWith('%') }
-    isCode   () : boolean { return this.ident.startsWith('&') }
-    isGlob   () : boolean { return this.ident.startsWith('*') }
-}
-
-export class Assignment extends AbstractNode {
-    override kind : NodeKind = NodeKind.ABSTRACT;
-
-    constructor(
-        public lhs : Node,
-        public rhs : Node,
-    ) { super() }
-
-    deparse() : string {
-        return `${this.lhs.deparse()} = ${this.rhs.deparse()}`
-    }
-}
-
 // -----------------------------------------------------------------------------
 // Compilation Unit
 // -----------------------------------------------------------------------------
@@ -335,6 +306,7 @@ export class ConstUndef extends AbstractNode {
 // -----------------------------------------------------------------------------
 // Glob Ops
 // -----------------------------------------------------------------------------
+// FIXME: These are all wrong!
 
 export class GlobVar extends AbstractNode {
     override kind : NodeKind = NodeKind.GLOBVAR;

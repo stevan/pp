@@ -4,11 +4,9 @@ import { logger } from './Tools'
 import { ParseTree, ExpressionKind } from './Parser/TreeParser'
 
 import * as AST from './Parser/AST'
-import {
-    Node,
-    Assignment,
-    Identifier,
-} from './Parser/AST'
+import { Node } from './Parser/AST'
+
+// -----------------------------------------------------------------------------
 
 export type ParseTreeVisitor = (tree: ParseTree, children: Node[], depth : number) => Node;
 
@@ -35,6 +33,64 @@ export function visitParseTree (tree: ParseTree, visitor: ParseTreeVisitor, dept
         throw new Error(`Unknown ParseTree type ${JSON.stringify(tree)}`);
     }
 }
+
+// -----------------------------------------------------------------------------
+
+export class ParserError extends AST.AbstractNode {
+    override kind : AST.NodeKind = AST.NodeKind.ABSTRACT;
+
+    constructor(
+        public tree : ParseTree,
+        public args : Node[],
+        public msg  : string,
+    ) { super() }
+
+    deparse() : string {
+        return `ErrorNode(${this.msg})`;
+    }
+}
+
+export class TODO extends AST.AbstractNode {
+    override kind : AST.NodeKind = AST.NodeKind.ABSTRACT;
+
+    constructor(
+        public tree : ParseTree,
+        public msg  : string,
+    ) { super() }
+
+    deparse() : string {
+        return `TODO(${this.msg})`;
+    }
+}
+
+export class FIXME extends AST.AbstractNode {
+    override kind : AST.NodeKind = AST.NodeKind.ABSTRACT;
+
+    constructor(
+        public tree : ParseTree,
+        public msg  : string,
+    ) { super() }
+
+    deparse() : string {
+        return `FIXME(${this.msg})`;
+    }
+}
+
+
+export class HMMM extends AST.AbstractNode {
+    override kind : AST.NodeKind = AST.NodeKind.ABSTRACT;
+
+    constructor(
+        public tree : ParseTree,
+        public msg  : string,
+    ) { super() }
+
+    deparse() : string {
+        return `HMMM(${this.msg})`;
+    }
+}
+
+// -----------------------------------------------------------------------------
 
 export class Parser {
 
@@ -68,10 +124,10 @@ export class Parser {
                     case 'false':
                         return new AST.ConstFalse();
                     default:
-                        throw new Error(`Unrecognized Literal ATOM Token ${JSON.stringify(tree.value.token)}`);
+                        return new ParserError(tree, children, `Unrecognized Literal ATOM Token ${JSON.stringify(tree.value.token)}`);
                     }
                 default:
-                    throw new Error(`Unrecognized Literal Token ${JSON.stringify(tree.value.token)}`);
+                    return new ParserError(tree, children, `Unrecognized Literal Token ${JSON.stringify(tree.value.token)}`);
                 }
             case 'IDENTIFIER':
                 switch (tree.value.token.source.charAt(0)) {
@@ -82,18 +138,18 @@ export class Parser {
                 case '%':
                 case '&':
                 case '*':
-                    throw new Error('TODO - fetch for % & and *');
+                    return new TODO(tree, 'Fetch for % & and *');
                 default:
-                    throw new Error(`Unrecognized Identifier Sigil ${JSON.stringify(tree.value.token.source)}`);
+                    return new ParserError(tree, children, `Unrecognized Identifier Sigil ${JSON.stringify(tree.value.token.source)}`);
                 }
             case 'BAREWORD':
             case 'KEYWORD':
-                throw new Error('TODO');
+                return new TODO(tree, 'handle BAREWORD and KEYWORD');
             default:
-                throw new Error(`Unrecognized Term Value ${JSON.stringify(tree.value)}`);
+                return new ParserError(tree, children, `Unrecognized Term Value ${JSON.stringify(tree.value)}`);
             }
         case 'SLICE':
-            throw new Error('TODO');
+            return new TODO(tree, 'handle SLICE');
         case 'OPERATION':
             switch (tree.operator.token.source) {
             // -----------------------------------------------------------------
@@ -107,17 +163,16 @@ export class Parser {
                         return new AST.ScalarDeclare(operand.name, operand.value);
                     }
                     else if (operand instanceof AST.ArrayStore) {
-                        throw new Error('FIXME - this will not work properly')
-                        //return new AST.ArrayDeclare(operand.name, [operand.value]);
+                        return new FIXME(tree, 'ArrayStore will not work properly without Array Literals')
                     }
                     else {
-                        throw new Error('TODO - support assignment for Hashes, Code and Globs(?)')
+                        return new TODO(tree, `Support assignment for Hashes, Code and Globs(?) -> GOT(${JSON.stringify(operand)})`)
                     }
                 } else {
-                    throw new Error(`Expected one operands for my() and got ${JSON.stringify(children)}`)
+                    return new ParserError(tree, children, `Expected one operands for my() and got ${JSON.stringify(children)}`)
                 }
             case 'our':
-                throw new Error('TODO - glob assignment');
+                return new TODO(tree, 'Glob assignment');
             case '=':
                 if (children.length == 2) {
                     let lhs = children[0] as Node;
@@ -130,10 +185,10 @@ export class Parser {
                         return new AST.ArrayStore(lhs.name, rhs);
                     }
                     else {
-                        throw new Error('TODO - support assignment for Hashes, Code and Globs(?)')
+                        return new TODO(tree, 'Support assignment for Hashes, Code and Globs(?)')
                     }
                 } else {
-                    throw new Error(`Expected two operands for assignement(=) and got ${JSON.stringify(children)}`)
+                    return new ParserError(tree, children, `Expected two operands for assignement(=) and got ${JSON.stringify(children)}`)
                 }
             // -----------------------------------------------------------------
             // Math
@@ -168,29 +223,29 @@ export class Parser {
                 return new AST.GreaterThanOrEqual(children[0] as Node, children[1] as Node);
             // -----------------------------------------------------------------
             default:
-                throw new Error(`Unrecognized Operator ${JSON.stringify(tree.operator)}`);
+                return new ParserError(tree, children, `Unrecognized Operator ${JSON.stringify(tree.operator)}`);
             }
         case 'EXPRESSION':
             switch (tree.kind) {
             case ExpressionKind.BARE:
-                throw new Error('This should never actually happen, the BARE kind is internal');
+                return new HMMM(tree, '... this should never actually happen, as BARE Expressions are kind of internal');
             case ExpressionKind.STATEMENT:
                 if (children.length == 1) {
                     return new AST.Statement(children[0] as Node);
                 } else {
-                    throw new Error('TODO');
+                    return new HMMM(tree, `... statements probably shouldn't have more than one child, but we got ${children.length}`);
                 }
             case ExpressionKind.CONTROL:
-                throw new Error('TODO');
+                return new TODO(tree, 'handle control blocks');
             case ExpressionKind.PARENS:
             case ExpressionKind.SQUARE:
             case ExpressionKind.CURLY:
-                throw new Error('TODO');
+                return new TODO(tree, 'handle expressions of different kinds () [] {}');
             default:
-                throw new Error(`Unrecognized Expression ${JSON.stringify(tree)}`);
+                return new ParserError(tree, children, `Unrecognized Expression kind ${JSON.stringify(tree)}`);
             }
         default:
-            throw new Error(`Unknown ParseTree type ${JSON.stringify(tree)}`);
+            return new ParserError(tree, children, `Unknown ParseTree type ${JSON.stringify(tree)}`);
         }
     }
 
