@@ -25,14 +25,13 @@ if ($foo == 0) {
     $foo = 10;
 }
 
-
     `],
     [
     ],
     {
-        verbose : false,
+        verbose : true,
         develop : true,
-        pretty_print : true
+        pretty_print : false,
     }
 ),
 ]);

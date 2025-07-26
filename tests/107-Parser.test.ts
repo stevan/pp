@@ -78,13 +78,18 @@ new ParserTestCase('... nested control structures',
           lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
           kind: ExpressionKind.STATEMENT,
           stack: [
-            { type: 'TERM', value: { type: 'KEYWORD', token: { type: 'ATOM', source: 'my' } } },
             {
               type: 'OPERATION',
-              operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
+              operator: { type: 'UNOP', token: { type: 'ATOM', source: 'my' } },
               operands: [
-                { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$x' } } },
-                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10' } } }
+                {
+                  type: 'OPERATION',
+                  operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
+                  operands: [
+                    { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$x' } } },
+                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10' } } }
+                  ]
+                }
               ]
             }
           ],
@@ -241,7 +246,7 @@ new ParserTestCase('... nested control structures',
 }
 // -----------------------------------------------------------------------------
     ],
-    { verbose : false, develop : false }
+    { verbose : false, develop : false, pretty_print : false }
 ),
 ]);
 

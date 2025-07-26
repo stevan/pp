@@ -18,7 +18,7 @@ new ParserTestCase('... complex hash slices + anon-hash creation',
     [`
         %hash{ "hello" } = %hash { "hello" . "goodbye" };
         %hash{two} = 3;
-        my %hash = { one => 1, two => 2 };
+        my %hash = +{ one => 1, two => 2 };
         %hash{two} = 100;
     `],
     [
@@ -105,25 +105,30 @@ new ParserTestCase('... complex hash slices + anon-hash creation',
   lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
-    { type: 'TERM', value: { type: 'KEYWORD', token: { type: 'ATOM', source: 'my' } } },
     {
       type: 'OPERATION',
-      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
+      operator: { type: 'UNOP', token: { type: 'ATOM', source: 'my' } },
       operands: [
-        { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
         {
-          type: 'EXPRESSION',
-          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
-          kind: ExpressionKind.CURLY,
-          stack: [
-            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'one' } } },
-            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: '=>' } } },
-            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
-            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'two' } } },
-            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: '=>' } } },
-            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
-          ],
-          opers: []
+          type: 'OPERATION',
+          operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
+          operands: [
+            { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
+            {
+              type: 'EXPRESSION',
+              lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '+{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+              kind: ExpressionKind.LITERAL,
+              stack: [
+                { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'one' } } },
+                { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: '=>' } } },
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
+                { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'two' } } },
+                { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: '=>' } } },
+                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
+              ],
+              opers: []
+            }
+          ]
         }
       ]
     }
@@ -159,6 +164,7 @@ new ParserTestCase('... complex hash slices + anon-hash creation',
   ],
   opers: []
 }
+// -----------------------------------------------------------------------------
     ],
     { verbose : false, develop : false }
 ),

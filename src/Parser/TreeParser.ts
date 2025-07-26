@@ -16,6 +16,7 @@ export enum ExpressionKind {
     PARENS    = 'PARENS',
     SQUARE    = 'SQUARE',
     CURLY     = 'CURLY',
+    LITERAL   = 'LITERAL',
 }
 
 export type Term =
@@ -70,9 +71,10 @@ export function newSlice (value: Term, slice: Expression) : Term {
 
 const BracketToKind = (src : string) : ExpressionKind => {
     switch (src) {
-    case '(': case ')': return ExpressionKind.PARENS;
-    case '[': case ']': return ExpressionKind.SQUARE;
-    case '{': case '}': return ExpressionKind.CURLY;
+    case '(' : case ')' : return ExpressionKind.PARENS;
+    case '[' : case ']' : return ExpressionKind.SQUARE;
+    case '{' : case '}' : return ExpressionKind.CURLY;
+    case '+{': case '+[': return ExpressionKind.LITERAL;
     default: throw new Error(`Unrecognized bracket (${src}`);
     }
 }
@@ -171,29 +173,19 @@ export class TreeParser {
                         }
                     }
                     else if (prev.type == 'TERM' && prev.value.type == 'IDENTIFIER') {
-                        // if the previous token is an IDENTIFIER, then we
-                        // might have a slice, but we need to be sure
+                        // if the previous token is an IDENTIFIER,
+                        // then we have a slice ...
 
-                        let is_slice = true;
-                        if (top.stack.length == 2) {
-                            let isKeyword = top.stack.at(-2) as ParseTree;
-                            if (isKeyword.type == 'TERM' && isKeyword.value.type == 'KEYWORD') {
-                                // TODO: check to be sure this is my/our
-                                is_slice = false;
-                            }
-                        }
-
-                        if (is_slice) {
-                            top.stack.push(newSlice(top.stack.pop() as Term, expr));
-                            // we've pushed the wrapped experssion on the stack
-                            // so we can break out of this now
-                            break;
-                        }
+                        top.stack.push(newSlice(top.stack.pop() as Term, expr));
+                        // we've pushed the wrapped experssion on the stack
+                        // so we can break out of this now
+                        break;
                     }
                     // otherwise, we will fall through ...
-                case ExpressionKind.PARENS: // and we ignore these for now
-                default:                    // and this is where we fall
-                    top.stack.push(expr);   // which is the default action
+                case ExpressionKind.PARENS:  // and we ignore these for now
+                case ExpressionKind.LITERAL: // and these should just fall through
+                default:                     // and this is where we fall
+                    top.stack.push(expr);    // which is the default action
                 }
                 break;
             case 'TERMINATOR':

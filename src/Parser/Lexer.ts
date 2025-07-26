@@ -29,6 +29,8 @@ export class Lexer {
                 case '('  :
                 case '['  :
                 case '{'  :
+                case '+['  :
+                case '+{'  :
                     yield { type : 'OPEN', token : token }
                     break;
                 case ')'  :
@@ -113,13 +115,17 @@ export class Lexer {
                     // ---------------------------------------------------------
                     // Keywords
                     // ---------------------------------------------------------
+                    // Many keywords function as unary operators, so
+                    // we do that here, and worry about problems later.
+                    // For which we have the KEYWORD type.
+                    // ---------------------------------------------------------
                     // declarations
                     case 'my'     :
                     case 'our'    :
                     case 'sub'    :
                     // misc ...
                     case 'return' :
-                        yield { type : 'KEYWORD', token : token }
+                        yield { type : 'UNOP', token : token }
                         break;
                     default:
                         yield { type : 'BAREWORD', token : token };
