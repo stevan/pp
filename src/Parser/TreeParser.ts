@@ -5,6 +5,8 @@ import { Lexed } from './Lexer'
 
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+
 export enum ExpressionKind {
     // implicit
     BARE      = 'BARE',
@@ -15,17 +17,6 @@ export enum ExpressionKind {
     SQUARE    = 'SQUARE',
     CURLY     = 'CURLY',
 }
-
-const BracketToKind = (src : string) : ExpressionKind => {
-    switch (src) {
-    case '(': case ')': return ExpressionKind.PARENS;
-    case '[': case ']': return ExpressionKind.SQUARE;
-    case '{': case '}': return ExpressionKind.CURLY;
-    default: throw new Error(`Unrecognized bracket (${src}`);
-    }
-}
-
-// -----------------------------------------------------------------------------
 
 export type Term =
     | { type : 'TERM',  value : Lexed }
@@ -76,6 +67,17 @@ export function newSlice (value: Term, slice: Expression) : Term {
 }
 
 // -----------------------------------------------------------------------------
+
+const BracketToKind = (src : string) : ExpressionKind => {
+    switch (src) {
+    case '(': case ')': return ExpressionKind.PARENS;
+    case '[': case ']': return ExpressionKind.SQUARE;
+    case '{': case '}': return ExpressionKind.CURLY;
+    default: throw new Error(`Unrecognized bracket (${src}`);
+    }
+}
+
+// ...
 
 export class TreeParser {
     constructor(public config : any = {}) {}
