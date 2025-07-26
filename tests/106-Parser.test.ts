@@ -53,20 +53,20 @@ new ParserTestCase('... conditional statements',
       ],
       opers: []
     },
+  ],
+  opers: []
+},
+{
+  type: 'EXPRESSION',
+  lexed: [ { type: 'CONTROL', token: { type: 'ATOM', source: 'else' } } ],
+  kind: ExpressionKind.CONTROL,
+  stack: [
     {
       type: 'EXPRESSION',
-      lexed: [ { type: 'CONTROL', token: { type: 'ATOM', source: 'else' } } ],
-      kind: ExpressionKind.CONTROL,
+      lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+      kind: ExpressionKind.CURLY,
       stack: [
-        {
-          type: 'EXPRESSION',
-          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
-          kind: ExpressionKind.CURLY,
-          stack: [
-            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
-          ],
-          opers: []
-        }
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
       ],
       opers: []
     }
@@ -131,20 +131,20 @@ new ParserTestCase('... conditional statements',
       ],
       opers: []
     },
+  ],
+  opers: []
+},
+{
+  type: 'EXPRESSION',
+  lexed: [ { type: 'CONTROL', token: { type: 'ATOM', source: 'else' } } ],
+  kind: ExpressionKind.CONTROL,
+  stack: [
     {
       type: 'EXPRESSION',
-      lexed: [ { type: 'CONTROL', token: { type: 'ATOM', source: 'else' } } ],
-      kind: ExpressionKind.CONTROL,
+      lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+      kind: ExpressionKind.CURLY,
       stack: [
-        {
-          type: 'EXPRESSION',
-          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
-          kind: ExpressionKind.CURLY,
-          stack: [
-            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '30' } } }
-          ],
-          opers: []
-        }
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '30' } } }
       ],
       opers: []
     }

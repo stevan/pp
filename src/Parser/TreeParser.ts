@@ -101,7 +101,8 @@ export class TreeParser {
         let destination = newExpression(to, orig);
         destination.opers.push(...from.opers.splice(0));
         while (from.stack.length > 0) {
-            if ((from.stack.at(-1) as Expression).kind == ExpressionKind.STATEMENT) break;
+            let top = from.stack.at(-1) as Expression;
+            if (top.kind == ExpressionKind.STATEMENT ||  top.kind == ExpressionKind.CONTROL) break;
             destination.stack.unshift(from.stack.pop() as ParseTree);
         }
         this.spillOperatorStack(destination);
@@ -109,45 +110,6 @@ export class TreeParser {
     }
 
     *run (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
-        yield* this.fixupControlStructures(source);
-    }
-
-    *fixupControlStructures (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
-        let stack : Expression[] = [];
-        for (const parseTree of this.constructParseTree(source)) {
-            switch (parseTree.type) {
-            case 'EXPRESSION':
-                if (parseTree.kind == ExpressionKind.CONTROL) {
-                    switch ((parseTree.lexed[0] as Lexed).token.source) {
-                    case 'if':
-                        if (stack.length > 0) {
-                            yield stack.pop() as Expression;
-                        }
-                        stack.push(parseTree);
-                        break;
-                    case 'else':
-                        if (stack.length > 0) {
-                            let ifExpr = stack.pop() as Expression;
-                            ifExpr.stack.push(parseTree);
-                            yield ifExpr;
-                        }
-                        break;
-                    default:
-                        yield parseTree;
-                    }
-                    break;
-                }
-            default:
-                yield parseTree;
-            }
-        }
-
-        while (stack.length > 0) {
-            yield stack.pop() as ParseTree;
-        }
-    }
-
-    private *constructParseTree (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
         let stack : Expression[] = [
             {
                 type  : 'EXPRESSION',

@@ -14,17 +14,13 @@ import {
 let runner = new ParserTestRunner();
 
 runner.run([
-new ParserTestCase('... qualified identifiers',
+new ParserTestCase('... nested control structures',
     [`
-        if (0 == 0) {
-            if (1 == 1) {
-                10;
-            }
-        }
+        say "TEST ME";
     `],
     [
     ],
-    { verbose : true, develop : true }
+    { verbose : false, develop : true }
 ),
 ]);
 
