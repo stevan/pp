@@ -157,14 +157,36 @@ export class TreeParser {
                         }
                         break;
                     }
+                    // NOTE the fall through here, this handles
+                    // both array and hash slices ... (sorry)
                 case ExpressionKind.SQUARE:
                     // check to see if this is a slice
                     let prev = top.stack.at(-1) as ParseTree;
-                    if (prev.type == 'TERM' && prev.value.type == 'IDENTIFIER') {
-                        top.stack.push(newSlice(top.stack.pop() as Term, expr));
-                        // we've pushed the wrapped experssion on the stack
-                        // so we can break out of this now
-                        break;
+                    if (prev == undefined) {
+                        if (stack.length == 1) {
+                            yield expr;
+                            break;
+                        }
+                    }
+                    else if (prev.type == 'TERM' && prev.value.type == 'IDENTIFIER') {
+                        // if the previous token is an IDENTIFIER, then we
+                        // might have a slice, but we need to be sure
+
+                        let is_slice = true;
+                        if (top.stack.length == 2) {
+                            let isKeyword = top.stack.at(-2) as ParseTree;
+                            if (isKeyword.type == 'TERM' && isKeyword.value.type == 'KEYWORD') {
+                                // TODO: check to be sure this is my/our
+                                is_slice = false;
+                            }
+                        }
+
+                        if (is_slice) {
+                            top.stack.push(newSlice(top.stack.pop() as Term, expr));
+                            // we've pushed the wrapped experssion on the stack
+                            // so we can break out of this now
+                            break;
+                        }
                     }
                     // otherwise, we will fall through ...
                 case ExpressionKind.PARENS: // and we ignore these for now

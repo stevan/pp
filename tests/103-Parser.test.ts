@@ -24,6 +24,16 @@ new ParserTestCase('... hash/array slices',
 
         @array[ %hash{"one"} ] = 10;
     `],
+/*
+        %hash{ "hello" } = 10;
+        %hash{ "hello" } = %hash { "hello" . "goodbye" };
+
+        @array[0] = 100;
+        @array[ 1 + 2, 3 ] = 10;
+
+        @array[ %hash{"one"} ] = 10;
+*/
+
     [
 // -----------------------------------------------------------------------------
 {
@@ -102,6 +112,7 @@ new ParserTestCase('... hash/array slices',
   ],
   opers: []
 },
+
 // -----------------------------------------------------------------------------
 {
   type: 'EXPRESSION',

@@ -16,14 +16,28 @@ let runner = new ParserTestRunner();
 runner.run([
 new ParserTestCase('... nested control structures',
     [`
-        say "TEST ME";
+        %hash{ "hello" } = %hash { "hello" . "goodbye" };
+        %hash{two} = 3;
+        my %hash = { one => 1, two => 2 };
+        %hash{two} = 100;
     `],
     [
     ],
-    { verbose : false, develop : true }
+    { verbose : true, develop : true }
 ),
 ]);
 
 /*
+        my %hash = { one => 1, two => 2 };
+        %hash{two} = 3;
+
+
+        my $x = 1;
+        my $y;
+        {
+           my $x = 10;
+           $y = $x;
+        }
+        say $x + $y;
 
 */

@@ -1,0 +1,169 @@
+
+
+import {
+    ExpressionKind
+} from '../src/Parser/TreeParser'
+
+import {
+    ParserTestRunner,
+    ParserTestCase,
+} from '../src/Tester/ParserTestRunner'
+
+// -----------------------------------------------------------------------------
+
+let runner = new ParserTestRunner();
+
+runner.run([
+new ParserTestCase('... complex hash slices + anon-hash creation',
+    [`
+        %hash{ "hello" } = %hash { "hello" . "goodbye" };
+        %hash{two} = 3;
+        my %hash = { one => 1, two => 2 };
+        %hash{two} = 100;
+    `],
+    [
+// -----------------------------------------------------------------------------
+{
+  type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
+  kind: ExpressionKind.STATEMENT,
+  stack: [
+    {
+      type: 'OPERATION',
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
+      operands: [
+        {
+          type: 'SLICE',
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
+          slice: {
+            type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+            kind: ExpressionKind.CURLY,
+            stack: [
+              { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello' } } }
+            ],
+            opers: []
+          }
+        },
+        {
+          type: 'SLICE',
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
+          slice: {
+            type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+            kind: ExpressionKind.CURLY,
+            stack: [
+              {
+                type: 'OPERATION',
+                operator: { type: 'BINOP', token: { type: 'ATOM', source: '.' } },
+                operands: [
+                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello' } } },
+                  { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'goodbye' } } }
+                ]
+              }
+            ],
+            opers: []
+          }
+        }
+      ]
+    }
+  ],
+  opers: []
+},
+// -----------------------------------------------------------------------------
+{
+  type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
+  kind: ExpressionKind.STATEMENT,
+  stack: [
+    {
+      type: 'OPERATION',
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
+      operands: [
+        {
+          type: 'SLICE',
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
+          slice: {
+            type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+            kind: ExpressionKind.CURLY,
+            stack: [
+              { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'two' } } }
+            ],
+            opers: []
+          }
+        },
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
+      ]
+    }
+  ],
+  opers: []
+},
+// -----------------------------------------------------------------------------
+{
+  type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
+  kind: ExpressionKind.STATEMENT,
+  stack: [
+    { type: 'TERM', value: { type: 'KEYWORD', token: { type: 'ATOM', source: 'my' } } },
+    {
+      type: 'OPERATION',
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
+      operands: [
+        { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
+        {
+          type: 'EXPRESSION',
+          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+          kind: ExpressionKind.CURLY,
+          stack: [
+            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'one' } } },
+            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: '=>' } } },
+            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } },
+            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'two' } } },
+            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: '=>' } } },
+            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
+          ],
+          opers: []
+        }
+      ]
+    }
+  ],
+  opers: []
+},
+// -----------------------------------------------------------------------------
+{
+  type: 'EXPRESSION',
+  lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
+  kind: ExpressionKind.STATEMENT,
+  stack: [
+    {
+      type: 'OPERATION',
+      operator: { type: 'BINOP', token: { type: 'ATOM', source: '=' } },
+      operands: [
+        {
+          type: 'SLICE',
+          value: { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hash' } } },
+          slice: {
+            type: 'EXPRESSION',
+            lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+            kind: ExpressionKind.CURLY,
+            stack: [
+              { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'two' } } }
+            ],
+            opers: []
+          }
+        },
+        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '100' } } }
+      ]
+    }
+  ],
+  opers: []
+}
+    ],
+    { verbose : false, develop : false }
+),
+]);
+
+/*
+
+*/
