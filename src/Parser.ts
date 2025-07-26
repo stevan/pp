@@ -4,7 +4,11 @@ import { logger } from './Tools'
 import { ParseTree, ExpressionKind } from './Parser/TreeParser'
 
 import * as AST from './Parser/AST'
-import { Node } from './Parser/AST'
+import {
+    Node,
+    Assignment,
+    Identifier,
+} from './Parser/AST'
 
 export type ParseTreeVisitor = (tree: ParseTree, children: Node[], depth : number) => Node;
 
@@ -84,8 +88,30 @@ export class Parser {
             // -----------------------------------------------------------------
             // Assignment
             // -----------------------------------------------------------------
+            case 'my':
+                if (children.length > 0) {
+                    let assignment = children[0]    as Assignment;
+                    let identifier = assignment.lhs as Identifier;
+                    switch (true) {
+                    case identifier.isScalar():
+                        return new AST.ScalarStore(identifier.name, assignment.rhs);
+                    case identifier.isArray():
+                        return new AST.ScalarStore(identifier.name, assignment.rhs);
+                    case identifier.isHash():
+                    case identifier.isCode():
+                    case identifier.isGlob():
+                        throw new Error('TODO - other Store operations');
+                    default:
+                        throw new Error(`Bad Identifier (${JSON.stringify(identifier)})`);
+                    }
+                }
+                else {
+                    throw new Error('Expected arguments to the my() operator');
+                }
+            case 'our':
+                throw new Error('TODO - glob assignment');
             case '=':
-                throw new Error('TODO - assignment');
+                return new AST.Assignment(children[0] as Node, children[1] as Node);
             // -----------------------------------------------------------------
             // Math
             // -----------------------------------------------------------------
