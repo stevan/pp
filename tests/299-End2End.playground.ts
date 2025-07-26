@@ -24,6 +24,7 @@ import { Node, Statement } from '../src/Parser/AST'
 let $SOURCE = `
 
 my $foo = 1 + 2;
+my $bar = $foo * 10;
 
 `;
 

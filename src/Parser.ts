@@ -74,7 +74,18 @@ export class Parser {
                     throw new Error(`Unrecognized Literal Token ${JSON.stringify(tree.value.token)}`);
                 }
             case 'IDENTIFIER':
-                return new AST.Identifier(tree.value.token.source)
+                switch (tree.value.token.source.charAt(0)) {
+                case '$':
+                    return new AST.ScalarFetch(tree.value.token.source.slice(1))
+                case '@':
+                    return new AST.ArrayFetch(tree.value.token.source.slice(1))
+                case '%':
+                case '&':
+                case '*':
+                    throw new Error('TODO - fetch for % & and *');
+                default:
+                    throw new Error(`Unrecognized Identifier Sigil ${JSON.stringify(tree.value.token.source)}`);
+                }
             case 'BAREWORD':
             case 'KEYWORD':
                 throw new Error('TODO');
@@ -89,29 +100,41 @@ export class Parser {
             // Assignment
             // -----------------------------------------------------------------
             case 'my':
-                if (children.length > 0) {
-                    let assignment = children[0]    as Assignment;
-                    let identifier = assignment.lhs as Identifier;
-                    switch (true) {
-                    case identifier.isScalar():
-                        return new AST.ScalarStore(identifier.name, assignment.rhs);
-                    case identifier.isArray():
-                        return new AST.ScalarStore(identifier.name, assignment.rhs);
-                    case identifier.isHash():
-                    case identifier.isCode():
-                    case identifier.isGlob():
-                        throw new Error('TODO - other Store operations');
-                    default:
-                        throw new Error(`Bad Identifier (${JSON.stringify(identifier)})`);
+                if (children.length == 1) {
+                    let operand = children[0] as Node;
+
+                    if (operand instanceof AST.ScalarStore) {
+                        return new AST.ScalarDeclare(operand.name, operand.value);
                     }
-                }
-                else {
-                    throw new Error('Expected arguments to the my() operator');
+                    else if (operand instanceof AST.ArrayStore) {
+                        throw new Error('FIXME - this will not work properly')
+                        //return new AST.ArrayDeclare(operand.name, [operand.value]);
+                    }
+                    else {
+                        throw new Error('TODO - support assignment for Hashes, Code and Globs(?)')
+                    }
+                } else {
+                    throw new Error(`Expected one operands for my() and got ${JSON.stringify(children)}`)
                 }
             case 'our':
                 throw new Error('TODO - glob assignment');
             case '=':
-                return new AST.Assignment(children[0] as Node, children[1] as Node);
+                if (children.length == 2) {
+                    let lhs = children[0] as Node;
+                    let rhs = children[1] as Node;
+
+                    if (lhs instanceof AST.ScalarFetch) {
+                        return new AST.ScalarStore(lhs.name, rhs);
+                    }
+                    else if (lhs instanceof AST.ArrayFetch) {
+                        return new AST.ArrayStore(lhs.name, rhs);
+                    }
+                    else {
+                        throw new Error('TODO - support assignment for Hashes, Code and Globs(?)')
+                    }
+                } else {
+                    throw new Error(`Expected two operands for assignement(=) and got ${JSON.stringify(children)}`)
+                }
             // -----------------------------------------------------------------
             // Math
             // -----------------------------------------------------------------
