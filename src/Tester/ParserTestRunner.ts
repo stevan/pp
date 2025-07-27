@@ -47,6 +47,7 @@ export function prettyPrintParseTree (tree: ParseTree, depth : number = 0) : str
         out = [
             `${indent}Expression:${tree.kind}[${tree.lexed.map((o) => `'${o.token.source}'`).join(' ')}](\n`,
                 tree.stack.map((o) => prettyPrintParseTree(o, depth + 1)).join(''),
+                tree.other.map((o) => prettyPrintParseTree(o, depth + 1)).join(''),
             `${indent})`
             ].join('')
         break;

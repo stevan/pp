@@ -18,8 +18,11 @@ runner.run([
 new ParserTestCase('... nested control structures',
     [`
 
-if (0 == 0) {
-    say "Test 0 / if";
+my $foo = 0;
+if ($foo == 0) {
+    $foo = 20;
+} else {
+    $foo = 10;
 }
 
 
@@ -27,9 +30,9 @@ if (0 == 0) {
     [
     ],
     {
-        verbose : true,
+        verbose : false,
         develop : true,
-        pretty_print : false,
+        pretty_print : true,
     }
 ),
 ]);

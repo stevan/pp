@@ -248,19 +248,25 @@ export class Conditional extends AbstractNode {
     override kind : NodeKind = NodeKind.CONDITIONAL;
 
     constructor(
-        public predicate : Node,
-        public ifTrue    : Block,
-        public ifFalse   : Block,
+        public condExpr : ParenExpression,
+        public ifTrue   : Block,
+        public ifFalse  : Block = new Block([]),
     ) { super() }
 
     deparse() : string {
-        return [
-            `if (${this.predicate.deparse()})`,
-                this.ifTrue.deparse(),
-            'else',
-                this.ifFalse.deparse(),
-        ]
-        .join('\n')
+        if (this.ifFalse.statements.length == 0) {
+            return [
+                `if ${this.condExpr.deparse()}`,
+                    this.ifTrue.deparse()
+            ].join('\n')
+        } else {
+            return [
+                `if ${this.condExpr.deparse()}`,
+                    this.ifTrue.deparse(),
+                'else',
+                    this.ifFalse.deparse(),
+            ].join('\n')
+        }
     }
 }
 

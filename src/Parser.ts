@@ -26,7 +26,10 @@ export function visitParseTree (tree: ParseTree, visitor: ParseTreeVisitor, dept
         );
     case 'EXPRESSION':
         return visitor(tree,
-            tree.stack.map((t) => visitParseTree(t, visitor, depth + 1)),
+            [
+                ...(tree.stack.map((t) => visitParseTree(t, visitor, depth + 1))),
+                ...(tree.other.map((o) => visitParseTree(o, visitor, depth + 1))),
+            ],
             depth
         );
     default:
@@ -268,13 +271,21 @@ export class Parser {
                 }
             case ExpressionKind.CONTROL:
                 switch (tree.lexed[0]?.token.source) {
-                case 'if'      :
+                case 'if' :
+                    return new AST.Statement(
+                        new AST.Conditional(
+                            children[0] as AST.ParenExpression,
+                            children[1] as AST.Block,
+                            children[2] as AST.Block,
+                        )
+                    );
                 case 'unless'  :
                 case 'elsif'   :
                 case 'while'   :
                 case 'until'   :
                     return new TODO(tree, 'handle predicate control blocks');
                 case 'else'    :
+                    return children[0] as AST.Block;
                 case 'do'      :
                 case 'try'     :
                 case 'finally' :
@@ -295,8 +306,9 @@ export class Parser {
                 }
             case ExpressionKind.LIST:
                 return new AST.ListExpression(children);
-            case ExpressionKind.SQUARE:
             case ExpressionKind.CURLY:
+                return new AST.Block(children as AST.Statement[]);
+            case ExpressionKind.SQUARE:
                 return new TODO(tree, 'handle expressions for [] {}');
             default:
                 return new ParserError(tree, children, `Unrecognized Expression kind ${JSON.stringify(tree)}`);

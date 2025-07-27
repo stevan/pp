@@ -10,6 +10,7 @@ import {
     ConstUndef, GlobVar, GlobDeclare, GlobFetch,
     Conditional, Equal, LessThan,
     SubDefinition, SubCall, SubReturn, SubBody, Say,
+    ParenExpression,
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
@@ -39,9 +40,11 @@ let BEGIN = new Program([
             [
                 new Statement(
                     new Conditional(
-                        new LessThan(
-                            new ScalarFetch('n'),
-                            new ConstInt(2)
+                        new ParenExpression(
+                            new LessThan(
+                                new ScalarFetch('n'),
+                                new ConstInt(2)
+                            )
                         ),
                         new Block([
                             new Statement(

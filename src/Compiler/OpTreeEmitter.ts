@@ -362,7 +362,7 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
     // -------------------------------------------------------------------------
 
     emitConditional (node : Conditional) : OpTree {
-        let condition   = this.visit(node.predicate);
+        let condition   = this.visit(node.condExpr.item);
         let trueBranch  = this.visit(node.ifTrue);
         let falseBranch = this.visit(node.ifFalse);
 

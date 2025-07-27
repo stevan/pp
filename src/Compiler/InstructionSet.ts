@@ -353,6 +353,12 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('divide',   LiftNumericBinOp((n, m) => n / m));
     opcodes.set('modulus',  LiftNumericBinOp((n, m) => n % m));
 
+    opcodes.set('+', opcodes.get('add')      as Opcode);
+    opcodes.set('-', opcodes.get('subtract') as Opcode);
+    opcodes.set('*', opcodes.get('multiply') as Opcode);
+    opcodes.set('/', opcodes.get('divide')   as Opcode);
+    opcodes.set('%', opcodes.get('modulus')  as Opcode);
+
     // ---------------------------------------------------------------------
     // Eq & Ord
     // ---------------------------------------------------------------------
@@ -366,6 +372,16 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('ge', LiftNumericPredicate((n, m) => n >= m));
     opcodes.set('le', LiftNumericPredicate((n, m) => n <= m));
 
+    // alias the operation versions ...
+
+    opcodes.set('==', opcodes.get('eq') as Opcode );
+    opcodes.set('!=', opcodes.get('ne') as Opcode);
+
+    opcodes.set('>',  opcodes.get('gt') as Opcode);
+    opcodes.set('<',  opcodes.get('lt') as Opcode);
+
+    opcodes.set('>=', opcodes.get('ge') as Opcode);
+    opcodes.set('<=', opcodes.get('le') as Opcode);
 
     // ---------------------------------------------------------------------
 
