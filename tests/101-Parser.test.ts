@@ -43,7 +43,7 @@ new ParserTestCase('... binary expressions with parens',
       ]
     }
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -67,7 +67,7 @@ new ParserTestCase('... binary expressions with parens',
       ]
     }
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -94,12 +94,12 @@ new ParserTestCase('... binary expressions with parens',
               ]
             }
           ],
-          opers: [], other : [],
+          opers: [], other : [], defer : [],
         }
       ]
     }
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -125,13 +125,13 @@ new ParserTestCase('... binary expressions with parens',
               ]
             }
           ],
-          opers: [], other : [],
+          opers: [], other : [], defer : [],
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
       ]
     }
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -157,7 +157,7 @@ new ParserTestCase('... binary expressions with parens',
               ]
             }
           ],
-          opers: [], other : [],
+          opers: [], other : [], defer : [],
         },
         {
           type: 'EXPRESSION',
@@ -173,12 +173,12 @@ new ParserTestCase('... binary expressions with parens',
               ]
             }
           ],
-          opers: [], other : [],
+          opers: [], other : [], defer : [],
         }
       ]
     }
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -209,7 +209,7 @@ new ParserTestCase('... binary expressions with parens',
                   ]
                 }
               ],
-              opers: [], other : [],
+              opers: [], other : [], defer : [],
             },
             {
               type: 'EXPRESSION',
@@ -234,21 +234,21 @@ new ParserTestCase('... binary expressions with parens',
                           ]
                         }
                       ],
-                      opers: [], other : [],
+                      opers: [], other : [], defer : [],
                     },
                     { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '5' } } }
                   ]
                 }
               ],
-              opers: [], other : [],
+              opers: [], other : [], defer : [],
             }
           ]
         }
       ],
-      opers: [], other : [],
+      opers: [], other : [], defer : [],
     }
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 }
     ],
     { verbose : false, develop : false }

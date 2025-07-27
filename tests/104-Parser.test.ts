@@ -41,6 +41,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -52,6 +53,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -63,6 +65,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -74,6 +77,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -85,6 +89,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -96,6 +101,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -107,6 +113,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -118,6 +125,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -129,6 +137,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -140,6 +149,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -151,6 +161,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -162,6 +173,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -173,6 +185,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -184,6 +197,7 @@ new ParserTestCase('... basic identifiers',
   ],
   opers: [],
   other: [],
+  defer: [],
 }
     ],
     { verbose : false, develop : false }

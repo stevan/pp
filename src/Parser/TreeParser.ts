@@ -34,9 +34,10 @@ export type Expression = {
     type  : 'EXPRESSION',
     lexed : Lexed[],
     kind  : ExpressionKind,
-    stack : ParseTree[], // this stores the components of the expression
-    other : ParseTree[], // this is for any expression which might branch (if/else, etc.)
-    opers : Operation[], // this is just an operator stack, for mini shunting yard
+    stack : ParseTree[],  // this stores the components of the expression
+    other : ParseTree[],  // this is for any expression which might branch (if/else, etc.)
+    opers : Operation[],  // this is just an operator stack, for mini shunting yard
+    defer : Expression[], // deferred control blocks (if/unless waiting for else)
   }
 
 export type ParseTree = Term | Expression | Operation
@@ -51,6 +52,7 @@ export function newExpression (kind: ExpressionKind, orig : Lexed, body: ParseTr
         stack : body,
         other : [],
         opers : [],
+        defer : [],
     } as Expression
 }
 
@@ -129,6 +131,7 @@ export class TreeParser {
                 stack : [],
                 other : [],
                 opers : [],
+                defer : [],
             } as Expression
         ];
 
@@ -143,6 +146,20 @@ export class TreeParser {
             }
 
             let TOP = STACK.at(-1) as Expression;
+
+            if (lexed.token.source != 'else') {
+                // =====================================================
+                // EXIT POINT!
+                // =====================================================
+                if (TOP.defer.length > 0) {
+                    let deferred = TOP.defer.pop() as Expression;
+                    if (shouldYieldStatement()) {
+                        yield deferred;
+                    } else {
+                        TOP.stack.push(deferred);
+                    }
+                }
+            }
 
             switch (lexed.type) {
             // -----------------------------------------------------------------
@@ -203,10 +220,14 @@ export class TreeParser {
                     TOP.stack.push(list);
                 }
 
-                TOP.stack.push(this.spillIntoExpression(TOP, ExpressionKind.STATEMENT, lexed));
-
+                // =====================================================
+                // EXIT POINT
+                // =====================================================
+                let statement = this.spillIntoExpression(TOP, ExpressionKind.STATEMENT, lexed);
                 if (shouldYieldStatement()) {
-                    yield (STACK[0] as Expression).stack.pop() as ParseTree;
+                    yield statement;
+                } else {
+                    TOP.stack.push(statement);
                 }
                 break;
 
@@ -228,13 +249,35 @@ export class TreeParser {
                     if (TOP.kind == ExpressionKind.CONTROL) {
                         // pop off TOP as the control expression
                         let control = STACK.pop() as Expression;
-
                         // then we need to add the block into
                         // the control expression's stack
-                        TOP.stack.push(expr);
-
+                        control.stack.push(expr);
                         // restore the top variable ...
                         TOP = STACK.at(-1) as Expression;
+
+                        // now we need to check if this is
+                        // an if/unless that might have an
+                        // else block ...
+                        let keyword = (control.lexed[0] as Lexed).token.source;
+                        if (keyword == 'if' || keyword == 'unless') {
+                            // defer these, we will check
+                            // on them later
+                            TOP.defer.push(control);
+                            break;
+                        }
+                        else if (keyword == 'else') {
+                            // else's do not ever get yielded
+                            let deferred = TOP.defer.pop() as Expression;
+                            if (deferred == undefined) throw new Error("WTF! Can't have an else with an if/unless");
+                            // we simply add them to the other of their parent
+                            deferred.other.push(control);
+                            // and return the parent ...
+                            control = deferred;
+                        }
+
+                        // =====================================================
+                        // EXIT POINT!
+                        // =====================================================
 
                         // now decide if we should yield
                         // or if this needs to put pushed
@@ -256,6 +299,10 @@ export class TreeParser {
 
                     // if there is nothing ...
                     if (prev == undefined) {
+                        // =====================================================
+                        // EXIT POINT????
+                        // =====================================================
+
                         // XXX - what does this do?
                         if (shouldYieldStatement()) {
                             yield expr;
@@ -291,15 +338,25 @@ export class TreeParser {
             }
         }
 
-        if (this.config.verbose) {
-            logger.log('== FINAL ============================================');
-            logger.log('STACK :', STACK);
-            logger.log('=====================================================\n');
+        if (STACK.length > 1) {
+            if (this.config.verbose) {
+                logger.log('== FLUSH ============================================');
+                logger.log('STACK :', STACK);
+                logger.log('=====================================================\n');
+            }
+
+            while (STACK.length > 1) {
+                yield STACK.pop() as ParseTree;
+            }
         }
 
-        while (STACK.length > 1) {
-            yield STACK.pop() as ParseTree;
+        let rootExpr = STACK[0] as Expression;
+
+        while (rootExpr.defer.length > 0) {
+            yield rootExpr.defer.pop() as Expression;
         }
+
+        // ???
     }
 }
 

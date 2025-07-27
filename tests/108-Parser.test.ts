@@ -42,7 +42,7 @@ new ParserTestCase('... complex hash slices + anon-hash creation',
             stack: [
               { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello' } } }
             ],
-            opers: [], other: [],
+            opers: [], other: [], defer: [],
           }
         },
         {
@@ -62,13 +62,13 @@ new ParserTestCase('... complex hash slices + anon-hash creation',
                 ]
               }
             ],
-            opers: [], other: [],
+            opers: [], other: [], defer: [],
           }
         }
       ]
     }
   ],
-  opers: [], other: [],
+  opers: [], other: [], defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -90,14 +90,14 @@ new ParserTestCase('... complex hash slices + anon-hash creation',
             stack: [
               { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'two' } } }
             ],
-            opers: [], other: [],
+            opers: [], other: [], defer: [],
           }
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
       ]
     }
   ],
-  opers: [], other: [],
+  opers: [], other: [], defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -126,14 +126,14 @@ new ParserTestCase('... complex hash slices + anon-hash creation',
                 { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: '=>' } } },
                 { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '2' } } }
               ],
-              opers: [], other: [],
+              opers: [], other: [], defer: [],
             }
           ]
         }
       ]
     }
   ],
-  opers: [], other: [],
+  opers: [], other: [], defer: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -155,14 +155,14 @@ new ParserTestCase('... complex hash slices + anon-hash creation',
             stack: [
               { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'two' } } }
             ],
-            opers: [], other: [],
+            opers: [], other: [], defer: [],
           }
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '100' } } }
       ]
     }
   ],
-  opers: [], other: [],
+  opers: [], other: [], defer: [],
 }
 // -----------------------------------------------------------------------------
     ],

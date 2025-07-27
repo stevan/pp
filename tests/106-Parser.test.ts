@@ -42,7 +42,7 @@ new ParserTestCase('... conditional statements',
           ]
         }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     },
     {
       type: 'EXPRESSION',
@@ -51,10 +51,11 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     },
   ],
   opers: [],
+  defer: [],
   other : [
     {
       type: 'EXPRESSION',
@@ -68,10 +69,10 @@ new ParserTestCase('... conditional statements',
           stack: [
             { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
           ],
-          opers: [], other : [],
+          defer: [], opers: [], other : [],
         }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     }
   ],
 },
@@ -88,7 +89,7 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'ATOM', source: 'true' } } }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     },
     {
       type: 'EXPRESSION',
@@ -97,10 +98,10 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'ATOM', source: 'false' } } }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     }
   ],
-  opers: [], other : [],
+  defer: [], opers: [], other : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -122,7 +123,7 @@ new ParserTestCase('... conditional statements',
           ]
         }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     },
     {
       type: 'EXPRESSION',
@@ -131,10 +132,11 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '11000' } } }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     },
   ],
   opers: [],
+  defer: [],
   other : [
     {
       type: 'EXPRESSION',
@@ -148,10 +150,10 @@ new ParserTestCase('... conditional statements',
           stack: [
             { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '30' } } }
           ],
-          opers: [], other : [],
+          defer: [], opers: [], other : [],
         }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     },
   ],
 },
@@ -168,7 +170,7 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'ATOM', source: 'false' } } }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     },
     {
       type: 'EXPRESSION',
@@ -177,10 +179,10 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'ATOM', source: 'true' } } }
       ],
-      opers: [], other : [],
+      defer: [], opers: [], other : [],
     }
   ],
-  opers: [], other : [],
+  defer: [], opers: [], other : [],
 }
     ],
     { verbose : false, develop : false }

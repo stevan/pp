@@ -30,7 +30,7 @@ new ParserTestCase('... qualified identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$Hello::World' } } },
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -40,7 +40,7 @@ new ParserTestCase('... qualified identifiers',
   stack: [
     { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'Hello::World' } } },
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -58,11 +58,11 @@ new ParserTestCase('... qualified identifiers',
         stack: [
           { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '0' } } },
         ],
-        opers: [], other : [],
+        opers: [], other : [], defer : [],
       }
     }
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -72,7 +72,7 @@ new ParserTestCase('... qualified identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*Hello::World' } } },
   ],
-  opers: [], other : [],
+  opers: [], other : [], defer : [],
 }
     ],
     { verbose : false, develop : false }
