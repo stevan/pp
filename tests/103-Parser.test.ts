@@ -55,14 +55,14 @@ new ParserTestCase('... hash/array slices',
             stack: [
               { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello' } } }
             ],
-            opers: []
+            opers: [], other : [],
           }
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10' } } }
       ]
     }
   ],
-  opers: []
+  opers: [], other : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -84,7 +84,7 @@ new ParserTestCase('... hash/array slices',
             stack: [
               { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'hello' } } }
             ],
-            opers: []
+            opers: [], other : [],
           }
         },
         {
@@ -104,13 +104,13 @@ new ParserTestCase('... hash/array slices',
                 ]
               }
             ],
-            opers: []
+            opers: [], other : [],
           }
         }
       ]
     }
   ],
-  opers: []
+  opers: [], other : [],
 },
 
 // -----------------------------------------------------------------------------
@@ -133,14 +133,14 @@ new ParserTestCase('... hash/array slices',
             stack: [
               { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '0' } } }
             ],
-            opers: []
+            opers: [], other : [],
           }
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '100' } } }
       ]
     }
   ],
-  opers: []
+  opers: [], other : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -170,14 +170,14 @@ new ParserTestCase('... hash/array slices',
               },
               { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
             ],
-            opers: []
+            opers: [], other : [],
           }
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10' } } }
       ]
     }
   ],
-  opers: []
+  opers: [], other : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -207,18 +207,18 @@ new ParserTestCase('... hash/array slices',
                   stack: [
                     { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'one' } } }
                   ],
-                  opers: []
+                  opers: [], other : [],
                 }
               }
             ],
-            opers: []
+            opers: [], other : [],
           }
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '10' } } }
       ]
     }
   ],
-  opers: []
+  opers: [], other : [],
 }
     ],
     { verbose : false, develop : false }

@@ -267,7 +267,26 @@ export class Parser {
                     return new ParserError(tree, children, `Unrecognized Expression Literal bracket ${JSON.stringify(tree)}`);
                 }
             case ExpressionKind.CONTROL:
-                return new TODO(tree, 'handle control blocks');
+                switch (tree.lexed[0]?.token.source) {
+                case 'if'      :
+                case 'unless'  :
+                case 'elsif'   :
+                case 'while'   :
+                case 'until'   :
+                    return new TODO(tree, 'handle predicate control blocks');
+                case 'else'    :
+                case 'do'      :
+                case 'try'     :
+                case 'finally' :
+                    return new TODO(tree, 'handle unary control blocks');
+                case 'catch'   :
+                    return new TODO(tree, 'handle cath control block (with args)');
+                case 'for'     :
+                case 'foreach' :
+                    return new TODO(tree, 'handle for/foreach (iterator) control blocks');
+                default:
+                    return new ParserError(tree, children, `Unrecognized Control Structure ${JSON.stringify(tree)}`);
+                }
             case ExpressionKind.PARENS:
                 if (children.length == 1) {
                     return new AST.ParenExpression(children[0] as Node);

@@ -42,7 +42,7 @@ new ParserTestCase('... conditional statements',
           ]
         }
       ],
-      opers: []
+      opers: [], other : [],
     },
     {
       type: 'EXPRESSION',
@@ -51,27 +51,29 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '1' } } }
       ],
-      opers: []
+      opers: [], other : [],
     },
   ],
-  opers: []
-},
-{
-  type: 'EXPRESSION',
-  lexed: [ { type: 'CONTROL', token: { type: 'ATOM', source: 'else' } } ],
-  kind: ExpressionKind.CONTROL,
-  stack: [
+  opers: [],
+  other : [
     {
       type: 'EXPRESSION',
-      lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
-      kind: ExpressionKind.CURLY,
+      lexed: [ { type: 'CONTROL', token: { type: 'ATOM', source: 'else' } } ],
+      kind: ExpressionKind.CONTROL,
       stack: [
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
+        {
+          type: 'EXPRESSION',
+          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+          kind: ExpressionKind.CURLY,
+          stack: [
+            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
+          ],
+          opers: [], other : [],
+        }
       ],
-      opers: []
+      opers: [], other : [],
     }
   ],
-  opers: []
 },
 // -----------------------------------------------------------------------------
 {
@@ -86,7 +88,7 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'ATOM', source: 'true' } } }
       ],
-      opers: []
+      opers: [], other : [],
     },
     {
       type: 'EXPRESSION',
@@ -95,10 +97,10 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'ATOM', source: 'false' } } }
       ],
-      opers: []
+      opers: [], other : [],
     }
   ],
-  opers: []
+  opers: [], other : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -120,7 +122,7 @@ new ParserTestCase('... conditional statements',
           ]
         }
       ],
-      opers: []
+      opers: [], other : [],
     },
     {
       type: 'EXPRESSION',
@@ -129,27 +131,29 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '11000' } } }
       ],
-      opers: []
+      opers: [], other : [],
     },
   ],
-  opers: []
-},
-{
-  type: 'EXPRESSION',
-  lexed: [ { type: 'CONTROL', token: { type: 'ATOM', source: 'else' } } ],
-  kind: ExpressionKind.CONTROL,
-  stack: [
+  opers: [],
+  other : [
     {
       type: 'EXPRESSION',
-      lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
-      kind: ExpressionKind.CURLY,
+      lexed: [ { type: 'CONTROL', token: { type: 'ATOM', source: 'else' } } ],
+      kind: ExpressionKind.CONTROL,
       stack: [
-        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '30' } } }
+        {
+          type: 'EXPRESSION',
+          lexed: [ { type: 'OPEN', token: { type: 'BRACKET', source: '{' } }, { type: 'CLOSE', token: { type: 'BRACKET', source: '}' } } ],
+          kind: ExpressionKind.CURLY,
+          stack: [
+            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '30' } } }
+          ],
+          opers: [], other : [],
+        }
       ],
-      opers: []
-    }
+      opers: [], other : [],
+    },
   ],
-  opers: []
 },
 // -----------------------------------------------------------------------------
 {
@@ -164,7 +168,7 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'ATOM', source: 'false' } } }
       ],
-      opers: []
+      opers: [], other : [],
     },
     {
       type: 'EXPRESSION',
@@ -173,10 +177,10 @@ new ParserTestCase('... conditional statements',
       stack: [
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'ATOM', source: 'true' } } }
       ],
-      opers: []
+      opers: [], other : [],
     }
   ],
-  opers: []
+  opers: [], other : [],
 }
     ],
     { verbose : false, develop : false }

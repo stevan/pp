@@ -39,7 +39,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$x' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -49,7 +50,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$hello' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -59,7 +61,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$hello_world' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -69,7 +72,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@a' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -79,7 +83,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@array_of_stuff' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -89,7 +94,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@arrayOfStuff' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -99,7 +105,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '@ArrayOfStuff' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -109,7 +116,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%h' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -119,7 +127,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%hashes' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -129,7 +138,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '%HASHOFTHINGS' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -139,7 +149,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '&foo' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -149,7 +160,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '&FooBar' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -159,7 +171,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*Testing' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -169,7 +182,8 @@ new ParserTestCase('... basic identifiers',
   stack: [
     { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '*foo' } } },
   ],
-  opers: []
+  opers: [],
+  other: [],
 }
     ],
     { verbose : false, develop : false }

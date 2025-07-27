@@ -34,8 +34,9 @@ export type Expression = {
     type  : 'EXPRESSION',
     lexed : Lexed[],
     kind  : ExpressionKind,
-    stack : ParseTree[],
-    opers : Operation[],
+    stack : ParseTree[], // this stores the components of the expression
+    opers : Operation[], // this is just an operator stack, for mini shunting yard
+    other : ParseTree[], // this is for any expression which might branch (if/else, etc.)
   }
 
 export type ParseTree = Term | Expression | Operation
@@ -49,6 +50,7 @@ export function newExpression (kind: ExpressionKind, orig : Lexed, body: ParseTr
         kind  : kind,
         stack : body,
         opers : [],
+        other : [],
     } as Expression
 }
 
@@ -127,22 +129,54 @@ export class TreeParser {
                 kind  : ExpressionKind.BARE,
                 stack : [],
                 opers : [],
+                other : [],
             } as Expression
         ];
+
+        let control_stack  : Expression[] = []; // for attaching ifs to elses
+        let deferred_stack : Expression[] = []; // for deferring ifs until elses are done
 
         for (const lexed of source) {
             if (this.config.verbose) {
                 logger.log('== BEFORE ===========================================');
                 logger.log('STACK :', stack);
+                logger.log('CNTRL :', control_stack);
+                logger.log('DEFER :', deferred_stack);
                 logger.log('-----------------------------------------------------');
                 logger.log('NEXT  :', lexed);
             }
 
             let top = stack.at(-1) as Expression;
 
+            if (stack.length == 1 && deferred_stack.length > 0 && lexed.type != 'CONTROL') {
+                yield deferred_stack.pop() as Expression;
+            }
+
             switch (lexed.type) {
             case 'CONTROL':
-                stack.push(newExpression(ExpressionKind.CONTROL, lexed));
+                let controlExpr = newExpression(ExpressionKind.CONTROL, lexed);
+
+                switch(lexed.token.source) {
+                case 'if':
+                case 'unless':
+                    control_stack.push(controlExpr);
+                    break;
+                case 'else':
+                    if (control_stack.length > 0) {
+                        let parentControl = control_stack.pop() as Expression;
+                        let keyword = parentControl.lexed[0]?.token.source ?? 'NEVER SHOULD HAPPEN!';
+                        if (keyword == 'if' || keyword == 'unless') {
+                            parentControl.other.push(controlExpr);
+                        } else {
+                            throw new Error('An else block can only follow if and unless');
+                        }
+                    } else {
+                        throw new Error('Cannot have an else on its own')
+                    }
+                    break;
+                }
+
+                stack.push(controlExpr);
                 break;
             case 'OPEN':
                 stack.push(newExpression(BracketToKind(lexed.token.source), lexed));
@@ -160,6 +194,16 @@ export class TreeParser {
                     if (top.kind == ExpressionKind.CONTROL) {
                         top.stack.push(expr);
                         let control = stack.pop() as Expression;
+
+                        let keyword = control.lexed[0]?.token.source ?? 'NEVER SHOULD HAPPEN!';
+                        if (keyword == 'if' || keyword == 'unless') {
+                            deferred_stack.push(control);
+                            break;
+                        }
+                        else if (keyword == 'else') {
+                            control = deferred_stack.pop() as Expression;
+                        }
+
                         if (stack.length == 1) {
                             yield control;
                         } else {
@@ -238,6 +282,10 @@ export class TreeParser {
                 logger.log('STACK :', stack);
                 logger.log('=====================================================\n');
             }
+        }
+
+        while (deferred_stack.length > 0) {
+            yield deferred_stack.pop() as Expression;
         }
 
         if (this.config.verbose) {

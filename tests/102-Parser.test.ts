@@ -43,10 +43,10 @@ new ParserTestCase('... list expressions',
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
       ],
-      opers: []
+      opers: [], other : [],
     }
   ],
-  opers: []
+  opers: [], other : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -74,14 +74,14 @@ new ParserTestCase('... list expressions',
               ]
             }
           ],
-          opers: []
+          opers: [], other : [],
         },
         { type: 'TERM', value: { type: 'LITERAL', token: { type: 'NUMBER', source: '3' } } }
       ],
-      opers: []
+      opers: [], other : [],
     }
   ],
-  opers: []
+  opers: [], other : [],
 },
 // -----------------------------------------------------------------------------
 {
@@ -109,7 +109,7 @@ new ParserTestCase('... list expressions',
               ]
             }
           ],
-          opers: []
+          opers: [], other : [],
         },
         {
           type: 'OPERATION',
@@ -130,15 +130,15 @@ new ParserTestCase('... list expressions',
                   ]
                 }
               ],
-              opers: []
+              opers: [], other : [],
             }
           ]
         }
       ],
-      opers: []
+      opers: [], other : [],
     }
   ],
-  opers: []
+  opers: [], other : [],
 }
     ],
     { verbose : false, develop : false }

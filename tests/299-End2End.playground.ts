@@ -29,7 +29,9 @@ my $z = $x + $x + $y + $x + $y + $x + $y + $x + $y;
 
 let $SOURCE = `
 
-lc "HELLO";
+if (1 == 1) {
+    say "One!";
+}
 
 `;
 

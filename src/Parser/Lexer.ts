@@ -193,7 +193,6 @@ export class Lexer {
                     // These are resolved at compile time to structure the
                     // opcode tree and code flow
                     // ---------------------------------------------------------
-
                     case 'if'      :
                     case 'unless'  :
                     case 'elsif'   :
