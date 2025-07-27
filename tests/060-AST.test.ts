@@ -7,6 +7,7 @@ import {
     Program,
     Statement,
     ConstInt, ConstStr,
+    ArrayLiteral,
     ArrayDeclare,
     ArrayFetch, ScalarFetch,
     ArrayElemFetch,
@@ -66,11 +67,11 @@ i                 <0> unstack v ->j
 
 let RUN = new Program([
     new Statement(
-        new ArrayDeclare('foo', [
+        new ArrayDeclare('foo', new ArrayLiteral([
             new ConstInt(1),
             new ConstInt(2),
             new ConstInt(3),
-        ]),
+        ])),
     ),
     new Statement(
         new ForEachLoop(

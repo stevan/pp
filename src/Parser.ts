@@ -90,6 +90,7 @@ export class HMMM extends AST.AbstractNode {
     }
 }
 
+
 // -----------------------------------------------------------------------------
 
 export class Parser {
@@ -151,79 +152,100 @@ export class Parser {
         case 'SLICE':
             return new TODO(tree, 'handle SLICE');
         case 'OPERATION':
-            switch (tree.operator.token.source) {
-            // -----------------------------------------------------------------
-            // Assignment
-            // -----------------------------------------------------------------
-            case 'my':
+            switch (tree.operator.type) {
+            case 'LISTOP':
                 if (children.length == 1) {
-                    let operand = children[0] as Node;
-
-                    if (operand instanceof AST.ScalarStore) {
-                        return new AST.ScalarDeclare(operand.name, operand.value);
-                    }
-                    else if (operand instanceof AST.ArrayStore) {
-                        return new FIXME(tree, 'ArrayStore will not work properly without Array Literals')
-                    }
-                    else {
-                        return new TODO(tree, `Support assignment for Hashes, Code and Globs(?) -> GOT(${JSON.stringify(operand)})`)
-                    }
-                } else {
-                    return new ParserError(tree, children, `Expected one operands for my() and got ${JSON.stringify(children)}`)
+                    let list = children[0] as AST.ListExpression;
+                    return new AST.BuiltIn(tree.operator.token.source, list.items);
                 }
-            case 'our':
-                return new TODO(tree, 'Glob assignment');
-            case '=':
-                if (children.length == 2) {
-                    let lhs = children[0] as Node;
-                    let rhs = children[1] as Node;
-
-                    if (lhs instanceof AST.ScalarFetch) {
-                        return new AST.ScalarStore(lhs.name, rhs);
-                    }
-                    else if (lhs instanceof AST.ArrayFetch) {
-                        return new AST.ArrayStore(lhs.name, rhs);
-                    }
-                    else {
-                        return new TODO(tree, 'Support assignment for Hashes, Code and Globs(?)')
-                    }
-                } else {
-                    return new ParserError(tree, children, `Expected two operands for assignement(=) and got ${JSON.stringify(children)}`)
+                else {
+                    return new ParserError(tree, children, `Expected a ListExpression for a LISTOP ${JSON.stringify(children)}`)
                 }
-            // -----------------------------------------------------------------
-            // Math
-            // -----------------------------------------------------------------
-            case '+':
-                return new AST.Add(children[0] as Node, children[1] as Node);
-            case '-':
-                return new AST.Subtract(children[0] as Node, children[1] as Node);
-            case '*':
-                return new AST.Multiply(children[0] as Node, children[1] as Node);
-            case '/':
-                return new AST.Modulus(children[0] as Node, children[1] as Node);
-            case '%':
-                return new AST.Modulus(children[0] as Node, children[1] as Node);
-            // -----------------------------------------------------------------
-            // Equality
-            // -----------------------------------------------------------------
-            case '==':
-                return new AST.Equal(children[0] as Node, children[1] as Node);
-            case '!=':
-                return new AST.NotEqual(children[0] as Node, children[1] as Node);
-            // -----------------------------------------------------------------
-            // Ordering
-            // -----------------------------------------------------------------
-            case '<':
-                return new AST.LessThan(children[0] as Node, children[1] as Node);
-            case '>':
-                return new AST.GreaterThan(children[0] as Node, children[1] as Node);
-            case '<=':
-                return new AST.LessThanOrEqual(children[0] as Node, children[1] as Node);
-            case '>=':
-                return new AST.GreaterThanOrEqual(children[0] as Node, children[1] as Node);
-            // -----------------------------------------------------------------
+            case 'UNOP':
+                switch (tree.operator.token.source) {
+                // -----------------------------------------------------------------
+                // Assignment
+                // -----------------------------------------------------------------
+                case 'my':
+                    if (children.length == 1) {
+                        let operand = children[0] as Node;
+
+                        if (operand instanceof AST.ScalarStore) {
+                            return new AST.ScalarDeclare(operand.name, operand.value);
+                        }
+                        else if (operand instanceof AST.ArrayStore) {
+                            return new AST.ArrayDeclare(operand.name, operand.value);
+                        }
+                        else {
+                            return new TODO(tree, `Support assignment for Hashes, Code and Globs(?) -> GOT(${JSON.stringify(operand)})`)
+                        }
+                    } else {
+                        return new ParserError(tree, children, `Expected one operands for my() and got ${JSON.stringify(children)}`)
+                    }
+                case 'our':
+                    return new TODO(tree, 'Glob assignment');
+                default:
+                    return new ParserError(tree, children, `Unrecognized Unary Operator ${JSON.stringify(tree.operator)}`);
+                }
+            case 'BINOP':
+                switch (tree.operator.token.source) {
+                // -----------------------------------------------------------------
+                // Assignment
+                // -----------------------------------------------------------------
+                case '=':
+                    if (children.length == 2) {
+                        let lhs = children[0] as Node;
+                        let rhs = children[1] as Node;
+
+                        if (lhs instanceof AST.ScalarFetch) {
+                            return new AST.ScalarStore(lhs.name, rhs);
+                        }
+                        else if (lhs instanceof AST.ArrayFetch) {
+                            return new AST.ArrayStore(lhs.name, rhs);
+                        }
+                        else {
+                            return new TODO(tree, 'Support assignment for Hashes, Code and Globs(?)')
+                        }
+                    } else {
+                        return new ParserError(tree, children, `Expected two operands for assignement(=) and got ${JSON.stringify(children)}`)
+                    }
+                // -----------------------------------------------------------------
+                // Math
+                // -----------------------------------------------------------------
+                case '+':
+                    return new AST.Add(children[0] as Node, children[1] as Node);
+                case '-':
+                    return new AST.Subtract(children[0] as Node, children[1] as Node);
+                case '*':
+                    return new AST.Multiply(children[0] as Node, children[1] as Node);
+                case '/':
+                    return new AST.Modulus(children[0] as Node, children[1] as Node);
+                case '%':
+                    return new AST.Modulus(children[0] as Node, children[1] as Node);
+                // -----------------------------------------------------------------
+                // Equality
+                // -----------------------------------------------------------------
+                case '==':
+                    return new AST.Equal(children[0] as Node, children[1] as Node);
+                case '!=':
+                    return new AST.NotEqual(children[0] as Node, children[1] as Node);
+                // -----------------------------------------------------------------
+                // Ordering
+                // -----------------------------------------------------------------
+                case '<':
+                    return new AST.LessThan(children[0] as Node, children[1] as Node);
+                case '>':
+                    return new AST.GreaterThan(children[0] as Node, children[1] as Node);
+                case '<=':
+                    return new AST.LessThanOrEqual(children[0] as Node, children[1] as Node);
+                case '>=':
+                    return new AST.GreaterThanOrEqual(children[0] as Node, children[1] as Node);
+                // -----------------------------------------------------------------
+                default:
+                    return new ParserError(tree, children, `Unrecognized Binary Operator ${JSON.stringify(tree.operator)}`);
+                }
             default:
-                return new ParserError(tree, children, `Unrecognized Operator ${JSON.stringify(tree.operator)}`);
+                return new ParserError(tree, children, `Unrecognized Operator type ${JSON.stringify(tree.operator)}`);
             }
         case 'EXPRESSION':
             switch (tree.kind) {
@@ -235,12 +257,24 @@ export class Parser {
                 } else {
                     return new HMMM(tree, `... statements probably shouldn't have more than one child, but we got ${children.length}`);
                 }
+            case ExpressionKind.LITERAL:
+                switch (tree.lexed[0]?.token.source) {
+                case '+[':
+                    return new AST.ArrayLiteral(children);
+                case '+{':
+                    return new TODO(tree, 'implement hash literals')
+                default:
+                    return new ParserError(tree, children, `Unrecognized Expression Literal bracket ${JSON.stringify(tree)}`);
+                }
             case ExpressionKind.CONTROL:
                 return new TODO(tree, 'handle control blocks');
             case ExpressionKind.PARENS:
+                return new AST.ParenExpression(children);
+            case ExpressionKind.LIST:
+                return new AST.ListExpression(children);
             case ExpressionKind.SQUARE:
             case ExpressionKind.CURLY:
-                return new TODO(tree, 'handle expressions of different kinds () [] {}');
+                return new TODO(tree, 'handle expressions for [] {}');
             default:
                 return new ParserError(tree, children, `Unrecognized Expression kind ${JSON.stringify(tree)}`);
             }

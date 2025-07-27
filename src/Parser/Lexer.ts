@@ -7,6 +7,7 @@ export type LexedType =
     | 'LITERAL'
     | 'BINOP'
     | 'UNOP'
+    | 'LISTOP'
     | 'KEYWORD'
     | 'CONTROL'
     | 'BAREWORD'
@@ -59,74 +60,186 @@ export class Lexer {
                 }
                 else {
                     switch (src) {
-                    // ---------------------------------------------------------
-                    // Stuff
-                    // ---------------------------------------------------------
+                    // Statement Divider
+                    case ';' :
+                        yield { type : 'TERMINATOR', token : token }
+                        break;
+                    // Expression Seperator
+                    case ','  :
+                        yield { type : 'SEPERATOR', token : token }
+                        break;
+
+                    // =========================================================
+                    // Literals
+                    // =========================================================
+
                     // literals ...
                     case 'undef':
                     case 'true':
                     case 'false':
                         yield { type : 'LITERAL', token : token };
                         break;
-                    // Dividers
-                    case ';' :
-                        yield { type : 'TERMINATOR', token : token }
-                        break;
-                    case ','  :
-                        yield { type : 'SEPERATOR', token : token }
-                        break;
-                    // ---------------------------------------------------------
+
+                    // =========================================================
                     // Operators
-                    // ---------------------------------------------------------
+                    // =========================================================
+
                     // Logical
                     case '!'   :
                     case 'not' :
                         yield { type : 'UNOP', token : token }
                         break;
-                    case '&&'  : case '||' :
-                    case 'and' : case 'or' :
+
+                    // Logical
+                    case '&&'  : case '||' : case '//':
+                    case 'and' : case 'or' : case 'xor':
                     // Equality
                     case '==' : case '!=' :
                     case 'eq' : case 'ne' :
                     // Ordering
                     case '<'  : case '<=' : case '>'  : case '>=' :
                     case 'lt' : case 'le' : case 'gt' : case 'ge' :
+                    case '<=>': case 'cmp':
+
                     // Maths
                     case '+'  : case '-'  : case '*'  : case '/'  : case '%':
+
                     // String
-                    case '.'  :
+                    case '.' :
+                    case 'x' :
+
                     // Assignment
                     case '='  :
                         yield { type : 'BINOP', token : token }
                         break;
-                    // ---------------------------------------------------------
-                    // Control structures
-                    // ---------------------------------------------------------
-                    case 'if'      :
-                    //case 'elsif'   :
-                    case 'else'    :
-                    case 'unless'  :
-                    case 'while'   :
-                    case 'until'   :
-                    //case 'for'     :
-                    //case 'foreach' :
-                        yield { type : 'CONTROL', token : token }
-                        break;
-                    // ---------------------------------------------------------
-                    // Keywords
-                    // ---------------------------------------------------------
+
+                    // =========================================================
+                    // Builins
+                    // =========================================================
                     // Many keywords function as unary operators, so
                     // we do that here, and worry about problems later.
                     // For which we have the KEYWORD type.
                     // ---------------------------------------------------------
-                    // declarations
-                    case 'my'     :
-                    case 'our'    :
-                    case 'sub'    :
-                    // misc ...
-                    case 'return' :
+
+                    // polymorphic
+                    case 'defined' :
+                    case 'reverse' :
+                    case 'length'  :
+
+                    // arrays
+                    case 'pop'   :
+                    case 'shift' :
+
+                    // Hashes
+                    case 'keys'   :
+                    case 'values' :
+
+                    // numbers
+                    case 'abs'   :
+                    case 'sin'   :
+                    case 'cos'   :
+                    case 'atan2' :
+                    case 'sqrt'  :
+                    case 'exp'   :
+                    case 'log'   :
+                    case 'hex'   :
+                    case 'oct'   :
+                    case 'rand'  :
+
+                    // strings
+                    case 'lc'      :
+                    case 'lcfirst' :
+                    case 'uc'      :
+                    case 'ucfirst' :
                         yield { type : 'UNOP', token : token }
                         break;
+
+                    // strings
+                    case 'join'  :
+                    case 'split' :
+
+                    // arrays
+                    case 'push'    :
+                    case 'unshift' :
+
+                    // hashes
+                    case 'delete' :
+                    case 'exists' :
+
+                    // I/O
+                    case 'say'   :
+                    case 'print' :
+                    case 'warn'  :
+                    case 'die'   :
+                        yield { type : 'LISTOP', token : token }
+                        break;
+
+                    // =========================================================
+                    // Variable Scoping
+                    // =========================================================
+                    // these are also resolved at compile time for the most part
+                    // and affect where a variable gets read/written from.
+
+                    case 'my'     :
+                    case 'our'    :
+                    case 'state'  :
+                    case 'local'  :
+                        yield { type : 'UNOP', token : token }
+                        break;
+
+                    // =========================================================
+                    // Control structures
+                    // =========================================================
+                    // These are resolved at compile time to structure the
+                    // opcode tree and code flow
+                    // ---------------------------------------------------------
+
+                    case 'if'      :
+                    case 'unless'  :
+                    case 'elsif'   :
+                    case 'else'    :
+
+                    case 'while'   :
+                    case 'until'   :
+
+                    case 'for'     :
+                    case 'foreach' :
+
+                    case 'try'     :
+                    case 'catch'   :
+                    case 'finally' :
+
+                    case 'do'      :
+
+                    case 'continue' :
+                    case 'break'    :
+                    case 'last'     :
+                    case 'next'     :
+                    case 'redo'     :
+                    case 'return'   :
+                        yield { type : 'CONTROL', token : token }
+                        break;
+
+                    // =========================================================
+                    // Declaration Keywords
+                    // =========================================================
+                    // Keywords are resolved at compile time and will construct
+                    // the symbol table for runtime
+                    // ---------------------------------------------------------
+                    case 'use'     :
+                    case 'no'      :
+
+                    case 'sub'     :
+                    case 'package' :
+                    case 'class'   :
+                    case 'role'    :
+                    case 'method'  :
+                    case 'field'   :
+                        yield { type : 'KEYWORD', token : token }
+                        break;
+                    // =========================================================
+                    // No idea, so it is a Bareword ;)
+                    // =========================================================
                     default:
                         yield { type : 'BAREWORD', token : token };
                     }

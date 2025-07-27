@@ -9,6 +9,7 @@ import {
     ConstInt, ConstStr,
     ArrayDeclare,
     ArrayFetch,
+    ArrayLiteral,
     Say, Join,
 } from '../src/Parser/AST'
 
@@ -20,18 +21,18 @@ import { Interpreter } from '../src/Interpreter'
 
 /*
 
-my @foo = (1, 2, 3);
+my @foo = [ 1, 2, 3 ];
 say join ', ' => @foo;
 
 */
 
 let RUN = new Program([
     new Statement(
-        new ArrayDeclare('foo', [
+        new ArrayDeclare('foo', new ArrayLiteral([
             new ConstInt(1),
             new ConstInt(2),
             new ConstInt(3),
-        ]),
+        ])),
     ),
     new Statement(
         new Say([

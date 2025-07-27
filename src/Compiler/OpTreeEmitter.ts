@@ -13,7 +13,7 @@ import {
     ConstInt, ConstNumber, ConstStr, ConstTrue, ConstFalse, ConstUndef,
     GlobFetch, GlobStore, GlobDeclare, GlobVar,
     ScalarFetch, ScalarStore, ScalarDeclare,
-    ArrayFetch, ArrayStore, ArrayDeclare,
+    ArrayFetch, ArrayStore, ArrayDeclare, ArrayLiteral,
     ArrayElemFetch, ArrayElemStore,
     BuiltIn, Say, Join,
     BinaryOp, Add, Multiply, Subtract, Modulus,
@@ -161,13 +161,13 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
     emitStore (node : Node) : OpTree {
         let op : UNOP;
         switch (true) {
-        case node instanceof ScalarStore:
+        case (node instanceof ScalarStore || node instanceof ScalarDeclare):
             op = new UNOP('padsv_store', {
                 target    : { name : node.name },
                 introduce : false,
             });
             break;
-        case node instanceof ArrayStore:
+        case (node instanceof ArrayStore || node instanceof ArrayDeclare):
             op = new UNOP('padav_store', {
                 target    : { name : node.name },
                 introduce : false,
@@ -192,9 +192,19 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
             return tree;
         }
         else if (node instanceof ArrayDeclare) {
-            let op = new UNOP('padav_init', {
-                target    : { name : node.name },
-                introduce : true,
+            let tree = this.emitStore(node);
+            tree.leave.config.introduce = true;
+            return tree;
+        }
+        else {
+            throw new Error(`Unrecognized Node(${JSON.stringify(node)})`)
+        }
+    }
+
+    emitLiteral (node : Node) : OpTree {
+        if (node instanceof ArrayLiteral) {
+            let op = new UNOP('array_literal', {
+                length : node.items.length,
             });
 
             let pushmark = new OP('pushmark', {});
@@ -394,6 +404,7 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         case NodeKind.FETCH         : return this.emitFetch(n);
         case NodeKind.STORE         : return this.emitStore(n);
         case NodeKind.DECLARE       : return this.emitDeclare(n);
+        case NodeKind.LITERAL       : return this.emitLiteral(n);
         case NodeKind.ELEMFETCH     : return this.emitElemFetch(n as ArrayElemFetch);
         case NodeKind.ELEMSTORE     : return this.emitElemStore(n as ArrayElemStore);
         case NodeKind.SUBDEFINITION : return this.emitSubDefinition(n as SubDefinition);

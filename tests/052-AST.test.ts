@@ -7,6 +7,7 @@ import {
     Program,
     Statement,
     ConstInt, ConstStr,
+    ArrayLiteral,
     ArrayDeclare,
     ArrayFetch,
     ArrayElemFetch,
@@ -31,11 +32,11 @@ my @foo = (1, 2, 3);
 
 let RUN = new Program([
     new Statement(
-        new ArrayDeclare('foo', [
+        new ArrayDeclare('foo', new ArrayLiteral([
             new ConstInt(1),
             new ConstInt(2),
             new ConstInt(3),
-        ]),
+        ])),
     ),
     new Statement(
         new ArrayElemStore(

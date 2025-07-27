@@ -211,6 +211,15 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     // ---------------------------------------------------------------------
+    // Array/Hash/Code Literals
+    // ---------------------------------------------------------------------
+
+    opcodes.set('array_literal', (i, op) => {
+        i.stack.push( newAV(collectArgumentsFromStack(i)) );
+        return op.next;
+    });
+
+    // ---------------------------------------------------------------------
     // Glob operations
     // ---------------------------------------------------------------------
 
@@ -266,16 +275,6 @@ export function loadInstructionSet () : InstructionSet {
     // ---------------------------------------------------------------------
     // Pad AV operations
     // ---------------------------------------------------------------------
-
-    opcodes.set('padav_init', (i, op) => {
-        let av = newAV(collectArgumentsFromStack(i));
-        if (op.config.introduce) {
-            i.createLexical(op.config.target.name, av);
-        } else {
-            i.setLexical(op.config.target.name, av);
-        }
-        return op.next;
-    });
 
     opcodes.set('padav_store', (i, op) => {
         let av = i.stack.pop() as Any;

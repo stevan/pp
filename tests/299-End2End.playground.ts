@@ -21,10 +21,15 @@ import { Interpreter } from '../src/Interpreter'
 
 import { Node, Statement } from '../src/Parser/AST'
 
+/*
+my $x = 1;
+my $y = 2;
+my $z = $x + $x + $y + $x + $y + $x + $y + $x + $y;
+*/
+
 let $SOURCE = `
 
-my $foo = 1 + 2;
-my $bar = $foo * (10 - 100);
+say "hello", 100;
 
 `;
 

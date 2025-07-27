@@ -10,6 +10,7 @@ import { Lexed } from './Lexer'
 export enum ExpressionKind {
     // implicit
     BARE      = 'BARE',
+    LIST      = 'LIST',
     STATEMENT = 'STATEMENT',
     CONTROL   = 'CONTROL',
     // explicit
@@ -94,7 +95,11 @@ export class TreeParser {
             }
             else if (op.operator.type == 'UNOP') {
                 op.operands.push(expr.stack.pop() as Term);
-            } else {
+            }
+            else if (op.operator.type == 'LISTOP') {
+                op.operands.push(...(expr.stack.splice(0) as Term[]));
+            }
+            else {
                 throw new Error('NEVER HAPPENS!');
             }
             expr.stack.push(op);
@@ -109,6 +114,7 @@ export class TreeParser {
             if (top.kind == ExpressionKind.STATEMENT ||  top.kind == ExpressionKind.CONTROL) break;
             destination.stack.unshift(from.stack.pop() as ParseTree);
         }
+        //logger.log('NEW DESTINATION', destination);
         this.spillOperatorStack(destination);
         return destination;
     }
@@ -189,6 +195,18 @@ export class TreeParser {
                 }
                 break;
             case 'TERMINATOR':
+                if (top.kind == ExpressionKind.LIST) {
+                    //logger.log('PRE TERMINATE');
+                    //logger.log('STACK', stack);
+                    //logger.log('TOP', top);
+                    let list = stack.pop() as Expression;
+                    this.spillOperatorStack(list);
+                    list.lexed.push(lexed);
+                    // restore the top variable ...
+                    top = stack.at(-1) as Expression;
+                    // and push the list onto it
+                    top.stack.push(list);
+                }
                 top.stack.push(this.spillIntoExpression(top, ExpressionKind.STATEMENT, lexed));
                 if (stack.length == 1) {
                     yield top.stack.pop() as ParseTree;
@@ -196,6 +214,10 @@ export class TreeParser {
                 break;
             case 'SEPERATOR':
                 this.spillOperatorStack(top);
+                break;
+            case 'LISTOP':
+                top.opers.push(newOperation(lexed));
+                stack.push(newExpression(ExpressionKind.LIST, lexed));
                 break;
             case 'BINOP':
             case 'UNOP':

@@ -8,6 +8,7 @@ import {
     Statement,
     ConstInt, ConstStr,
     ArrayDeclare,
+    ArrayLiteral,
     ArrayFetch,
     ArrayElemFetch,
     Subtract,
@@ -31,11 +32,11 @@ say @foo[ @foo[2] - 1 ];
 
 let RUN = new Program([
     new Statement(
-        new ArrayDeclare('foo', [
+        new ArrayDeclare('foo', new ArrayLiteral([
             new ConstInt(1),
             new ConstInt(2),
             new ConstInt(3),
-        ]),
+        ])),
     ),
     new Statement(new Say([ new ConstStr('first  : '), new ArrayElemFetch('foo', new ConstInt(0)) ])),
     new Statement(new Say([

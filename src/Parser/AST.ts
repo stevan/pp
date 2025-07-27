@@ -26,6 +26,7 @@ export enum NodeKind {
     // ------------------------------------
     SCOPE         = 'SCOPE',
     CONST         = 'CONST',
+    LITERAL       = 'LITERAL',
     BUILTIN       = 'BUILTIN',
     BINARYOP      = 'BINARYOP',
     FETCH         = 'FETCH',
@@ -95,9 +96,34 @@ export abstract class AbstractNode implements Node {
     accept<T>(v : NodeVisitor<T>) : T { return v.visit(this) }
 }
 
-// these are nodes which are needed in the AST, but
-// are not used by the emitter, so we mark them as
-// being abstact
+// -----------------------------------------------------------------------------
+// Synthetic Nodes
+// -----------------------------------------------------------------------------
+
+export class ListExpression extends AbstractNode {
+    override kind : NodeKind = NodeKind.ABSTRACT;
+
+    constructor(
+        public items : Node[]
+    ) { super() }
+
+    deparse() : string {
+        return `${this.items.map((i) => i.deparse()).join(', ')}`;
+    }
+}
+
+
+export class ParenExpression extends AbstractNode {
+    override kind : NodeKind = NodeKind.ABSTRACT;
+
+    constructor(
+        public items : Node[]
+    ) { super() }
+
+    deparse() : string {
+        return `(${this.items.map((i) => i.deparse()).join(', ')})`;
+    }
+}
 
 // -----------------------------------------------------------------------------
 // Compilation Unit
@@ -390,6 +416,18 @@ export class ScalarDeclare extends ScalarStore {
 // Array Ops
 // -----------------------------------------------------------------------------
 
+export class ArrayLiteral extends AbstractNode {
+    override kind : NodeKind = NodeKind.LITERAL;
+
+    constructor(
+        public items : Node[],
+    ) { super() }
+
+    deparse() : string {
+        return `+[ ${this.items.map((i) => i.deparse()).join(', ')} ]`
+    }
+}
+
 export class ArrayElemFetch extends AbstractNode {
     override kind : NodeKind = NodeKind.ELEMFETCH;
 
@@ -441,11 +479,11 @@ export class ArrayDeclare extends AbstractNode {
 
     constructor(
         public name  : string,
-        public items : Node[],
+        public value : Node,
     ) { super() }
 
     deparse() : string {
-        return `my @${this.name} = (${this.items.map((i) => i.deparse()).join(', ')})`
+        return `my @${this.name} = (${this.value.deparse()})`
     }
 }
 
@@ -453,7 +491,7 @@ export class ArrayDeclare extends AbstractNode {
 // Builtins
 // -----------------------------------------------------------------------------
 
-export abstract class BuiltIn extends AbstractNode {
+export class BuiltIn extends AbstractNode {
     override kind : NodeKind = NodeKind.BUILTIN;
 
     constructor(

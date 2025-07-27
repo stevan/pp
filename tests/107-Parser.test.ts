@@ -170,13 +170,26 @@ new ParserTestCase('... nested control structures',
                           lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
                           kind: ExpressionKind.STATEMENT,
                           stack: [
-                            { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'say' } } },
                             {
                               type: 'OPERATION',
-                              operator: { type: 'BINOP', token: { type: 'ATOM', source: '.' } },
+                              operator: { type: 'LISTOP', token: { type: 'ATOM', source: 'say' } },
                               operands: [
-                                { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$x' } } },
-                                { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: '...' } } }
+                                {
+                                  type: 'EXPRESSION',
+                                  lexed: [ { type: 'LISTOP', token: { type: 'ATOM', source: 'say' } }, { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
+                                  kind: ExpressionKind.LIST,
+                                  stack: [
+                                    {
+                                      type: 'OPERATION',
+                                      operator: { type: 'BINOP', token: { type: 'ATOM', source: '.' } },
+                                      operands: [
+                                        { type: 'TERM', value: { type: 'IDENTIFIER', token: { type: 'ATOM', source: '$x' } } },
+                                        { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: '...' } } }
+                                      ]
+                                    }
+                                  ],
+                                  opers: []
+                                }
                               ]
                             }
                           ],
@@ -193,8 +206,21 @@ new ParserTestCase('... nested control structures',
                   lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
                   kind: ExpressionKind.STATEMENT,
                   stack: [
-                    { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'say' } } },
-                    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: '... the end' } } }
+                    {
+                      type: 'OPERATION',
+                      operator: { type: 'LISTOP', token: { type: 'ATOM', source: 'say' } },
+                      operands: [
+                        {
+                          type: 'EXPRESSION',
+                          lexed: [ { type: 'LISTOP', token: { type: 'ATOM', source: 'say' } }, { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
+                          kind: ExpressionKind.LIST,
+                          stack: [
+                            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: '... the end' } } }
+                          ],
+                          opers: []
+                        }
+                      ]
+                    }
                   ],
                   opers: []
                 }
@@ -239,8 +265,21 @@ new ParserTestCase('... nested control structures',
   lexed: [ { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
   kind: ExpressionKind.STATEMENT,
   stack: [
-    { type: 'TERM', value: { type: 'BAREWORD', token: { type: 'ATOM', source: 'say' } } },
-    { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'goodbye' } } }
+    {
+      type: 'OPERATION',
+      operator: { type: 'LISTOP', token: { type: 'ATOM', source: 'say' } },
+      operands: [
+        {
+          type: 'EXPRESSION',
+          lexed: [ { type: 'LISTOP', token: { type: 'ATOM', source: 'say' } }, { type: 'TERMINATOR', token: { type: 'ATOM', source: ';' } } ],
+          kind: ExpressionKind.LIST,
+          stack: [
+            { type: 'TERM', value: { type: 'LITERAL', token: { type: 'STRING', source: 'goodbye' } } }
+          ],
+          opers: []
+        }
+      ]
+    }
   ],
   opers: []
 }
