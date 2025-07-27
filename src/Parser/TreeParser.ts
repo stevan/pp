@@ -35,8 +35,8 @@ export type Expression = {
     lexed : Lexed[],
     kind  : ExpressionKind,
     stack : ParseTree[], // this stores the components of the expression
-    opers : Operation[], // this is just an operator stack, for mini shunting yard
     other : ParseTree[], // this is for any expression which might branch (if/else, etc.)
+    opers : Operation[], // this is just an operator stack, for mini shunting yard
   }
 
 export type ParseTree = Term | Expression | Operation
@@ -49,8 +49,8 @@ export function newExpression (kind: ExpressionKind, orig : Lexed, body: ParseTr
         lexed : [ orig ],
         kind  : kind,
         stack : body,
-        opers : [],
         other : [],
+        opers : [],
     } as Expression
 }
 
@@ -108,7 +108,7 @@ export class TreeParser {
         }
     }
 
-    spillIntoExpression (from: Expression, to: ExpressionKind, orig: Lexed) : Expression {
+    private spillIntoExpression (from: Expression, to: ExpressionKind, orig: Lexed) : Expression {
         let destination = newExpression(to, orig);
         destination.opers.push(...from.opers.splice(0));
         while (from.stack.length > 0) {
@@ -116,117 +116,159 @@ export class TreeParser {
             if (top.kind == ExpressionKind.STATEMENT ||  top.kind == ExpressionKind.CONTROL) break;
             destination.stack.unshift(from.stack.pop() as ParseTree);
         }
-        //logger.log('NEW DESTINATION', destination);
         this.spillOperatorStack(destination);
         return destination;
     }
 
     *run (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
-        let stack : Expression[] = [
+        let STACK : Expression[] = [
             {
                 type  : 'EXPRESSION',
                 lexed : [],
                 kind  : ExpressionKind.BARE,
                 stack : [],
-                opers : [],
                 other : [],
+                opers : [],
             } as Expression
         ];
 
-        let control_stack  : Expression[] = []; // for attaching ifs to elses
-        let deferred_stack : Expression[] = []; // for deferring ifs until elses are done
+        const shouldYieldStatement = () : boolean => STACK.length == 1;
 
         for (const lexed of source) {
             if (this.config.verbose) {
                 logger.log('== BEFORE ===========================================');
-                logger.log('STACK :', stack);
-                logger.log('CNTRL :', control_stack);
-                logger.log('DEFER :', deferred_stack);
+                logger.log('STACK :', STACK);
                 logger.log('-----------------------------------------------------');
                 logger.log('NEXT  :', lexed);
             }
 
-            let top = stack.at(-1) as Expression;
-
-            if (stack.length == 1 && deferred_stack.length > 0 && lexed.type != 'CONTROL') {
-                yield deferred_stack.pop() as Expression;
-            }
+            let TOP = STACK.at(-1) as Expression;
 
             switch (lexed.type) {
+            // -----------------------------------------------------------------
+            // Expression Entry points
+            // -----------------------------------------------------------------
             case 'CONTROL':
+                // control block entry position
                 let controlExpr = newExpression(ExpressionKind.CONTROL, lexed);
-
-                switch(lexed.token.source) {
-                case 'if':
-                case 'unless':
-                    control_stack.push(controlExpr);
-                    break;
-                case 'else':
-                    if (control_stack.length > 0) {
-                        let parentControl = control_stack.pop() as Expression;
-                        let keyword = parentControl.lexed[0]?.token.source ?? 'NEVER SHOULD HAPPEN!';
-                        if (keyword == 'if' || keyword == 'unless') {
-                            parentControl.other.push(controlExpr);
-                        } else {
-                            throw new Error('An else block can only follow if and unless');
-                        }
-                    } else {
-                        throw new Error('Cannot have an else on its own')
-                    }
-                    break;
-                }
-
-                stack.push(controlExpr);
+                STACK.push(controlExpr);
                 break;
             case 'OPEN':
-                stack.push(newExpression(BracketToKind(lexed.token.source), lexed));
+                // expression enty point
+                STACK.push(newExpression(BracketToKind(lexed.token.source), lexed));
                 break;
+            // -----------------------------------------------------------------
+            // Current Expression Entry points
+            // -----------------------------------------------------------------
+            // these get pushed into the top stack right away
+            case 'LITERAL':
+            case 'BAREWORD':
+            case 'KEYWORD':
+            case 'IDENTIFIER':
+                TOP.stack.push(newTerm(lexed));
+                break;
+            // these get pushed into our mini-shunting yard
+            case 'BINOP':
+            case 'UNOP':
+                TOP.opers.push(newOperation(lexed));
+                break;
+            // this gets pushed into the mini-shunting yard
+            // and a new LIST expression is pushed onto the
+            // stack to be operated on ...
+            case 'LISTOP':
+                TOP.opers.push(newOperation(lexed));
+                STACK.push(newExpression(ExpressionKind.LIST, lexed));
+                break;
+
+            // -----------------------------------------------------------------
+            // Current Expression Exit points
+            // -----------------------------------------------------------------
+
+            // this spills the operator stack in the top
+            // node, and applies the shunting yard stuff
+            case 'SEPERATOR':
+                this.spillOperatorStack(TOP);
+                break;
+
+            // this ends an expression and wraps it in
+            // a statement
+            case 'TERMINATOR':
+                if (TOP.kind == ExpressionKind.LIST) {
+                    let list = STACK.pop() as Expression;
+                    this.spillOperatorStack(list);
+                    list.lexed.push(lexed);
+                    // restore the top variable ...
+                    TOP = STACK.at(-1) as Expression;
+                    // and push the list onto it
+                    TOP.stack.push(list);
+                }
+
+                TOP.stack.push(this.spillIntoExpression(TOP, ExpressionKind.STATEMENT, lexed));
+
+                if (shouldYieldStatement()) {
+                    yield (STACK[0] as Expression).stack.pop() as ParseTree;
+                }
+                break;
+
+            // this exits the current expression
             case 'CLOSE':
-                let expr = stack.pop() as Expression;
+                let expr = STACK.pop() as Expression;
                 this.spillOperatorStack(expr);
                 expr.lexed.push(lexed);
 
                 // restore the top variable ...
-                top = stack.at(-1) as Expression;
+                TOP = STACK.at(-1) as Expression;
 
+                // Now check the TOP variable to see
+                // if we need to do anything more
                 switch (expr.kind) {
                 case ExpressionKind.CURLY:
-                    if (top.kind == ExpressionKind.CONTROL) {
-                        top.stack.push(expr);
-                        let control = stack.pop() as Expression;
+                    // if we had a CURLY, whose parent is a CONTROL
+                    // then we know it is a block ...
+                    if (TOP.kind == ExpressionKind.CONTROL) {
+                        // pop off TOP as the control expression
+                        let control = STACK.pop() as Expression;
 
-                        let keyword = control.lexed[0]?.token.source ?? 'NEVER SHOULD HAPPEN!';
-                        if (keyword == 'if' || keyword == 'unless') {
-                            deferred_stack.push(control);
-                            break;
-                        }
-                        else if (keyword == 'else') {
-                            control = deferred_stack.pop() as Expression;
-                        }
+                        // then we need to add the block into
+                        // the control expression's stack
+                        TOP.stack.push(expr);
 
-                        if (stack.length == 1) {
+                        // restore the top variable ...
+                        TOP = STACK.at(-1) as Expression;
+
+                        // now decide if we should yield
+                        // or if this needs to put pushed
+                        // to the TOP variable's stack?
+                        if (shouldYieldStatement()) {
                             yield control;
                         } else {
-                            (stack.at(-1) as Expression).stack.push(control);
+                            TOP.stack.push(control);
                         }
                         break;
                     }
                     // NOTE the fall through here, this handles
-                    // both array and hash slices ... (sorry)
+                    // both array and hash literals and slices
+                    // sorry :(
                 case ExpressionKind.SQUARE:
-                    // check to see if this is a slice
-                    let prev = top.stack.at(-1) as ParseTree;
+                    // check to see if there is anything in the
+                    // the TOP stack ...
+                    let prev = TOP.stack.at(-1) as ParseTree;
+
+                    // if there is nothing ...
                     if (prev == undefined) {
-                        if (stack.length == 1) {
+                        // XXX - what does this do?
+                        if (shouldYieldStatement()) {
                             yield expr;
                             break;
                         }
                     }
+                    // if we have something else on the
+                    // TOP stack, then we check it ...
                     else if (prev.type == 'TERM' && prev.value.type == 'IDENTIFIER') {
                         // if the previous token is an IDENTIFIER,
                         // then we have a slice ...
+                        TOP.stack.push(newSlice(TOP.stack.pop() as Term, expr));
 
-                        top.stack.push(newSlice(top.stack.pop() as Term, expr));
                         // we've pushed the wrapped experssion on the stack
                         // so we can break out of this now
                         break;
@@ -235,43 +277,8 @@ export class TreeParser {
                 case ExpressionKind.PARENS:  // and we ignore these for now
                 case ExpressionKind.LITERAL: // and these should just fall through
                 default:                     // and this is where we fall
-                    top.stack.push(expr);    // which is the default action
+                    TOP.stack.push(expr);    // which is the default action
                 }
-                break;
-            case 'TERMINATOR':
-                if (top.kind == ExpressionKind.LIST) {
-                    //logger.log('PRE TERMINATE');
-                    //logger.log('STACK', stack);
-                    //logger.log('TOP', top);
-                    let list = stack.pop() as Expression;
-                    this.spillOperatorStack(list);
-                    list.lexed.push(lexed);
-                    // restore the top variable ...
-                    top = stack.at(-1) as Expression;
-                    // and push the list onto it
-                    top.stack.push(list);
-                }
-                top.stack.push(this.spillIntoExpression(top, ExpressionKind.STATEMENT, lexed));
-                if (stack.length == 1) {
-                    yield top.stack.pop() as ParseTree;
-                }
-                break;
-            case 'SEPERATOR':
-                this.spillOperatorStack(top);
-                break;
-            case 'LISTOP':
-                top.opers.push(newOperation(lexed));
-                stack.push(newExpression(ExpressionKind.LIST, lexed));
-                break;
-            case 'BINOP':
-            case 'UNOP':
-                top.opers.push(newOperation(lexed));
-                break;
-            case 'LITERAL':
-            case 'BAREWORD':
-            case 'KEYWORD':
-            case 'IDENTIFIER':
-                top.stack.push(newTerm(lexed));
                 break;
             default:
                 throw new Error(`Unknown lexed type ${lexed.type}`);
@@ -279,23 +286,19 @@ export class TreeParser {
 
             if (this.config.verbose) {
                 logger.log('-- AFTER --------------------------------------------');
-                logger.log('STACK :', stack);
+                logger.log('STACK :', STACK);
                 logger.log('=====================================================\n');
             }
         }
 
-        while (deferred_stack.length > 0) {
-            yield deferred_stack.pop() as Expression;
-        }
-
         if (this.config.verbose) {
             logger.log('== FINAL ============================================');
-            logger.log('STACK :', stack);
+            logger.log('STACK :', STACK);
             logger.log('=====================================================\n');
         }
 
-        while (stack.length > 1) {
-            yield stack.pop() as ParseTree;
+        while (STACK.length > 1) {
+            yield STACK.pop() as ParseTree;
         }
     }
 }

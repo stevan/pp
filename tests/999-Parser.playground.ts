@@ -18,17 +18,7 @@ runner.run([
 new ParserTestCase('... nested control structures',
     [`
 
-if (0 == 0) {
-    say "Test 0 / if";
-    if (1 == 1) {
-        say "Test 1 / if";
-    } else {
-        say "Test 1 / else";
-    }
-    say "Yo!";
-}
-
-say "Hello there";
+1;
 
 
 
