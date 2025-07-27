@@ -496,7 +496,24 @@ export class ArrayDeclare extends AbstractNode {
 // Builtins
 // -----------------------------------------------------------------------------
 
-export class BuiltIn extends AbstractNode {
+export abstract class BuiltIn extends AbstractNode {
+    override kind : NodeKind = NodeKind.BUILTIN;
+}
+
+export class BuiltInUnary extends BuiltIn {
+    override kind : NodeKind = NodeKind.BUILTIN;
+
+    constructor(
+        public name : string, // TODO: make this an enum or something
+        public arg  : Node,
+    ) { super() }
+
+    deparse() : string {
+        return `${this.name}(${this.arg.deparse()})`
+    }
+}
+
+export class BuiltInFunction extends BuiltIn {
     override kind : NodeKind = NodeKind.BUILTIN;
 
     constructor(
@@ -509,11 +526,11 @@ export class BuiltIn extends AbstractNode {
     }
 }
 
-export class Say extends BuiltIn {
+export class Say extends BuiltInFunction {
     constructor(args : Node[]) { super('say', args) }
 }
 
-export class Join extends BuiltIn {
+export class Join extends BuiltInFunction {
     constructor(args : Node[]) { super('join', args) }
 }
 

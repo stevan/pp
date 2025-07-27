@@ -156,7 +156,7 @@ export class Parser {
             case 'LISTOP':
                 if (children.length == 1) {
                     let list = children[0] as AST.ListExpression;
-                    return new AST.BuiltIn(tree.operator.token.source, list.items);
+                    return new AST.BuiltInFunction(tree.operator.token.source, list.items);
                 }
                 else {
                     return new ParserError(tree, children, `Expected a ListExpression for a LISTOP ${JSON.stringify(children)}`)
@@ -185,7 +185,7 @@ export class Parser {
                 case 'our':
                     return new TODO(tree, 'Glob assignment');
                 default:
-                    return new ParserError(tree, children, `Unrecognized Unary Operator ${JSON.stringify(tree.operator)}`);
+                    return new AST.BuiltInUnary(tree.operator.token.source, children[0] as Node);
                 }
             case 'BINOP':
                 switch (tree.operator.token.source) {

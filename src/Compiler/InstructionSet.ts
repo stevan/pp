@@ -19,6 +19,7 @@ import {
 
     assertIsSV, assertIsPV, assertIsIV, assertIsCV, assertIsAV,
     assertIsGlob, assertIsBool,
+    assertIsComparable, assertIsNumeric, assertIsStringy,
 
     SVtoPV, AnytoPV, isUndef, isTrue,
     setGlobScalar, setGlobCode, getGlobSlot, GlobSlot,
@@ -310,7 +311,7 @@ export function loadInstructionSet () : InstructionSet {
         assertIsAV(av);
 
         let idx = i.stack.pop() as Any;
-        assertIsIV(idx);
+        assertIsNumeric(idx);
 
         // FIXME: Support negative indices
         let elem = av.contents[idx.value];
@@ -327,7 +328,7 @@ export function loadInstructionSet () : InstructionSet {
 
         let elem = i.stack.pop() as Any;
         let idx  = i.stack.pop() as Any;
-        assertIsIV(idx);
+        assertIsNumeric(idx);
 
         // FIXME: Support negative indices
         av.contents[idx.value] = elem;
@@ -338,9 +339,9 @@ export function loadInstructionSet () : InstructionSet {
     // ---------------------------------------------------------------------
     // Operators
     // ---------------------------------------------------------------------
-    // NOTE:
-    // These are all work only on IVs for now
-    // see comments in LiftNumericBinOp above.
+
+    opcodes.set('lc', LiftStringyUnOp((s) => s.toLowerCase()));
+    opcodes.set('uc', LiftStringyUnOp((s) => s.toUpperCase()));
 
     // ---------------------------------------------------------------------
     // Maths
@@ -349,6 +350,7 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('add',      LiftNumericBinOp((n, m) => n + m));
     opcodes.set('subtract', LiftNumericBinOp((n, m) => n - m));
     opcodes.set('multiply', LiftNumericBinOp((n, m) => n * m));
+    opcodes.set('divide',   LiftNumericBinOp((n, m) => n / m));
     opcodes.set('modulus',  LiftNumericBinOp((n, m) => n % m));
 
     // ---------------------------------------------------------------------
@@ -397,27 +399,31 @@ function collectArgumentsFromStack (i : StackFrame) : Any[] {
 }
 
 // -----------------------------------------------------------------------------
-// Utils to lift some BinOps
+// Utils to lift some Ops
 // -----------------------------------------------------------------------------
 
-function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
-    // FIXME:
-    // This currenly only works for IVs, it should
-    // detect if either check the lhs/rhs values at
-    // runtime and DWIM, or the compiler should figure
-    // it out and use the correct opcode. But this is
-    // an MVP, so this is fine for now.
+function LiftStringyUnOp (f : (s: string) => string) : Opcode {
     return (i, op) => {
         let rhs = i.stack.pop() as Any;
-        let lhs = i.stack.pop() as Any;
-        assertIsIV(lhs);
-        assertIsIV(rhs);
-        i.stack.push(newIV( f(lhs.value, rhs.value) ));
+        assertIsStringy(rhs);
+        i.stack.push(newPV( f(rhs.value) ));
         return op.next;
     }
 }
 
-function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
+function LiftNumericBinOp (f : (n: number, m: number) => number) : Opcode {
+    return (i, op) => {
+        let rhs = i.stack.pop() as Any;
+        let lhs = i.stack.pop() as Any;
+        assertIsNumeric(lhs);
+        assertIsNumeric(rhs);
+        // FIXME: this should not always return an NV
+        i.stack.push(newNV( f(lhs.value, rhs.value) ));
+        return op.next;
+    }
+}
+
+function LiftNumericPredicate (f : (n: any, m: any) => boolean) : Opcode {
     // FIXME:
     // This currenly only works for IVs, it should
     // detect if either check the lhs/rhs values at
@@ -427,8 +433,8 @@ function LiftNumericPredicate (f : (n: number, m: number) => boolean) : Opcode {
     return (i, op) => {
         let rhs = i.stack.pop() as Any;
         let lhs = i.stack.pop() as Any;
-        assertIsIV(lhs);
-        assertIsIV(rhs);
+        assertIsComparable(lhs);
+        assertIsComparable(rhs);
         i.stack.push( f(lhs.value, rhs.value) ? SV_True : SV_False );
         return op.next;
     }

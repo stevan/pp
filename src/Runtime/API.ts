@@ -141,9 +141,9 @@ export class OpTree {
 // Values
 // =============================================================================
 
-export type Undef = { type : 'UNDEF' }
-export type True  = { type : 'TRUE'  }
-export type False = { type : 'FALSE' }
+export type Undef = { type : 'UNDEF', value : undefined }
+export type True  = { type : 'TRUE',  value : boolean   }
+export type False = { type : 'FALSE', value : boolean   }
 
 export type IV = { type : 'INT', value : number }
 export type NV = { type : 'NUM', value : number }
@@ -186,17 +186,21 @@ export type Stash = {
 
 export type GV = Glob | Stash
 
-export type Bool = Undef | True | False
+export type Bool       = Undef | True | False
+export type Numeric    = IV | NV
+export type Stringy    = PV
+export type Comparable = Numeric | Bool | Stringy
+
 export type Any = SV | AV | HV | CV | GV
 
 // =============================================================================
 
-export const SV_Undef : Undef = { type : 'UNDEF' }
-export const SV_True  : True  = { type : 'TRUE'  }
-export const SV_False : False = { type : 'FALSE' }
-export const SV_Yes   : IV    = { type : 'INT', value : 1 }
-export const SV_No    : IV    = { type : 'INT', value : 0 }
-export const SV_Empty : PV    = { type : 'STR', value : '' }
+export const SV_Undef : Undef = { type : 'UNDEF', value : undefined }
+export const SV_True  : True  = { type : 'TRUE',  value : true  }
+export const SV_False : False = { type : 'FALSE', value : false }
+export const SV_Yes   : IV    = { type : 'INT',   value : 1 }
+export const SV_No    : IV    = { type : 'INT',   value : 0 }
+export const SV_Empty : PV    = { type : 'STR',   value : '' }
 
 export function isUndef (sv : Any) : sv is Undef { return sv.type == 'UNDEF' }
 export function isTrue  (sv : Any) : sv is True  { return sv.type == 'TRUE'  }
@@ -222,6 +226,30 @@ export function assertIsBool (sv : Any) : asserts sv is Bool {
     if (!isBool(sv)) throw new Error(`Not Bool ??(${JSON.stringify(sv)})`)
 }
 
+export function isNumeric (sv : Any) : sv is Numeric {
+    return isIV(sv) || isNV(sv);
+}
+
+export function assertIsNumeric (sv : Any) : asserts sv is Numeric {
+    if (!isNumeric(sv)) throw new Error(`Not Number ??(${JSON.stringify(sv)})`)
+}
+
+export function isStringy (sv : Any) : sv is Stringy {
+    return isPV(sv)
+}
+
+export function assertIsStringy (sv : Any) : asserts sv is Stringy {
+    if (!isStringy(sv)) throw new Error(`Not String ??(${JSON.stringify(sv)})`)
+}
+
+export function isComparable (sv : Any) : sv is Comparable {
+    return isNumeric(sv) || isBool(sv) || isStringy(sv);
+}
+
+export function assertIsComparable (sv : Any) : asserts sv is Comparable {
+    if (!isComparable(sv)) throw new Error(`Not Comparable ??(${JSON.stringify(sv)})`)
+}
+
 // -----------------------------------------------------------------------------
 
 export function newIV (value : number) : IV { return { type : 'INT', value } }
@@ -231,7 +259,6 @@ export function newPV (value : string) : PV { return { type : 'STR', value } }
 export function isIV (sv : Any) : sv is IV { return sv.type == 'INT' }
 export function isNV (sv : Any) : sv is NV { return sv.type == 'NUM' }
 export function isPV (sv : Any) : sv is PV { return sv.type == 'STR' }
-
 
 export function assertIsIV (sv : Any) : asserts sv is IV {
     if (!isIV(sv)) throw new Error(`Not IV ??(${JSON.stringify(sv)})`)

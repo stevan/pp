@@ -16,7 +16,7 @@ import {
     ScalarFetch, ScalarStore, ScalarDeclare,
     ArrayFetch, ArrayStore, ArrayDeclare, ArrayLiteral,
     ArrayElemFetch, ArrayElemStore,
-    BuiltIn, Say, Join,
+    BuiltIn, BuiltInFunction, BuiltInUnary, Say, Join,
     BinaryOp, Add, Multiply, Subtract, Modulus,
     Equal, NotEqual,
     LessThan, GreaterThan, LessThanOrEqual, GreaterThanOrEqual,
@@ -103,24 +103,38 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
     // -------------------------------------------------------------------------
 
     emitBuiltIn (node : BuiltIn) : OpTree {
-        let op       = new LISTOP(node.name, { builtin : true });
-        let pushmark = new OP('pushmark', {});
+        if (node instanceof BuiltInFunction) {
+            let op       = new LISTOP(node.name, { builtin : true });
+            let pushmark = new OP('pushmark', {});
 
-        op.first = pushmark;
+            op.first = pushmark;
 
-        let curr = pushmark;
-        for (const arg of node.args) {
-            let a = this.visit(arg);
+            let curr = pushmark;
+            for (const arg of node.args) {
+                let a = this.visit(arg);
 
-            curr.next    = a.enter;
-            curr.sibling = a.leave;
+                curr.next    = a.enter;
+                curr.sibling = a.leave;
 
-            curr = a.leave;
+                curr = a.leave;
+            }
+
+            curr.next = op;
+
+            return new OpTree(pushmark, op);
         }
+        else if (node instanceof BuiltInUnary) {
+            let arg = this.visit(node.arg);
+            let op  = new UNOP(node.name, { builtin : true });
 
-        curr.next = op;
+            arg.leave.next = op;
+            op.first       = arg.leave;
 
-        return new OpTree(pushmark, op);
+            return new OpTree(arg.enter, op);
+        }
+        else {
+            throw new Error('Unrecognized BUILTIN type');
+        }
     }
 
     // -------------------------------------------------------------------------
