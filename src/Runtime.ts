@@ -309,12 +309,26 @@ export class Thread {
 
     toSTDOUT (args : PV[]) : void {
         this.STD_buffer.push(...args);
-        console.log('STDOUT>', args.map((pv) => pv.value).join(''));
+        if (this.config.DEBUG) {
+            console.log('STDOUT>', args.map((pv) => pv.value).join(''));
+        } else {
+            if (!this.config.QUIET) {
+                // FIXME: this should use stdout
+                console.log(args.map((pv) => pv.value).join(''));
+            }
+        }
     }
 
     toSTDERR (args : PV[]) : void {
         this.ERR_buffer.push(...args);
-        console.log('STDERR>', args.map((pv) => pv.value).join(''));
+        if (this.config.DEBUG) {
+            console.log('STDERR>', args.map((pv) => pv.value).join(''));
+        } else {
+            if (!this.config.QUIET) {
+                // FIXME: this should use stderr
+                console.log(args.map((pv) => pv.value).join(''));
+            }
+        }
     }
 
 }
