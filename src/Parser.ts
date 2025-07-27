@@ -269,7 +269,11 @@ export class Parser {
             case ExpressionKind.CONTROL:
                 return new TODO(tree, 'handle control blocks');
             case ExpressionKind.PARENS:
-                return new AST.ParenExpression(children);
+                if (children.length == 1) {
+                    return new AST.ParenExpression(children[0] as Node);
+                } else {
+                    return new AST.ListExpression(children);
+                }
             case ExpressionKind.LIST:
                 return new AST.ListExpression(children);
             case ExpressionKind.SQUARE:

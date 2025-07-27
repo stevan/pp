@@ -80,6 +80,17 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('goto', (i, op) => op.next);
 
     // ---------------------------------------------------------------------
+    // Lists
+    // ---------------------------------------------------------------------
+
+    // just leaves everything on the stack ;)
+    opcodes.set('list', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+        i.stack.push(...args);
+        return op.next;
+    });
+
+    // ---------------------------------------------------------------------
     // Sub Calls
     // ---------------------------------------------------------------------
 

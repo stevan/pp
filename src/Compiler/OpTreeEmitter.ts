@@ -8,6 +8,7 @@ import {
     NodeVisitor, Node, NodeKind,
     Scope,
     Program, Block, Statement,
+    ExpressionNode, ListExpression, ParenExpression,
     SubBody, SubDefinition, SubCall, SubReturn,
     Conditional, ForEachLoop,
     ConstInt, ConstNumber, ConstStr, ConstTrue, ConstFalse, ConstUndef,
@@ -316,6 +317,34 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         return new OpTree(s, n.leave);
     }
 
+    emitExpression (node : ExpressionNode) : OpTree {
+        if (node instanceof ParenExpression) {
+            return this.visit(node.item);
+        }
+        else if (node instanceof ListExpression) {
+            let op = new LISTOP('list', {});
+            let pushmark = new OP('pushmark', {});
+
+            op.first = pushmark;
+
+            let curr = pushmark;
+            for (const item of node.items) {
+                let i = this.visit(item);
+
+                curr.next    = i.enter;
+                curr.sibling = i.leave;
+
+                curr = i.leave;
+            }
+            curr.next = op;
+
+            return new OpTree(pushmark, op);
+        }
+        else {
+            throw new Error("Unkown ExpressionNode type");
+        }
+    }
+
     // -------------------------------------------------------------------------
 
     emitConditional (node : Conditional) : OpTree {
@@ -411,6 +440,7 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         case NodeKind.SUBCALL       : return this.emitSubCall(n as SubCall);
         case NodeKind.SUBRETURN     : return this.emitSubReturn(n as SubReturn);
         case NodeKind.STATEMENT     : return this.emitStatement(n as Statement);
+        case NodeKind.EXPRESSION    : return this.emitExpression(n as ExpressionNode);
         case NodeKind.CONDITIONAL   : return this.emitConditional(n as Conditional);
         case NodeKind.FOREACHLOOP   : return this.emitForEachLoop(n as ForEachLoop);
         case NodeKind.GLOBVAR       : return this.emitGlobVar(n as GlobVar);

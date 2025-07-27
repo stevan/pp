@@ -29,7 +29,7 @@ my $z = $x + $x + $y + $x + $y + $x + $y + $x + $y;
 
 let $SOURCE = `
 
-say "hello", 100;
+say(("hello", (100, (2 + 3))));
 
 `;
 

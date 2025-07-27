@@ -51,6 +51,7 @@ export enum NodeKind {
     // Statements
     // ------------------------------------
     STATEMENT     = 'STATEMENT',
+    EXPRESSION    = 'EXPRESSION',
 
     // ------------------------------------
     // Constrol structures
@@ -100,8 +101,12 @@ export abstract class AbstractNode implements Node {
 // Synthetic Nodes
 // -----------------------------------------------------------------------------
 
-export class ListExpression extends AbstractNode {
-    override kind : NodeKind = NodeKind.ABSTRACT;
+export abstract class ExpressionNode extends AbstractNode {
+    override kind : NodeKind = NodeKind.EXPRESSION;
+}
+
+export class ListExpression extends ExpressionNode {
+    override kind : NodeKind = NodeKind.EXPRESSION;
 
     constructor(
         public items : Node[]
@@ -113,15 +118,15 @@ export class ListExpression extends AbstractNode {
 }
 
 
-export class ParenExpression extends AbstractNode {
-    override kind : NodeKind = NodeKind.ABSTRACT;
+export class ParenExpression extends ExpressionNode {
+    override kind : NodeKind = NodeKind.EXPRESSION;
 
     constructor(
-        public items : Node[]
+        public item : Node
     ) { super() }
 
     deparse() : string {
-        return `(${this.items.map((i) => i.deparse()).join(', ')})`;
+        return `(${this.item.deparse()})`;
     }
 }
 
