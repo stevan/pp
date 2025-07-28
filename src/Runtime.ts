@@ -278,7 +278,9 @@ export class Thread {
             depth = this.frames.length
 
             if (this.config.DEBUG) {
-                logger.group(`${frame.optree.enter.config.name} : OP[${op.name}, ${op.metadata.uid}]`);
+                logger.group(
+
+    `\x1b[32m${frame.optree.enter.config.name}\x1b[0m : OP[\x1b[32m${op.name}\x1b[0m, \x1b[32m${op.metadata.uid}]\x1b[0m`);
             }
 
             let next_op = opcode(frame, op);
