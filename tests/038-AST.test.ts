@@ -9,7 +9,7 @@ import {
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobDeclare, GlobFetch,
     Conditional, Equal, Say,
-    SubDefinition, SubCall, SubReturn, SubBody,
+    SubDefinition, SubCall, SubReturn, SubBody, Bareword, ListExpression
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
@@ -31,9 +31,9 @@ sub multipler ($n, $m) { return $n * $m }
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
-            'multipler',
-            [ 'n', 'm' ],
-            [
+            new Bareword('multipler'),
+            new ListExpression([ new ScalarFetch('n'), new ScalarFetch('m') ]),
+            new Block([
                 new Statement(
                     new SubReturn(
                         new Multiply(
@@ -42,14 +42,14 @@ let BEGIN = new Program([
                         )
                     )
                 )
-            ]
+            ])
         )
     ),
     new Statement(
         new SubDefinition(
-            'adder',
-            [ 'n', 'm' ],
-            [
+            new Bareword('adder'),
+            new ListExpression([ new ScalarFetch('n'), new ScalarFetch('m') ]),
+            new Block([
                 new Statement(
                     new SubReturn(
                         new Add(
@@ -61,7 +61,7 @@ let BEGIN = new Program([
                         )
                     )
                 )
-            ]
+            ])
         )
     )
 ]);

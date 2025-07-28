@@ -10,7 +10,7 @@ import {
     ConstUndef, GlobVar, GlobDeclare, GlobFetch,
     Conditional, Equal,
     SubDefinition, SubCall, SubReturn, SubBody, Say,
-    ParenExpression,
+    ParenExpression, ListExpression, Bareword
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
@@ -34,9 +34,9 @@ sub gcd ($a, $b) {
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
-            'gcd',
-            [ 'a', 'b' ],
-            [
+            new Bareword('gcd'),
+            new ListExpression([ new ScalarFetch('a'), new ScalarFetch('b') ]),
+            new Block([
                 new Statement(
                     new Conditional(
                         new ParenExpression(
@@ -70,7 +70,7 @@ let BEGIN = new Program([
                         ])
                     )
                 )
-            ]
+            ])
         )
     )
 ]);

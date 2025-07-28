@@ -10,12 +10,12 @@ import { EndToEndTestRunner } from '../src/Tester/EndToEndTestRunner'
 
 let interpreter = EndToEndTestRunner([`
 
-1 + 2;
-1 + 2 - 3;
-1 + (2 - 3);
-(1 + 2) - 3;
-(1 + 2) - (3 + 4);
-((1 + 2) - ((3 * 4) / 5));
+    say 1 + 2;
+    say 1 + 2 - 3;
+    say 1 + (2 - 3);
+    say (1 + 2) - 3;
+    say (1 + 2) - (3 + 4);
+    say ((1 + 2) - ((3 * 4) / 5));
 
 `], {
     verbose : false,
@@ -23,19 +23,14 @@ let interpreter = EndToEndTestRunner([`
 });
 
 test("... simple EndToEnd test", (t) => {
-    let frame = interpreter.main.frames[0] as StackFrame;
+    let strings = interpreter.main.STD_buffer;
 
-    assert.deepStrictEqual(
-        frame.stack,
-        [
-          { type: 'NUM', value: 3 },
-          { type: 'NUM', value: 0 },
-          { type: 'NUM', value: 0 },
-          { type: 'NUM', value: 0 },
-          { type: 'NUM', value: -4 },
-          { type: 'NUM', value: 1 },
-        ]
-    );
+    assert.strictEqual(strings[0]?.value, "3");
+    assert.strictEqual(strings[1]?.value, "0");
+    assert.strictEqual(strings[2]?.value, "0");
+    assert.strictEqual(strings[3]?.value, "0");
+    assert.strictEqual(strings[4]?.value, "-4");
+    assert.strictEqual(strings[5]?.value, "1");
 });
 
 

@@ -14,7 +14,7 @@ my $x = 1;
 say join ', ', 1, (1 + $x), ($x + (1 + $x));
 
 `], {
-    verbose : true,
+    verbose : false,
     quiet   : true,
 });
 

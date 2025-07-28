@@ -27,6 +27,7 @@ export enum NodeKind {
     SCOPE         = 'SCOPE',
     CONST         = 'CONST',
     LITERAL       = 'LITERAL',
+    BAREWORD      = 'BAREWORD',
     BUILTIN       = 'BUILTIN',
     BINARYOP      = 'BINARYOP',
     FETCH         = 'FETCH',
@@ -46,6 +47,7 @@ export enum NodeKind {
     SUBDEFINITION = 'SUBDEFINITION',
     SUBCALL       = 'SUBCALL',
     SUBRETURN     = 'SUBRETURN',
+    CALLSUB       = 'CALLSUB',
 
     // ------------------------------------
     // Statements
@@ -105,6 +107,7 @@ export abstract class ExpressionNode extends AbstractNode {
     override kind : NodeKind = NodeKind.EXPRESSION;
 }
 
+
 export class ListExpression extends ExpressionNode {
     override kind : NodeKind = NodeKind.EXPRESSION;
 
@@ -128,6 +131,15 @@ export class ParenExpression extends ExpressionNode {
     deparse() : string {
         return `(${this.item.deparse()})`;
     }
+}
+
+
+export class Bareword extends AbstractNode {
+    override kind : NodeKind = NodeKind.BAREWORD;
+
+    constructor(public name : string) { super() }
+
+    deparse() : string { return this.name }
 }
 
 // -----------------------------------------------------------------------------
@@ -161,12 +173,8 @@ export class Block extends Scope {
 // Subroutines ...
 // -----------------------------------------------------------------------------
 
-export class SubBody extends Scope {
-    override deparse() : string {
-        let src = super.deparse();
-        return '{\n' + src + '\n}';
-    }
-}
+export class SubBody extends Block {}
+
 
 // NOTE:
 // I am calling them `params` now to indicate that it
@@ -178,23 +186,48 @@ export class SubBody extends Scope {
 export class SubDefinition extends AbstractNode {
     override kind : NodeKind = NodeKind.SUBDEFINITION;
 
-    public name   : string;
-    public params : string[];
-    public body   : SubBody;
+    private _name   : Bareword;
+    private _params : ListExpression;
+    private _body   : SubBody;
 
     constructor(
-        name   : string,
-        params : string[],
-        body   : Statement[],
+        name   : Bareword,
+        params : ExpressionNode,
+        block  : Block,
     ) {
         super();
-        this.name   = name;
-        this.params = params;
-        this.body   = new SubBody(body);
+        this._name   = name;
+        this._params = (params instanceof ParenExpression)
+                            ? new ListExpression([(params as ParenExpression).item])
+                            : params as ListExpression;
+        this._body   = (block instanceof SubBody)
+                            ? block
+                            : new SubBody(block.statements);
+    }
+
+    get name   () : string   { return this._name.name }
+    get body   () : Block    { return this._body }
+    get params () : string[] {
+        return this._params.items.map((p) => {
+            return (p as any)?.name
+        })
     }
 
     deparse() : string {
-        return `sub ${this.name} (${this.params.join(', ')}) ${this.body.deparse()}`
+        return `sub ${this._name.deparse()} ${this._params.deparse()} ${this._body.deparse()}`
+    }
+}
+
+export class CallSub extends AbstractNode {
+    override kind : NodeKind = NodeKind.CALLSUB;
+
+    constructor(
+        public callee : Bareword,
+        public args   : Node[],
+    ) { super() }
+
+    deparse() : string {
+        return `${this.callee.name}(${this.args.map((a) => a.deparse()).join(', ')})`
     }
 }
 

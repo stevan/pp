@@ -27,6 +27,14 @@ export function prettyPrintParseTree (tree: ParseTree, depth : number = 0) : str
     case 'TERM':
         out = `${indent}Term:${prettyPrintLexed(tree.value)}`;
         break;
+    case 'APPLY':
+        out = [
+            `${indent}Apply(\n`,
+                prettyPrintParseTree(tree.value, depth + 1),
+                prettyPrintParseTree(tree.args, depth + 1),
+            `${indent})`
+            ].join('');
+        break;
     case 'SLICE':
         out = [
             `${indent}Slice(\n`,

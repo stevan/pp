@@ -19,6 +19,11 @@ export function visitParseTree (tree: ParseTree, visitor: ParseTreeVisitor, dept
             visitParseTree(tree.value, visitor, depth + 1),
             visitParseTree(tree.slice, visitor, depth + 1)
         ], depth);
+    case 'APPLY':
+        return visitor(tree, [
+            visitParseTree(tree.value, visitor, depth + 1),
+            visitParseTree(tree.args, visitor, depth + 1)
+        ], depth);
     case 'OPERATION':
         return visitor(tree,
             tree.operands.map((t) => visitParseTree(t, visitor, depth + 1)),
@@ -147,13 +152,17 @@ export class Parser {
                     return new ParserError(tree, children, `Unrecognized Identifier Sigil ${JSON.stringify(tree.value.token.source)}`);
                 }
             case 'BAREWORD':
-            case 'KEYWORD':
-                return new TODO(tree, 'handle BAREWORD and KEYWORD');
+                return new AST.Bareword(tree.value.token.source);
             default:
                 return new ParserError(tree, children, `Unrecognized Term Value ${JSON.stringify(tree.value)}`);
             }
         case 'SLICE':
             return new TODO(tree, 'handle SLICE');
+        case 'APPLY':
+            return new AST.CallSub(
+                children.shift() as AST.Bareword,
+                children,
+            );
         case 'OPERATION':
             switch (tree.operator.type) {
             case 'LISTOP':
@@ -269,8 +278,27 @@ export class Parser {
                 default:
                     return new ParserError(tree, children, `Unrecognized Expression Literal bracket ${JSON.stringify(tree)}`);
                 }
+            case ExpressionKind.DEFINE:
+                switch (tree.lexed[0]?.token.source) {
+                // -------------------------------------------------------------
+                // Declarations
+                // -------------------------------------------------------------
+                case 'sub':
+                    return new AST.Statement(
+                        new AST.SubDefinition(
+                            children[0] as AST.Bareword,
+                            children[1] as AST.ExpressionNode,
+                            children[2] as AST.Block
+                        )
+                    );
+                default:
+                    return new ParserError(tree, children, `Unrecognized Definition type ${JSON.stringify(tree)}`);
+                }
             case ExpressionKind.CONTROL:
                 switch (tree.lexed[0]?.token.source) {
+                // -------------------------------------------------------------
+                // Control structures
+                // -------------------------------------------------------------
                 case 'if' :
                     return new AST.Statement(
                         new AST.Conditional(
@@ -299,7 +327,9 @@ export class Parser {
                     return new ParserError(tree, children, `Unrecognized Control Structure ${JSON.stringify(tree)}`);
                 }
             case ExpressionKind.PARENS:
-                if (children.length == 1) {
+                if (children.length == 0) {
+                    return new AST.ListExpression(children);
+                } else if (children.length == 1) {
                     return new AST.ParenExpression(children[0] as Node);
                 } else {
                     return new AST.ListExpression(children);

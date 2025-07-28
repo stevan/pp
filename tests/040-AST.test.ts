@@ -10,7 +10,7 @@ import {
     ConstUndef, GlobVar, GlobDeclare, GlobFetch,
     Conditional, Equal,
     SubDefinition, SubCall, SubReturn, SubBody, Say,
-    ParenExpression,
+    ParenExpression, ListExpression, Bareword
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
@@ -36,9 +36,9 @@ fact(10);
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
-            'fact',
-            [ 'n' ],
-            [
+            new Bareword('fact'),
+            new ListExpression([ new ScalarFetch('n') ]),
+            new Block([
                 new Statement(
                     new Conditional(
                         new ParenExpression(
@@ -74,7 +74,7 @@ let BEGIN = new Program([
                         ])
                     )
                 )
-            ]
+            ])
         )
     )
 ]);

@@ -10,27 +10,26 @@ import { EndToEndTestRunner } from '../src/Tester/EndToEndTestRunner'
 
 let interpreter = EndToEndTestRunner([`
 
-my $foo = 0;
-if ($foo == 0) {
-    $foo = 20;
-} else {
-    $foo = 10;
+sub fact ($n) {
+    if ($n == 0) {
+        1;
+    } else {
+        $n * fact( $n - 1 );
+    }
 }
 
+fact(10);
+
 `], {
-    verbose : true,
+    verbose : false,
     quiet   : true,
 });
 
 test("... simple EndToEnd test", (t) => {
     let frame = interpreter.main.frames[0] as StackFrame;
-    let pad   = frame.padlist.at(-1)  as Pad;
 
-    assert.ok(pad.has('foo'));
+    //logger.log(interpreter.root);
 
-    let foo = pad.get('foo') as IV;
-
-    assert.strictEqual(foo.value, 20);
 });
 
 

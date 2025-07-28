@@ -13,6 +13,7 @@ export enum ExpressionKind {
     LIST      = 'LIST',
     STATEMENT = 'STATEMENT',
     CONTROL   = 'CONTROL',
+    DEFINE    = 'DEFINE',
     // explicit
     PARENS    = 'PARENS',
     SQUARE    = 'SQUARE',
@@ -23,6 +24,7 @@ export enum ExpressionKind {
 export type Term =
     | { type : 'TERM',  value : Lexed }
     | { type : 'SLICE', value : Term, slice: Expression }
+    | { type : 'APPLY', value : Term, args:  Expression }
 
 export type Operation  = {
     type     : 'OPERATION',
@@ -72,6 +74,10 @@ export function newSlice (value: Term, slice: Expression) : Term {
     return { type : 'SLICE', value, slice } as Term
 }
 
+export function newApply (value: Term, args: Expression) : Term {
+    return { type : 'APPLY', value, args } as Term
+}
+
 // -----------------------------------------------------------------------------
 
 const BracketToKind = (src : string) : ExpressionKind => {
@@ -89,7 +95,7 @@ const BracketToKind = (src : string) : ExpressionKind => {
 export class TreeParser {
     constructor(public config : any = {}) {}
 
-    private spillOperatorStack (expr : Expression) : void {
+    private endExpression (expr : Expression) : void {
         while (expr.opers.length > 0) {
             let op = expr.opers.pop() as Operation;
             if (op.operator.type == 'BINOP') {
@@ -123,7 +129,7 @@ export class TreeParser {
                 //logger.log('... found LIST', from);
                 //logger.log('... PRE OPERATOR SPILL', stack);
                 let list = stack.pop() as Expression;
-                this.spillOperatorStack(list);
+                this.endExpression(list);
                 (stack.at(-1) as Expression).stack.push(list);
                 //logger.log('... POST OPERATOR SPILL', stack);
             } else {
@@ -137,11 +143,13 @@ export class TreeParser {
         destination.opers.push(...from.opers.splice(0));
         while (from.stack.length > 0) {
             let top = from.stack.at(-1) as Expression;
-            if (top.kind == ExpressionKind.STATEMENT ||  top.kind == ExpressionKind.CONTROL) break;
+            if (top.kind == ExpressionKind.STATEMENT
+            ||  top.kind == ExpressionKind.CONTROL
+            ||  top.kind == ExpressionKind.DEFINE) break;
             destination.stack.unshift(from.stack.pop() as ParseTree);
         }
 
-        this.spillOperatorStack(destination);
+        this.endExpression(destination);
         return destination;
     }
 
@@ -188,10 +196,13 @@ export class TreeParser {
             // -----------------------------------------------------------------
             // Expression Entry points
             // -----------------------------------------------------------------
+                // keyword entry positon
+            case 'KEYWORD':
+                STACK.push(newExpression(ExpressionKind.DEFINE, lexed));
+                break;
             case 'CONTROL':
                 // control block entry position
-                let controlExpr = newExpression(ExpressionKind.CONTROL, lexed);
-                STACK.push(controlExpr);
+                STACK.push(newExpression(ExpressionKind.CONTROL, lexed));
                 break;
             case 'OPEN':
                 // expression enty point
@@ -201,9 +212,9 @@ export class TreeParser {
             // Current Expression Entry points
             // -----------------------------------------------------------------
             // these get pushed into the top stack right away
-            case 'LITERAL':
+
             case 'BAREWORD':
-            case 'KEYWORD':
+            case 'LITERAL':
             case 'IDENTIFIER':
                 TOP.stack.push(newTerm(lexed));
                 break;
@@ -227,52 +238,37 @@ export class TreeParser {
             // this spills the operator stack in the top
             // node, and applies the shunting yard stuff
             case 'SEPERATOR':
-                this.spillOperatorStack(TOP);
+                this.endExpression(TOP);
                 break;
 
             // this ends an expression and wraps it in
             // a statement
             case 'TERMINATOR':
-                //logger.log('pre op-stack spill STACK :', STACK);
-
-                // NOTE: this might not need to be here
-                // the same thing is done in endStatement
-                // but this also updates the TOP variable
-                // so I am nervous to remove it. I need
-                // better test coverage first.
-                if (TOP.kind == ExpressionKind.LIST) {
-                    let list = STACK.pop() as Expression;
-                    this.spillOperatorStack(list);
-                    list.lexed.push(lexed);
-                    // restore the top variable ...
-                    TOP = STACK.at(-1) as Expression;
-                    // and push the list onto it
-                    TOP.stack.push(list);
-                }
-
-                //logger.log('post op-stack spill STACK :', STACK);
-
                 // =====================================================
                 // EXIT POINT
                 // =====================================================
+
+                // if we have a LIST, that means it does not
+                // have an accompanying CLOSE, and while we
+                // handle this in the endStatement method,
+                // we also make a note to let us know that
+                // this was where the expression ended
+                if (TOP.kind == ExpressionKind.LIST) {
+                    TOP.lexed.push(lexed);
+                }
+
                 let statement = this.endStatement(STACK, lexed);
-
-                //logger.log('post expression spill STACK :', STACK);
-
                 if (shouldYieldStatement()) {
                     yield statement;
                 } else {
-                    TOP.stack.push(statement);
+                    (STACK.at(-1) as Expression).stack.push(statement);
                 }
-
-                //logger.log('post yield/push of expression spill STACK :', STACK);
-
                 break;
 
             // this exits the current expression
             case 'CLOSE':
                 let expr = STACK.pop() as Expression;
-                this.spillOperatorStack(expr);
+                this.endExpression(expr);
                 expr.lexed.push(lexed);
 
                 // restore the top variable ...
@@ -284,12 +280,27 @@ export class TreeParser {
                 case ExpressionKind.CURLY:
                     // if we had a CURLY, whose parent is a CONTROL
                     // then we know it is a block ...
-                    if (TOP.kind == ExpressionKind.CONTROL) {
+                    if (TOP.kind == ExpressionKind.CONTROL || TOP.kind == ExpressionKind.DEFINE) {
                         // pop off TOP as the control expression
                         let control = STACK.pop() as Expression;
                         // then we need to add the block into
                         // the control expression's stack
+
+                        // but before we do that, we need to make sure that
+                        // the block ends with a statement of some kind
+                        let lastExpr = expr.stack.at(-1) as ParseTree;
+                        if (lastExpr.type != 'EXPRESSION'
+                        || (lastExpr.kind != ExpressionKind.STATEMENT
+                        &&  lastExpr.kind != ExpressionKind.CONTROL)
+                        ){
+                            expr.stack.push(this.endStatement([ expr ], lexed));
+                        }
+
+                        // now push the control expression
+                        // on the stack ...
                         control.stack.push(expr);
+
+
                         // restore the top variable ...
                         TOP = STACK.at(-1) as Expression;
 
@@ -331,6 +342,7 @@ export class TreeParser {
                     // both array and hash literals and slices
                     // sorry :(
                 case ExpressionKind.SQUARE:
+                case ExpressionKind.PARENS:
                     // check to see if there is anything in the
                     // the TOP stack ...
                     let prev = TOP.stack.at(-1) as ParseTree;
@@ -338,10 +350,14 @@ export class TreeParser {
                     // if there is nothing ...
                     if (prev == undefined) {
                         // =====================================================
-                        // EXIT POINT????
+                        // EXIT POINT - FIXME???
                         // =====================================================
+                        // I am not 100% sure of when this happens, but I think
+                        // it might be related to the array/hash literals and
+                        // they have since been moved to +[] and +{} so this
+                        // code can likely just go away or be replaced by the
+                        // appropriate error.
 
-                        // XXX - what does this do?
                         if (shouldYieldStatement()) {
                             yield expr;
                             break;
@@ -349,17 +365,27 @@ export class TreeParser {
                     }
                     // if we have something else on the
                     // TOP stack, then we check it ...
-                    else if (prev.type == 'TERM' && prev.value.type == 'IDENTIFIER') {
-                        // if the previous token is an IDENTIFIER,
-                        // then we have a slice ...
-                        TOP.stack.push(newSlice(TOP.stack.pop() as Term, expr));
+                    else if (prev.type == 'TERM') {
+                        if (prev.value.type == 'IDENTIFIER' && (expr.kind == ExpressionKind.CURLY || expr.kind == ExpressionKind.SQUARE)) {
+                            // if the previous token is an IDENTIFIER,
+                            // then we have a slice ...
+                            TOP.stack.push(newSlice(TOP.stack.pop() as Term, expr));
 
-                        // we've pushed the wrapped experssion on the stack
-                        // so we can break out of this now
-                        break;
+                            // we've pushed the wrapped experssion on the stack
+                            // so we can break out of this now
+                            break;
+                        }
+                        else if (prev.value.type == 'BAREWORD' && expr.kind == ExpressionKind.PARENS) {
+                            // ignore this if we are directly inside a definition
+                            if (TOP.kind != ExpressionKind.DEFINE) {
+                                TOP.stack.push(newApply(TOP.stack.pop() as Term, expr));
+                                // we've pushed the wrapped experssion on the stack
+                                // so we can break out of this now
+                                break;
+                            }
+                        }
                     }
                     // otherwise, we will fall through ...
-                case ExpressionKind.PARENS:  // and we ignore these for now
                 case ExpressionKind.LITERAL: // and these should just fall through
                 default:                     // and this is where we fall
                     TOP.stack.push(expr);    // which is the default action

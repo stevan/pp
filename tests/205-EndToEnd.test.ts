@@ -18,7 +18,7 @@ if ($foo == 0) {
 }
 
 `], {
-    verbose : true,
+    verbose : false,
     quiet   : true,
 });
 
@@ -34,4 +34,12 @@ test("... simple EndToEnd test", (t) => {
 });
 
 
+/*
+TODO: add this
+
+        if (0 == 0) { 1 } else { 3 }
+        if (true) { false }
+        if (0 == 0) { 11000 } else { 30 }
+        unless (false) { true }
+*/
 

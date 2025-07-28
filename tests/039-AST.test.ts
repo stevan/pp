@@ -10,7 +10,7 @@ import {
     ConstUndef, GlobVar, GlobDeclare, GlobFetch,
     Conditional, Equal, LessThan,
     SubDefinition, SubCall, SubReturn, SubBody, Say,
-    ParenExpression,
+    ParenExpression, Bareword, ListExpression
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
@@ -35,9 +35,9 @@ sub fib ($n) {
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
-            'fib',
-            [ 'n' ],
-            [
+            new Bareword('fib'),
+            new ListExpression([ new ScalarFetch('n') ]),
+            new Block([
                 new Statement(
                     new Conditional(
                         new ParenExpression(
@@ -79,7 +79,7 @@ let BEGIN = new Program([
                         ])
                     )
                 )
-            ]
+            ])
         )
     )
 ]);

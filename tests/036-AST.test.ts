@@ -9,7 +9,7 @@ import {
     Add, Multiply, Subtract, Block,
     ConstUndef, GlobVar, GlobDeclare, GlobFetch,
     Conditional, Equal, Say,
-    SubDefinition, SubCall, SubReturn, SubBody,
+    SubDefinition, SubCall, SubReturn, SubBody, Bareword, ListExpression,
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
@@ -30,15 +30,15 @@ add_one_and_two();
 let BEGIN = new Program([
     new Statement(
         new SubDefinition(
-            'add_one_and_two',
-            [],
-            [
+            new Bareword('add_one_and_two'),
+            new ListExpression([]),
+            new Block([
                 new Statement(
                     new Add(
                         new ConstInt(1), new ConstInt(2)
                     )
                 )
-            ]
+            ])
         )
     )
 ]);

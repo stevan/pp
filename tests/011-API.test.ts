@@ -59,7 +59,7 @@ test("... simple Runtime test", (t) => {
     let Gorch = main.autovivify('Bar::Gorch::');
     assert.strictEqual(Gorch.type, 'STASH');
 
-    logger.log(main);
+    //logger.log(main);
 
 });
 

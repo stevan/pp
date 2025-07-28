@@ -9,7 +9,8 @@ import {
     Scope,
     Program, Block, Statement,
     ExpressionNode, ListExpression, ParenExpression,
-    SubBody, SubDefinition, SubCall, SubReturn,
+    Bareword,
+    SubBody, SubDefinition, SubCall, SubReturn, CallSub,
     Conditional, ForEachLoop,
     ConstInt, ConstNumber, ConstStr, ConstTrue, ConstFalse, ConstUndef,
     GlobFetch, GlobStore, GlobDeclare, GlobVar,
@@ -42,13 +43,13 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
             enter = new OP('enter', {});
             leave = new UNOP('leave', {});
             break;
-        case node instanceof Block:
-            enter = new OP('enterscope', {});
-            leave = new UNOP('leavescope', {});
-            break;
         case node instanceof SubBody:
             enter = new OP('entersub', {});
             leave = new UNOP('leavesub', {});
+            break;
+        case node instanceof Block:
+            enter = new OP('enterscope', {});
+            leave = new UNOP('leavescope', {});
             break;
         default:
             throw new Error(`Unrecognized Node(${JSON.stringify(node)})`)
@@ -286,6 +287,37 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         return new OpTree(op, op)
     }
 
+    emitCallSub (node : CallSub) : OpTree {
+        let glob = new OP('gv_fetch', {
+            target : {
+                name : node.callee.name,
+                slot : GlobSlot.CODE,
+            }
+        });
+
+        let op       = new LISTOP('callsub', { name : node.callee.name });
+        let pushmark = new OP('pushmark', {});
+
+        op.first = pushmark;
+
+        let curr = pushmark;
+        for (const arg of node.args) {
+            let a = this.visit(arg);
+
+            curr.next    = a.enter;
+            curr.sibling = a.leave;
+
+            curr = a.leave;
+        }
+        curr.next    = glob;
+        curr.sibling = glob;
+
+        glob.next = op;
+
+        return new OpTree(pushmark, op);
+    }
+
+    // TODO - remove me ...
     emitSubCall (node : SubCall) : OpTree {
         let glob     = this.visit(node.glob);
         let op       = new LISTOP('callsub', { name : node.glob.name });
@@ -452,6 +484,7 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         case NodeKind.ELEMSTORE     : return this.emitElemStore(n as ArrayElemStore);
         case NodeKind.SUBDEFINITION : return this.emitSubDefinition(n as SubDefinition);
         case NodeKind.SUBCALL       : return this.emitSubCall(n as SubCall);
+        case NodeKind.CALLSUB       : return this.emitCallSub(n as CallSub);
         case NodeKind.SUBRETURN     : return this.emitSubReturn(n as SubReturn);
         case NodeKind.STATEMENT     : return this.emitStatement(n as Statement);
         case NodeKind.EXPRESSION    : return this.emitExpression(n as ExpressionNode);
@@ -462,7 +495,7 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         case NodeKind.GLOBSTORE     : return this.emitGlobStore(n as GlobStore);
         case NodeKind.GLOBDECLARE   : return this.emitGlobDeclare(n as GlobDeclare);
         default:
-            throw new Error(`Unknown NodeKind (${JSON.stringify(n)})`)
+            throw new Error(`Unknown (or un-used) NodeKind (${JSON.stringify(n)})`)
         }
     }
 }

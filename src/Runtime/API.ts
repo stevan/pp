@@ -1,3 +1,6 @@
+
+import { inspect } from "node:util"
+
 // =============================================================================
 // API
 // -----------------------------------------------------------------------------
@@ -47,6 +50,15 @@ export class OP {
             uid      : -1, // the default
             compiler : {},
             JIT      : {},
+        }
+    }
+
+    [inspect.custom] () {
+        return {
+            uid  : this.metadata.uid,
+            name : this.name,
+            conf : this.config,
+            next : this.next,
         }
     }
 }

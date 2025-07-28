@@ -18,14 +18,18 @@ runner.run([
 new ParserTestCase('... nested control structures',
     [`
 
-say join ', ', 1, 2, 3;
-
+sub add_one_and_two () {
+    if (10 == 10) {
+        1 + 2
+    }
+    10 - 20;
+}
 
     `],
     [
     ],
     {
-        verbose : false,
+        verbose : true,
         develop : true,
         pretty_print : false,
     }
@@ -34,36 +38,10 @@ say join ', ', 1, 2, 3;
 
 /*
 
-my $foo = 0;
-if ($foo == 0) {
-    $foo = 20;
-} else {
-    $foo = 10;
-}
+KEYWORD : BAREWORD ...       BLOCK
+sub     : BAREWORD (PARENS)? BLOCK
+package : BAREWORD (ATTRS)?  BLOCK
 
-let RUN = new Program([
-    new Statement(
-        new ScalarDeclare('foo', new ConstInt(0))
-    ),
-    new Statement(
-        new Conditional(
-            new Equal(
-                new ScalarFetch('foo'),
-                new ConstInt(0)
-            ),
-            new Block([
-                new Statement(
-                    new ScalarStore('foo', new ConstInt(20))
-                ),
-            ]),
-            new Block([
-                new Statement(
-                    new ScalarStore('foo', new ConstInt(10))
-                ),
-            ])
-        )
-    )
 
-]);
 
 */
