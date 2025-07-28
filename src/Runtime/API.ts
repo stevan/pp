@@ -147,6 +147,21 @@ export class OpTree {
         this.enter = enter;
         this.leave = leave;
     }
+
+    [inspect.custom] () {
+        return {
+            enter : {
+                uid  : this.enter.metadata.uid,
+                name : this.enter.name,
+                conf : this.enter.config,
+            },
+            leave : {
+                uid  : this.enter.metadata.uid,
+                name : this.enter.name,
+                conf : this.enter.config,
+            },
+        }
+    }
 }
 
 // =============================================================================

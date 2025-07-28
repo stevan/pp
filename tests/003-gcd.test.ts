@@ -10,26 +10,18 @@ import { EndToEndTestRunner } from '../src/Tester/EndToEndTestRunner'
 
 let interpreter = EndToEndTestRunner([`
 
-sub is_even ($n) {
-    if ($n <= 0) {
-        true;
+sub gcd ($a, $b) {
+    if ($b == 0) {
+        $a;
     } else {
-        is_odd($n - 1);
+        gcd($b, $a % $b);
     }
 }
 
-sub is_odd ($n) {
-    if ($n <= 0) {
-        false;
-    } else {
-        is_even($n - 1);
-    }
-}
-
-say is_even(10);
+say gcd(75025, 46368);
 
 `], {
-    verbose : true,
+    verbose : false,
     quiet   : true,
 });
 

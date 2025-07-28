@@ -1,3 +1,6 @@
+
+import { inspect } from "node:util"
+
 // =============================================================================
 // Interpreter
 // -----------------------------------------------------------------------------
@@ -22,7 +25,13 @@ export type Opcode = (i : StackFrame, op : OP) => MaybeOP;
 export type MaybeOpcode = Opcode | undefined
 export type MaybeStackFrame = StackFrame | undefined
 
-export class Pad extends Map<string, Any> {}
+export class Pad extends Map<string, Any> {
+    [inspect.custom] () {
+        let pad : any = {};
+        this.forEach((v, k, m) => pad[k] = v);
+        return pad;
+    }
+}
 
 // -----------------------------------------------------------------------------
 // Symbol Table
@@ -246,7 +255,7 @@ export class Thread {
             undefined
         );
 
-        optree.enter.config.name = '__main__';
+        optree.enter.config.name = '(main)';
 
         this.frames.unshift(frame);
     }
@@ -256,6 +265,7 @@ export class Thread {
 
         let frame = this.frames[0] as StackFrame;
 
+        let depth = this.frames.length;
         while (frame.current_op != undefined) {
 
             let op : MaybeOP = frame.current_op;
@@ -265,10 +275,11 @@ export class Thread {
             if (opcode == undefined)
                 throw new Error(`Unlinked OP, no opcode (${op.name} = ${JSON.stringify(op.config)})`)
 
-            let depth  = this.frames.length;
+            depth = this.frames.length
 
-            if (this.config.DEBUG)
-                logger.group(`[${depth}] {${frame.optree.enter.config.name}} -> OP[${op.name}] = ${JSON.stringify(op.config)}`);
+            if (this.config.DEBUG) {
+                logger.group(`${frame.optree.enter.config.name} : OP[${op.name}, ${op.metadata.uid}]`);
+            }
 
             let next_op = opcode(frame, op);
             if (next_op == undefined) {
@@ -278,15 +289,17 @@ export class Thread {
 
             if (this.config.DEBUG) {
                 if (this.frames.length > depth) {
-                    logger.log('ARGS    :', this.frames[0]?.stack);
+                    logger.group(`... enter ${this.frames[0]?.optree.enter.config.name}`);
+                    logger.log('  args ->', this.frames[0]?.stack);
                 }
 
                 if (this.frames.length < depth) {
-                    logger.log('RETURN  :', this.frames[0]?.stack);
+                    logger.log('return <-', this.frames[0]?.stack);
+                    logger.groupEnd();
                 }
 
-                logger.log('STACK   :', frame.stack);
-                logger.log('PADLIST :', frame.padlist);
+                logger.log('  stack :', frame.stack.toReversed());
+                logger.log('   pads :', frame.padlist);
                 //logger.log('SYMTBL  :', this.root);
                 logger.groupEnd();
             }
