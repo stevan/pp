@@ -18,12 +18,7 @@ runner.run([
 new ParserTestCase('... nested control structures',
     [`
 
-my $foo = 0;
-if ($foo == 0) {
-    $foo = 20;
-} else {
-    $foo = 10;
-}
+say join ', ', 1, 2, 3;
 
 
     `],
@@ -32,7 +27,7 @@ if ($foo == 0) {
     {
         verbose : false,
         develop : true,
-        pretty_print : true,
+        pretty_print : false,
     }
 ),
 ]);

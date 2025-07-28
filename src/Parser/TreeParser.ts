@@ -110,14 +110,37 @@ export class TreeParser {
         }
     }
 
-    private spillIntoExpression (from: Expression, to: ExpressionKind, orig: Lexed) : Expression {
-        let destination = newExpression(to, orig);
+    // NOTE:
+    // this one gets a little complicated because it has
+    // to resolve any Expression.LIST that has not
+    // already been resolved, which can be nested.
+    private endStatement (stack: Expression[], orig: Lexed) : Expression {
+        //logger.log('STARTING END STATEMENT', stack);
+
+        while (stack.length > 1) {
+            let from = stack.at(-1) as Expression;
+            if (from.kind == ExpressionKind.LIST) {
+                //logger.log('... found LIST', from);
+                //logger.log('... PRE OPERATOR SPILL', stack);
+                let list = stack.pop() as Expression;
+                this.spillOperatorStack(list);
+                (stack.at(-1) as Expression).stack.push(list);
+                //logger.log('... POST OPERATOR SPILL', stack);
+            } else {
+                //logger.log('... found non-LIST, exiting loop');
+                break;
+            }
+        }
+
+        let from        = stack.at(-1) as Expression;
+        let destination = newExpression(ExpressionKind.STATEMENT, orig);
         destination.opers.push(...from.opers.splice(0));
         while (from.stack.length > 0) {
             let top = from.stack.at(-1) as Expression;
             if (top.kind == ExpressionKind.STATEMENT ||  top.kind == ExpressionKind.CONTROL) break;
             destination.stack.unshift(from.stack.pop() as ParseTree);
         }
+
         this.spillOperatorStack(destination);
         return destination;
     }
@@ -210,6 +233,13 @@ export class TreeParser {
             // this ends an expression and wraps it in
             // a statement
             case 'TERMINATOR':
+                //logger.log('pre op-stack spill STACK :', STACK);
+
+                // NOTE: this might not need to be here
+                // the same thing is done in endStatement
+                // but this also updates the TOP variable
+                // so I am nervous to remove it. I need
+                // better test coverage first.
                 if (TOP.kind == ExpressionKind.LIST) {
                     let list = STACK.pop() as Expression;
                     this.spillOperatorStack(list);
@@ -220,15 +250,23 @@ export class TreeParser {
                     TOP.stack.push(list);
                 }
 
+                //logger.log('post op-stack spill STACK :', STACK);
+
                 // =====================================================
                 // EXIT POINT
                 // =====================================================
-                let statement = this.spillIntoExpression(TOP, ExpressionKind.STATEMENT, lexed);
+                let statement = this.endStatement(STACK, lexed);
+
+                //logger.log('post expression spill STACK :', STACK);
+
                 if (shouldYieldStatement()) {
                     yield statement;
                 } else {
                     TOP.stack.push(statement);
                 }
+
+                //logger.log('post yield/push of expression spill STACK :', STACK);
+
                 break;
 
             // this exits the current expression
@@ -337,6 +375,8 @@ export class TreeParser {
                 logger.log('=====================================================\n');
             }
         }
+
+        //logger.log('END LOOP STACK :', STACK);
 
         if (STACK.length > 1) {
             if (this.config.verbose) {

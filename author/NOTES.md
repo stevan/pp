@@ -3,6 +3,80 @@
 <!----------------------------------------------------------------------------->
 
 <!----------------------------------------------------------------------------->
+
+
+
+
+
+
+<!----------------------------------------------------------------------------->
+
+But not just at the start of the pipeline. Take this kinda insane idea for 
+instance. 
+
+Start from Step 1 and make sure to read the descriptions at the bottom 
+about what each thing is, it will help a bit (I think).
+
+// Step 5. Checks to see if this AST has changed 
+// or not and lets a distributes compiler know 
+// what it needs to do. 
+DistributesASTCache.run(
+    // Step 4. take the stream of Lexical tokens 
+    // and construct parse Trees
+    // and stream them to step 5.
+    treeParser.run(
+        // Step 3. performs lexical analysis on each token 
+        // and stream it to Step 4.
+        LexerService.run(
+            // Step 2. tokenize each chunk and streams it to Step 3.
+            tokenizer.run(
+                // Step 1. fetches from git server and streams to Step 2.
+                GitService.getSourceStream(
+                    'http://git.foo.com/-/main/lib/Foo.pm',
+                    { 
+                        // 1a. send 1000 characters at a time ...
+                        chunkSize : 1000 
+                    }
+                )
+            ),
+            {
+                language : 'Perl',
+                policies : [ 'NoEvalString', ... ]
+            }
+        )
+    ),
+    {
+        memecache_servers : [ ... ]
+    }
+)
+
+- `tokenizer` is a local instance of a Tokenizer object
+- `treeParser` is a local instance of a TreeParser object
+
+
+- `GitService` is an HTTP client in disguise
+- `LexerService` is a module that can access a database that stores information 
+  about tokens for a given language, and can provide lexical analysis as well 
+  as enforce policies about what language features are allowed, etc. 
+- `DistributesASTCache` would take each ParseTree that came out of the
+  `treeParser` and using "hash consing", determine if that tree/sub-tree has 
+  changed or not. If it has not changed, then that portion of the OpTree does 
+  not need to be recompiled by the compiler. 
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+<!----------------------------------------------------------------------------->
 ## Compiler Phases
 <!----------------------------------------------------------------------------->
 
