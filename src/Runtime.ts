@@ -280,7 +280,7 @@ export class Thread {
             if (this.config.DEBUG) {
                 logger.group(
 
-    `\x1b[32m${frame.optree.enter.config.name}\x1b[0m : OP[\x1b[32m${op.name}\x1b[0m, \x1b[32m${op.metadata.uid}]\x1b[0m`);
+    `\x1b[36m${frame.optree.enter.config.name}\x1b[0m ->[\x1b[33m${op.name}\x1b[0m, \x1b[36m${op.metadata.uid}\x1b[0m]`);
             }
 
             let next_op = opcode(frame, op);
@@ -291,17 +291,62 @@ export class Thread {
 
             if (this.config.DEBUG) {
                 if (this.frames.length > depth) {
-                    logger.group(`... enter ${this.frames[0]?.optree.enter.config.name}`);
-                    logger.log('  args ->', this.frames[0]?.stack);
+                    logger.log(
+                        '\x1b[32m' +
+                        '━'.repeat(
+                            ((process.stdout.columns - 1)
+                                -
+                             (this.frames.length * 2))
+                                -
+                             (this.frames[0]?.optree.enter.config.name.length + 4)
+                        ) + '\x1b[0m'
+                    );
+                    logger.log(
+                        `\x1b[42m\x1b[30m ▶ ${this.frames[0]?.optree.enter.config.name} \x1b[0m`,
+                        this.frames[0]?.stack
+                    );
+                    logger.group(
+                        '\x1b[32m' +
+                        '━'.repeat(
+                            ((process.stdout.columns - 1)
+                                -
+                             (this.frames.length * 2))
+                                -
+                             (this.frames[0]?.optree.enter.config.name.length + 4)
+                        ) + '\x1b[0m'
+                    );
                 }
 
                 if (this.frames.length < depth) {
-                    logger.log('return <-', this.frames[0]?.stack);
                     logger.groupEnd();
+                    logger.log(
+                        '\x1b[33m' +
+                        '━'.repeat(
+                            ((process.stdout.columns - 1)
+                                -
+                             (this.frames.length * 2))
+                                -
+                             (this.frames[0]?.optree.enter.config.name.length + 4)
+                        ) + '\x1b[0m'
+                    );
+                    logger.log(
+                        `\x1b[43m\x1b[30m ◀ ${this.frames[0]?.optree.enter.config.name} \x1b[0m`,
+                        this.frames[0]?.stack
+                    );
+                    logger.log(
+                        '\x1b[33m' +
+                        '━'.repeat(
+                            ((process.stdout.columns - 1)
+                                -
+                             (this.frames.length * 2))
+                                -
+                             (this.frames[0]?.optree.enter.config.name.length + 4)
+                        ) + '\x1b[0m'
+                    );
                 }
 
-                logger.log('  stack :', frame.stack.toReversed());
-                logger.log('   pads :', frame.padlist);
+                logger.log('\x1b[35m   stack :\x1b[0m', frame.stack.toReversed());
+                logger.log('\x1b[35m    pads :\x1b[0m', frame.padlist);
                 //logger.log('SYMTBL  :', this.root);
                 logger.groupEnd();
             }
@@ -325,7 +370,7 @@ export class Thread {
     toSTDOUT (args : PV[]) : void {
         this.STD_buffer.push(...args);
         if (this.config.DEBUG) {
-            console.log('STDOUT>', args.map((pv) => pv.value).join(''));
+            console.log('\x1b[44m STDOUT> \x1b[0m', args.map((pv) => pv.value).join(''));
         } else {
             if (!this.config.QUIET) {
                 // FIXME: this should use stdout
@@ -337,7 +382,7 @@ export class Thread {
     toSTDERR (args : PV[]) : void {
         this.ERR_buffer.push(...args);
         if (this.config.DEBUG) {
-            console.log('STDERR>', args.map((pv) => pv.value).join(''));
+            console.log('\x1b[41m STDERR> \x1b[0m', args.map((pv) => pv.value).join(''));
         } else {
             if (!this.config.QUIET) {
                 // FIXME: this should use stderr
