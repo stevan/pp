@@ -178,6 +178,8 @@ export class Parser {
                 // -----------------------------------------------------------------
                 // Assignment
                 // -----------------------------------------------------------------
+                case 'return':
+                    return new AST.SubReturn(children[0] as Node);
                 case 'my':
                     if (children.length == 1) {
                         let operand = children[0] as Node;

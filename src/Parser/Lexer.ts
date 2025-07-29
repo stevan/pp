@@ -151,6 +151,9 @@ export class Lexer {
                     case 'lcfirst' :
                     case 'uc'      :
                     case 'ucfirst' :
+
+                    // subroutines
+                    case 'return'  :
                         yield { type : 'UNOP', token : token }
                         break;
 
@@ -215,7 +218,6 @@ export class Lexer {
                     case 'last'     :
                     case 'next'     :
                     case 'redo'     :
-                    case 'return'   :
                         yield { type : 'CONTROL', token : token }
                         break;
 

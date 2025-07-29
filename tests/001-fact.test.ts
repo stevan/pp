@@ -12,9 +12,9 @@ let interpreter = EndToEndTestRunner([`
 
 sub fact ($n) {
     if ($n == 0) {
-        1;
+        return 1;
     } else {
-        $n * fact( $n - 1 );
+        return $n * fact( $n - 1 );
     }
 }
 

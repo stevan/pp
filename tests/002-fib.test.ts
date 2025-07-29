@@ -12,9 +12,9 @@ let interpreter = EndToEndTestRunner([`
 
 sub fib ($n) {
     if ($n < 2) {
-        $n;
+        return $n;
     } else {
-        fib( $n - 1 ) + fib( $n - 2 );
+        return fib( $n - 1 ) + fib( $n - 2 );
     }
 }
 

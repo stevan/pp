@@ -18,11 +18,12 @@ runner.run([
 new ParserTestCase('... nested control structures',
     [`
 
-sub add_one_and_two () {
-    if (10 == 10) {
-        1 + 2
+sub fact ($n) {
+    if ($n == 0) {
+        return 1;
+    } else {
+        return $n * fact( $n - 1 );
     }
-    10 - 20;
 }
 
     `],

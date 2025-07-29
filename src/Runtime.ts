@@ -290,64 +290,29 @@ export class Thread {
             }
 
             if (this.config.DEBUG) {
+                let avail_width = (process.stdout.columns - (this.frames.length * 2)) - 2;
+
                 if (this.frames.length > depth) {
+                    logger.log('\x1b[32m╭─' + '─'.repeat(avail_width) + '\x1b[0m');
                     logger.log(
-                        '\x1b[32m' +
-                        '━'.repeat(
-                            ((process.stdout.columns - 1)
-                                -
-                             (this.frames.length * 2))
-                                -
-                             (this.frames[0]?.optree.enter.config.name.length + 4)
-                        ) + '\x1b[0m'
-                    );
-                    logger.log(
-                        `\x1b[42m\x1b[30m ▶ ${this.frames[0]?.optree.enter.config.name} \x1b[0m`,
+                        `\x1b[32m│ \x1b[42m\x1b[30m ${this.frames[0]?.optree.enter.config.name} ▼ \x1b[0m`,
                         this.frames[0]?.stack
                     );
-                    logger.group(
-                        '\x1b[32m' +
-                        '━'.repeat(
-                            ((process.stdout.columns - 1)
-                                -
-                             (this.frames.length * 2))
-                                -
-                             (this.frames[0]?.optree.enter.config.name.length + 4)
-                        ) + '\x1b[0m'
-                    );
+                    logger.group('\x1b[32m╰─' + '─'.repeat(avail_width) + '\x1b[0m');
                 }
-
-                if (this.frames.length < depth) {
+                else if (this.frames.length < depth) {
                     logger.groupEnd();
+                    logger.log('\x1b[33m╭─' + '─'.repeat(avail_width) + '\x1b[0m');
                     logger.log(
-                        '\x1b[33m' +
-                        '━'.repeat(
-                            ((process.stdout.columns - 1)
-                                -
-                             (this.frames.length * 2))
-                                -
-                             (this.frames[0]?.optree.enter.config.name.length + 4)
-                        ) + '\x1b[0m'
-                    );
-                    logger.log(
-                        `\x1b[43m\x1b[30m ◀ ${this.frames[0]?.optree.enter.config.name} \x1b[0m`,
+                        `\x1b[33m│ \x1b[43m\x1b[30m ${this.frames[0]?.optree.enter.config.name} ▲ \x1b[0m`,
                         this.frames[0]?.stack
                     );
-                    logger.log(
-                        '\x1b[33m' +
-                        '━'.repeat(
-                            ((process.stdout.columns - 1)
-                                -
-                             (this.frames.length * 2))
-                                -
-                             (this.frames[0]?.optree.enter.config.name.length + 4)
-                        ) + '\x1b[0m'
-                    );
-                }
+                    logger.log('\x1b[33m╰─' + '─'.repeat(avail_width) + '\x1b[0m');
+                } else {
 
-                logger.log('\x1b[35m   stack :\x1b[0m', frame.stack.toReversed());
-                logger.log('\x1b[35m    pads :\x1b[0m', frame.padlist);
-                //logger.log('SYMTBL  :', this.root);
+                    logger.log('\x1b[34m├─\x1b[35m stack :\x1b[0m', frame.stack.toReversed());
+                    logger.log('\x1b[34m╰──\x1b[35m pads :\x1b[0m', frame.padlist);
+                }
                 logger.groupEnd();
             }
 
@@ -370,7 +335,7 @@ export class Thread {
     toSTDOUT (args : PV[]) : void {
         this.STD_buffer.push(...args);
         if (this.config.DEBUG) {
-            console.log('\x1b[44m STDOUT> \x1b[0m', args.map((pv) => pv.value).join(''));
+            console.log('\x1b[44m  STDOUT ▶ :\x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
         } else {
             if (!this.config.QUIET) {
                 // FIXME: this should use stdout
@@ -382,7 +347,7 @@ export class Thread {
     toSTDERR (args : PV[]) : void {
         this.ERR_buffer.push(...args);
         if (this.config.DEBUG) {
-            console.log('\x1b[41m STDERR> \x1b[0m', args.map((pv) => pv.value).join(''));
+            console.log('\x1b[41m  STDERR ▶ \x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
         } else {
             if (!this.config.QUIET) {
                 // FIXME: this should use stderr

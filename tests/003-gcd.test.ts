@@ -12,9 +12,9 @@ let interpreter = EndToEndTestRunner([`
 
 sub gcd ($a, $b) {
     if ($b == 0) {
-        $a;
+        return $a;
     } else {
-        gcd($b, $a % $b);
+        return gcd($b, $a % $b);
     }
 }
 
