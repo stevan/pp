@@ -303,24 +303,6 @@ export class Conditional extends AbstractNode {
     }
 }
 
-export class ForEachLoop extends AbstractNode {
-    override kind : NodeKind = NodeKind.FOREACHLOOP;
-
-    constructor(
-        public local : string, // TODO: make this Var object
-        public iter  : Node,   // TODO: make this something
-        public body  : Block,
-    ) { super() }
-
-    deparse() : string {
-        return [
-            `foreach my $${this.local} (${this.iter.deparse()})`,
-                this.body.deparse(),
-        ]
-        .join('\n')
-    }
-}
-
 // -----------------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------------

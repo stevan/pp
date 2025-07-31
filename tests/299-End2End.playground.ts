@@ -10,23 +10,14 @@ import { EndToEndTestRunner } from '../src/Tester/EndToEndTestRunner'
 
 let interpreter = EndToEndTestRunner([`
 
-sub is_even ($n) {
-    if ($n <= 0) {
-        true;
-    } else {
-        is_odd($n - 1);
-    }
-}
+if (0 == 0) { 1 } else { 3 }
 
-sub is_odd ($n) {
-    if ($n <= 0) {
-        false;
-    } else {
-        is_even($n - 1);
-    }
-}
+if (true) { false }
 
-say is_even(10);
+if (0 == 0) { 11000 } else { 30 }
+
+unless (false) { true }
+
 
 `], {
     verbose : true,
@@ -34,9 +25,10 @@ say is_even(10);
 });
 
 test("... simple EndToEnd test", (t) => {
+    let frame   = interpreter.main.frames[0] as StackFrame;
     let strings = interpreter.main.STD_buffer;
 
-    assert.strictEqual(strings[0]?.value, "1");
+    logger.log(frame.stack);
 });
 
 

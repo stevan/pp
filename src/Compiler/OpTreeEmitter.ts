@@ -11,7 +11,7 @@ import {
     ExpressionNode, ListExpression, ParenExpression,
     Bareword,
     SubBody, SubDefinition, SubCall, SubReturn, CallSub,
-    Conditional, ForEachLoop,
+    Conditional,
     ConstInt, ConstNumber, ConstStr, ConstTrue, ConstFalse, ConstUndef,
     GlobFetch, GlobStore, GlobDeclare, GlobVar,
     ScalarFetch, ScalarStore, ScalarDeclare,
@@ -419,10 +419,6 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         return new OpTree(condition.enter, goto);
     }
 
-    emitForEachLoop (node : ForEachLoop) : OpTree {
-        throw new Error('TODO');
-    }
-
     // -------------------------------------------------------------------------
 
     emitGlobVar (node : GlobVar) : OpTree {
@@ -489,7 +485,6 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         case NodeKind.STATEMENT     : return this.emitStatement(n as Statement);
         case NodeKind.EXPRESSION    : return this.emitExpression(n as ExpressionNode);
         case NodeKind.CONDITIONAL   : return this.emitConditional(n as Conditional);
-        case NodeKind.FOREACHLOOP   : return this.emitForEachLoop(n as ForEachLoop);
         case NodeKind.GLOBVAR       : return this.emitGlobVar(n as GlobVar);
         case NodeKind.GLOBFETCH     : return this.emitGlobFetch(n as GlobFetch);
         case NodeKind.GLOBSTORE     : return this.emitGlobStore(n as GlobStore);
