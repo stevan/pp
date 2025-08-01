@@ -8,6 +8,7 @@ import {
     ConstInt,
     Add, Block, ConstUndef, GlobVar, GlobDeclare, GlobFetch,
     Conditional, Equal, ParenExpression,
+    Keyword,
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'
@@ -33,6 +34,7 @@ let RUN = new Program([
     ),
     new Statement(
         new Conditional(
+            new Keyword('if'),
             new ParenExpression(
                 new Equal(
                     new ScalarFetch('foo'),

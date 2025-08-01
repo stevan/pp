@@ -301,15 +301,16 @@ export class Parser {
                 // -------------------------------------------------------------
                 // Control structures
                 // -------------------------------------------------------------
-                case 'if' :
+                case 'if'      :
+                case 'unless'  :
                     return new AST.Statement(
                         new AST.Conditional(
+                            new AST.Keyword(tree.lexed[0]?.token.source),
                             children[0] as AST.ParenExpression,
                             children[1] as AST.Block,
                             children[2] as AST.Block,
                         )
                     );
-                case 'unless'  :
                 case 'elsif'   :
                 case 'while'   :
                 case 'until'   :

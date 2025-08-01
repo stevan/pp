@@ -398,6 +398,10 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         let trueBranch  = this.visit(node.ifTrue);
         let falseBranch = this.visit(node.ifFalse);
 
+        if (node.keyword.name == 'unless') {
+            [ trueBranch, falseBranch ] = [ falseBranch, trueBranch ];
+        }
+
         let op = new LOGOP('cond_expr', {});
 
         condition.leave.next = op;

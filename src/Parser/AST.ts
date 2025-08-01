@@ -28,6 +28,7 @@ export enum NodeKind {
     CONST         = 'CONST',
     LITERAL       = 'LITERAL',
     BAREWORD      = 'BAREWORD',
+    KEYWORD       = 'KEYWORD',
     BUILTIN       = 'BUILTIN',
     BINARYOP      = 'BINARYOP',
     FETCH         = 'FETCH',
@@ -133,9 +134,18 @@ export class ParenExpression extends ExpressionNode {
     }
 }
 
+// -----------------------------------------------------------------------------
 
 export class Bareword extends AbstractNode {
     override kind : NodeKind = NodeKind.BAREWORD;
+
+    constructor(public name : string) { super() }
+
+    deparse() : string { return this.name }
+}
+
+export class Keyword extends AbstractNode {
+    override kind : NodeKind = NodeKind.KEYWORD;
 
     constructor(public name : string) { super() }
 
@@ -281,6 +291,7 @@ export class Conditional extends AbstractNode {
     override kind : NodeKind = NodeKind.CONDITIONAL;
 
     constructor(
+        public keyword  : Keyword,
         public condExpr : ParenExpression,
         public ifTrue   : Block,
         public ifFalse  : Block = new Block([]),
@@ -289,12 +300,12 @@ export class Conditional extends AbstractNode {
     deparse() : string {
         if (this.ifFalse.statements.length == 0) {
             return [
-                `if ${this.condExpr.deparse()}`,
+                `${this.keyword.deparse()} ${this.condExpr.deparse()}`,
                     this.ifTrue.deparse()
             ].join('\n')
         } else {
             return [
-                `if ${this.condExpr.deparse()}`,
+                `${this.keyword.deparse()} ${this.condExpr.deparse()}`,
                     this.ifTrue.deparse(),
                 'else',
                     this.ifFalse.deparse(),
