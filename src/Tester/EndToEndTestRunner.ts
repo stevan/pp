@@ -52,6 +52,9 @@ export function EndToEndTestRunner (src : string[], config : any) : Interpreter 
         logger.log("=".repeat(process.stdout.columns - 1));
     }
 
+    if (!isQuiet) logger.time('\x1b[31m... total\x1b[0m');
+
+    if (!isQuiet) logger.time('\x1b[35m... parse time\x1b[0m');
     for (const parseTree of treeParser.run(lexer.run(tokenizer.run(source)))) {
 
         if (isVerbose) {
@@ -80,6 +83,7 @@ export function EndToEndTestRunner (src : string[], config : any) : Interpreter 
             logger.groupEnd();
         }
     }
+    if (!isQuiet) logger.timeEnd('\x1b[35m... parse time\x1b[0m');
 
     if (isVerbose) {
         logger.log("=".repeat(process.stdout.columns - 1));
@@ -87,7 +91,9 @@ export function EndToEndTestRunner (src : string[], config : any) : Interpreter 
         logger.log("=".repeat(process.stdout.columns - 1));
     }
 
+    if (!isQuiet) logger.time('\x1b[34m... compile time\x1b[0m');
     let opcodes = compiler.compile(program);
+    if (!isQuiet) logger.timeEnd('\x1b[34m... compile time\x1b[0m');
 
     if (isVerbose) {
         logger.group('EXEC ORDER:');
@@ -103,11 +109,15 @@ export function EndToEndTestRunner (src : string[], config : any) : Interpreter 
         logger.log("=".repeat(process.stdout.columns - 1));
     }
 
+    if (!isQuiet) logger.time('\x1b[36m... runtime\x1b[0m');
     interpreter.run(opcodes);
+    if (!isQuiet) logger.timeEnd('\x1b[36m... runtime\x1b[0m');
 
     if (isVerbose) {
         logger.log("=".repeat(process.stdout.columns - 1));
     }
+
+    if (!isQuiet) logger.timeEnd('\x1b[31m... total\x1b[0m');
 
     return interpreter;
 }

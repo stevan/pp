@@ -8,7 +8,8 @@ import { IV }                 from '../src/Runtime/API'
 import { Interpreter }        from '../src/Interpreter'
 import { EndToEndTestRunner } from '../src/Tester/EndToEndTestRunner'
 
-let interpreter = EndToEndTestRunner([`
+test("... simple EndToEnd test", (t) => {
+    let interpreter = EndToEndTestRunner([`
 
 sub fib ($n) {
     if ($n < 2) {
@@ -20,12 +21,11 @@ sub fib ($n) {
 
 say fib(25);
 
-`], {
-    verbose : false,
-    quiet   : true,
-});
+    `], {
+        verbose : false,
+        quiet   : true,
+    });
 
-test("... simple EndToEnd test", (t) => {
     let strings = interpreter.main.STD_buffer;
 
     assert.strictEqual(strings[0]?.value, "75025");
