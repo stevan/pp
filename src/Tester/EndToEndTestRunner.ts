@@ -57,6 +57,7 @@ export function EndToEndTestRunner (src : string[], config : any) : Interpreter 
         if (isVerbose) {
             logger.group(`Statement (${statementCount.toString().padStart(3, '0')}):`);
             logger.group(`ParseTree:`);
+            logger.log("-".repeat(process.stdout.columns - 3));
             logger.log(prettyPrintParseTree(parseTree));
             logger.groupEnd()
         }
