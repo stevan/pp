@@ -37,31 +37,32 @@ let RUN = new Program([
     ),
 ]);
 
+let DEBUG = false;
 
 let compiler = new Compiler();
 
-logger.log('... compiling RUN');
+if (DEBUG) logger.log('... compiling RUN');
 let runtime  = compiler.compile(RUN);
 
-logger.group('DEPARSE/RUN:');
-logger.log(RUN.deparse());
-logger.groupEnd();
+if (DEBUG) logger.group('DEPARSE/RUN:');
+if (DEBUG) logger.log(RUN.deparse());
+if (DEBUG) logger.groupEnd();
 
-logger.group('RUN/EXEC:');
-walkExecOrder(prettyPrinter, runtime.enter);
-logger.groupEnd();
+if (DEBUG) logger.group('RUN/EXEC:');
+if (DEBUG) walkExecOrder(prettyPrinter, runtime.enter);
+if (DEBUG) logger.groupEnd();
 
-logger.group('RUN/WALK:');
-walkTraversalOrder(prettyPrinter, runtime.leave);
-logger.groupEnd();
+if (DEBUG) logger.group('RUN/WALK:');
+if (DEBUG) walkTraversalOrder(prettyPrinter, runtime.leave);
+if (DEBUG) logger.groupEnd();
 
 let interpreter = new Interpreter({ DEBUG : false });
 
-logger.group('RUN/INTERPRET:');
-logger.time('RUN elapased');
+if (DEBUG) logger.group('RUN/INTERPRET:');
+if (DEBUG) logger.time('RUN elapased');
 interpreter.run(runtime);
-logger.timeEnd('RUN elapased');
-logger.groupEnd();
+if (DEBUG) logger.timeEnd('RUN elapased');
+if (DEBUG) logger.groupEnd();
 
 test("... simple AST test", (t) => {
     let frame = interpreter.main.frames[0] as StackFrame;

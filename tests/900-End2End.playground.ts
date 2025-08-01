@@ -10,18 +10,22 @@ import { EndToEndTestRunner } from '../src/Tester/EndToEndTestRunner'
 
 let interpreter = EndToEndTestRunner([`
 
-my $x = 1;
-say 1, (1 + $x), ($x + (1 + $x));
+my $x = 10;
+until ($x == 0) {
+    $x = $x - 1;
+    say $x;
+}
 
 `], {
-    verbose : false,
+    verbose : true,
     quiet   : true,
 });
 
 test("... simple EndToEnd test", (t) => {
+    let frame   = interpreter.main.frames[0] as StackFrame;
     let strings = interpreter.main.STD_buffer;
 
-    assert.strictEqual(strings[0]?.value, "1");
-    assert.strictEqual(strings[1]?.value, "2");
-    assert.strictEqual(strings[2]?.value, "3");
+    logger.log(frame.stack);
 });
+
+
