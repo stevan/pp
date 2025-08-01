@@ -10,14 +10,11 @@ import { EndToEndTestRunner } from '../src/Tester/EndToEndTestRunner'
 
 let interpreter = EndToEndTestRunner([`
 
-if (0 == 0) { 1 } else { 3 }
-
-if (true) { false }
-
-if (0 == 0) { 11000 } else { 30 }
-
-unless (false) { true }
-
+my $x = 10;
+until ($x == 0) {
+    $x = $x - 1;
+    say $x;
+}
 
 `], {
     verbose : true,

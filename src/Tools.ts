@@ -7,7 +7,7 @@
 import { Console } from 'console';
 
 import {
-    OP, COP, UNOP, BINOP, LOGOP, LISTOP, MaybeOP,
+    OP, COP, UNOP, BINOP, LOGOP, LOOPOP, LISTOP, MaybeOP,
 } from './Runtime/API'
 
 export const logger = new Console({
@@ -65,6 +65,7 @@ export function prettyPrinter (op : OP, depth : number) : void {
         case op instanceof COP    : return ';';
         case op instanceof LISTOP : return '@';
         case op instanceof LOGOP  : return '|';
+        case op instanceof LOOPOP : return 'L';
         case op instanceof BINOP  : return '2';
         case op instanceof UNOP   : return '1';
         case op instanceof OP     : return '0';
@@ -87,8 +88,10 @@ export function prettyPrinter (op : OP, depth : number) : void {
         "  ".repeat(depth),
         `\x1b[34m<${opType(op)}>\x1b[0m`,
         `\x1b[33m${opName(op)}\x1b[0m`,
-        ((op instanceof LOGOP && op.other != undefined)
-            ? `\x1b[35m[next -> ${opUID(op.next)}, other -> ${opUID(op.other)}]\x1b[0m`
+        (((op instanceof LOGOP || op instanceof LOOPOP))
+            ? ((op instanceof LOOPOP)
+                ? `\x1b[31m[next -> ${opUID(op.next)}]->(next -> ${opUID(op.next_op)}, last -> ${opUID(op.last_op)}, redo -> ${opUID(op.redo_op)})\x1b[0m`
+                : `\x1b[35m[next -> ${opUID(op.next)}, other -> ${opUID(op.other)}]\x1b[0m`)
             : `\x1b[36m[next -> ${opUID(op.next)}]\x1b[0m`),
         op.config,
     );

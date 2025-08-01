@@ -60,7 +60,7 @@ export enum NodeKind {
     // Constrol structures
     // ------------------------------------
     CONDITIONAL   = 'CONDITIONAL',
-    FOREACHLOOP   = 'FOREACHLOOP',
+    CONDLOOP      = 'CONDLOOP',
 
     // ------------------------------------
     // Glob operations
@@ -311,6 +311,23 @@ export class Conditional extends AbstractNode {
                     this.ifFalse.deparse(),
             ].join('\n')
         }
+    }
+}
+
+export class ConditionalLoop extends AbstractNode {
+    override kind : NodeKind = NodeKind.CONDLOOP;
+
+    constructor(
+        public keyword  : Keyword,
+        public condExpr : ParenExpression,
+        public body     : Block,
+    ) { super() }
+
+    deparse() : string {
+        return [
+            `${this.keyword.deparse()} ${this.condExpr.deparse()}`,
+                this.body.deparse()
+        ].join('\n')
     }
 }
 

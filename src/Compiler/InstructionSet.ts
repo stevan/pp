@@ -21,10 +21,10 @@ import {
     assertIsGlob, assertIsBool,
     assertIsComparable, assertIsNumeric, assertIsStringy,
 
-    SVtoPV, AnytoPV, isUndef, isTrue,
+    SVtoPV, AnytoPV, isUndef, isTrue, isFalse,
     setGlobScalar, setGlobCode, getGlobSlot, GlobSlot,
 
-    OP, LOGOP, DECLARE, MaybeOP, OpTree,
+    OP, BINOP, LOGOP, LOOPOP, DECLARE, MaybeOP, OpTree,
 } from '../Runtime/API'
 
 import { Opcode, SymbolTable, StackFrame } from '../Runtime'
@@ -62,6 +62,12 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('enterscope', (i, op) => { i.enterScope(); return op.next });
     opcodes.set('leavescope', (i, op) => { i.leaveScope(); return op.next });
 
+    opcodes.set('enterloop', (i, op) => op.next);
+    opcodes.set('leaveloop', (i, op) => {
+
+        return op.next;
+    });
+
     opcodes.set('nextstate', (i, op) => op.next);
 
     // ---------------------------------------------------------------------
@@ -79,6 +85,28 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     opcodes.set('goto', (i, op) => op.next);
+
+    opcodes.set('unstack', (i, op) => (op as BINOP).last);
+
+    opcodes.set('and', (i, op) => {
+        let bool = i.stack.pop() as Any;
+        assertIsBool(bool);
+        if (isTrue(bool) && op instanceof LOGOP) {
+            return op.other;
+        } else {
+            return op.next;
+        }
+    });
+
+    opcodes.set('or',  (i, op) => {
+        let bool = i.stack.pop() as Any;
+        assertIsBool(bool);
+        if (isFalse(bool) && op instanceof LOGOP) {
+            return op.other;
+        } else {
+            return op.next;
+        }
+    });
 
     // ---------------------------------------------------------------------
     // Lists

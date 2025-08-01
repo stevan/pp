@@ -11,7 +11,7 @@ import {
     ExpressionNode, ListExpression, ParenExpression,
     Bareword,
     SubBody, SubDefinition, SubCall, SubReturn, CallSub,
-    Conditional,
+    Conditional, ConditionalLoop,
     ConstInt, ConstNumber, ConstStr, ConstTrue, ConstFalse, ConstUndef,
     GlobFetch, GlobStore, GlobDeclare, GlobVar,
     ScalarFetch, ScalarStore, ScalarDeclare,
@@ -423,6 +423,47 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         return new OpTree(condition.enter, goto);
     }
 
+    emitConditionalLoop (node : ConditionalLoop) : OpTree {
+        let condition = this.visit(node.condExpr.item);
+        let body      = this.visit(node.body);
+
+        let branchType = node.keyword.name == 'while' ? 'and' : 'or';
+        let branchOp   = new LOGOP(branchType, {});
+
+        let enterLoop = new LOOPOP('enterloop', {});
+        let leaveLoop = new UNOP('leaveloop', {});
+
+        let goto    = new UNOP('goto', {});
+        let unstack = new BINOP('unstack', {});
+
+        enterLoop.next       = condition.enter;
+        condition.leave.next = branchOp;
+
+        branchOp.other = body.enter;
+        branchOp.next  = leaveLoop;
+
+        body.leave.next = unstack;
+        unstack.next    = goto;
+        goto.next       = leaveLoop;
+
+        leaveLoop.first = enterLoop;
+        enterLoop.first = goto;
+        goto.first      = branchOp;
+        branchOp.first  = condition.leave;
+
+        // FIXME: this is kinda a hack
+        unstack.last = condition.enter;
+
+        condition.leave.sibling = body.leave;
+        body.leave.sibling      = unstack;
+
+        enterLoop.next_op = unstack;
+        enterLoop.redo_op = body.enter;
+        enterLoop.last_op = leaveLoop;
+
+        return new OpTree(enterLoop, leaveLoop);
+    }
+
     // -------------------------------------------------------------------------
 
     emitGlobVar (node : GlobVar) : OpTree {
@@ -472,27 +513,45 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
 
     visit (n : Node) : OpTree {
         switch (n.kind) {
-        case NodeKind.SCOPE         : return this.emitScope(n as Scope);
-        case NodeKind.CONST         : return this.emitConst(n);
-        case NodeKind.BUILTIN       : return this.emitBuiltIn(n as BuiltIn);
-        case NodeKind.BINARYOP      : return this.emitBinaryOp(n as BinaryOp);
-        case NodeKind.FETCH         : return this.emitFetch(n);
-        case NodeKind.STORE         : return this.emitStore(n);
+        // definitions ...
         case NodeKind.DECLARE       : return this.emitDeclare(n);
-        case NodeKind.LITERAL       : return this.emitLiteral(n);
-        case NodeKind.ELEMFETCH     : return this.emitElemFetch(n as ArrayElemFetch);
-        case NodeKind.ELEMSTORE     : return this.emitElemStore(n as ArrayElemStore);
+        case NodeKind.GLOBDECLARE   : return this.emitGlobDeclare(n as GlobDeclare);
         case NodeKind.SUBDEFINITION : return this.emitSubDefinition(n as SubDefinition);
+
+        // abstract things ...
+        case NodeKind.STATEMENT     : return this.emitStatement(n as Statement);
+        case NodeKind.EXPRESSION    : return this.emitExpression(n as ExpressionNode);
+        case NodeKind.SCOPE         : return this.emitScope(n as Scope);
+
+        // subroutines ...
         case NodeKind.SUBCALL       : return this.emitSubCall(n as SubCall);
         case NodeKind.CALLSUB       : return this.emitCallSub(n as CallSub);
         case NodeKind.SUBRETURN     : return this.emitSubReturn(n as SubReturn);
-        case NodeKind.STATEMENT     : return this.emitStatement(n as Statement);
-        case NodeKind.EXPRESSION    : return this.emitExpression(n as ExpressionNode);
+
+        // control structures ...
         case NodeKind.CONDITIONAL   : return this.emitConditional(n as Conditional);
+        case NodeKind.CONDLOOP      : return this.emitConditionalLoop(n as ConditionalLoop);
+
+        // consts, literals, etc.
+        case NodeKind.CONST         : return this.emitConst(n);
+        case NodeKind.LITERAL       : return this.emitLiteral(n);
+
+        // builtins and operators
+        case NodeKind.BUILTIN       : return this.emitBuiltIn(n as BuiltIn);
+        case NodeKind.BINARYOP      : return this.emitBinaryOp(n as BinaryOp);
+
+        // variable access
+        case NodeKind.FETCH         : return this.emitFetch(n);
+        case NodeKind.STORE         : return this.emitStore(n);
+
+        // array element access
+        case NodeKind.ELEMFETCH     : return this.emitElemFetch(n as ArrayElemFetch);
+        case NodeKind.ELEMSTORE     : return this.emitElemStore(n as ArrayElemStore);
+
+        // glob access
         case NodeKind.GLOBVAR       : return this.emitGlobVar(n as GlobVar);
         case NodeKind.GLOBFETCH     : return this.emitGlobFetch(n as GlobFetch);
         case NodeKind.GLOBSTORE     : return this.emitGlobStore(n as GlobStore);
-        case NodeKind.GLOBDECLARE   : return this.emitGlobDeclare(n as GlobDeclare);
         default:
             throw new Error(`Unknown (or un-used) NodeKind (${JSON.stringify(n)})`)
         }

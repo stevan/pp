@@ -301,6 +301,8 @@ export class Parser {
                 // -------------------------------------------------------------
                 // Control structures
                 // -------------------------------------------------------------
+                // Conditionals
+                // -------------------------------------------------------------
                 case 'if'      :
                 case 'unless'  :
                     return new AST.Statement(
@@ -311,18 +313,35 @@ export class Parser {
                             children[2] as AST.Block,
                         )
                     );
-                case 'elsif'   :
-                case 'while'   :
-                case 'until'   :
-                    return new TODO(tree, 'handle predicate control blocks');
                 case 'else'    :
                     return children[0] as AST.Block;
-                case 'do'      :
+                case 'elsif'   :
+                    return new TODO(tree, 'handle elsif blocks');
+                // -------------------------------------------------------------
+                // Conditional Loops
+                // -------------------------------------------------------------
+                case 'while'   :
+                case 'until'   :
+                    return new AST.Statement(
+                        new AST.ConditionalLoop(
+                            new AST.Keyword(tree.lexed[0]?.token.source),
+                            children[0] as AST.ParenExpression,
+                            children[1] as AST.Block,
+                        )
+                    );
+                // -------------------------------------------------------------
+                // exception handling
+                // -------------------------------------------------------------
                 case 'try'     :
                 case 'finally' :
                     return new TODO(tree, 'handle unary control blocks');
                 case 'catch'   :
-                    return new TODO(tree, 'handle cath control block (with args)');
+                    return new TODO(tree, 'handle catch control block (with args)');
+                // -------------------------------------------------------------
+                // the others ...
+                // -------------------------------------------------------------
+                case 'do'      :
+                    return new TODO(tree, 'handle do blocks');
                 case 'for'     :
                 case 'foreach' :
                     return new TODO(tree, 'handle for/foreach (iterator) control blocks');
