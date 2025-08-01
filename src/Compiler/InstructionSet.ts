@@ -371,6 +371,10 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('lc', LiftStringyUnOp((s) => s.toLowerCase()));
     opcodes.set('uc', LiftStringyUnOp((s) => s.toUpperCase()));
 
+    opcodes.set('concat', LiftStringyBinOp((n, m) => n.concat(m)));
+
+    opcodes.set('.', opcodes.get('concat') as Opcode);
+
     // ---------------------------------------------------------------------
     // Maths
     // ---------------------------------------------------------------------
@@ -451,6 +455,17 @@ function LiftStringyUnOp (f : (s: string) => string) : Opcode {
         let rhs = i.stack.pop() as Any;
         assertIsStringy(rhs);
         i.stack.push(newPV( f(rhs.value) ));
+        return op.next;
+    }
+}
+
+function LiftStringyBinOp (f : (n: string, m: string) => string) : Opcode {
+    return (i, op) => {
+        let rhs = i.stack.pop() as Any;
+        let lhs = i.stack.pop() as Any;
+        assertIsSV(lhs);
+        assertIsSV(rhs);
+        i.stack.push(newPV( f( SVtoPV(lhs).value, SVtoPV(rhs).value ) ));
         return op.next;
     }
 }

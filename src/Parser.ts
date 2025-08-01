@@ -224,6 +224,11 @@ export class Parser {
                         return new ParserError(tree, children, `Expected two operands for assignement(=) and got ${JSON.stringify(children)}`)
                     }
                 // -----------------------------------------------------------------
+                // String
+                // -----------------------------------------------------------------
+                case '.':
+                    return new AST.Concat(children[0] as Node, children[1] as Node);
+                // -----------------------------------------------------------------
                 // Math
                 // -----------------------------------------------------------------
                 case '+':
