@@ -82,7 +82,7 @@ export interface NodeVisitor<T> {
 export interface Node {
     kind : NodeKind;
 
-    deparse () : string;
+    deparse (depth? : number) : string;
 
     accept<T>(v : NodeVisitor<T>) : T;
 }
@@ -95,9 +95,14 @@ export interface Node {
 export abstract class AbstractNode implements Node {
     kind : NodeKind = NodeKind.ABSTRACT;
 
-    abstract deparse () : string;
+    abstract deparse (depth? : number) : string;
 
     accept<T>(v : NodeVisitor<T>) : T { return v.visit(this) }
+
+    indent (depth : number) : string {
+        if (depth == 0) return '';
+        return "  ".repeat(depth);
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -116,7 +121,7 @@ export class ListExpression extends ExpressionNode {
         public items : Node[]
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `${this.items.map((i) => i.deparse()).join(', ')}`;
     }
 }
@@ -129,7 +134,7 @@ export class ParenExpression extends ExpressionNode {
         public item : Node
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `(${this.item.deparse()})`;
     }
 }
@@ -141,7 +146,7 @@ export class Bareword extends AbstractNode {
 
     constructor(public name : string) { super() }
 
-    deparse() : string { return this.name }
+    deparse(depth : number = 0) : string { return this.name }
 }
 
 export class Keyword extends AbstractNode {
@@ -149,7 +154,7 @@ export class Keyword extends AbstractNode {
 
     constructor(public name : string) { super() }
 
-    deparse() : string { return this.name }
+    deparse(depth : number = 0) : string { return this.name }
 }
 
 // -----------------------------------------------------------------------------
@@ -161,10 +166,10 @@ export abstract class Scope extends AbstractNode {
 
     constructor(public statements : Statement[]) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return this.statements
                 //.map((s) => (typeof s) + ":" + s.deparse() + "####")
-                .map((s) => s.deparse())
+                .map((s) => s.deparse(depth + 1))
                 .filter((s) => s.length > 0)
                 .join('\n');
     }
@@ -173,9 +178,9 @@ export abstract class Scope extends AbstractNode {
 export class Program extends Scope {}
 
 export class Block extends Scope {
-    override deparse() : string {
-        let src = super.deparse();
-        return '{\n' + src + '\n}';
+    override deparse(depth : number = 0) : string {
+        let src = super.deparse(depth);
+        return '{\n' + src + '\n' + this.indent(depth - 1) + '}';
     }
 }
 
@@ -223,8 +228,8 @@ export class SubDefinition extends AbstractNode {
         })
     }
 
-    deparse() : string {
-        return `sub ${this._name.deparse()} ${this._params.deparse()} ${this._body.deparse()}`
+    deparse(depth : number = 0) : string {
+        return `sub ${this._name.deparse()} ${this._params.deparse()} ${this._body.deparse(depth + 1)}`
     }
 }
 
@@ -236,7 +241,7 @@ export class CallSub extends AbstractNode {
         public args   : Node[],
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `${this.callee.name}(${this.args.map((a) => a.deparse()).join(', ')})`
     }
 }
@@ -249,7 +254,7 @@ export class SubCall extends AbstractNode {
         public args : Node[],
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `${this.glob.name}(${this.args.map((a) => a.deparse()).join(', ')})`
     }
 }
@@ -259,7 +264,7 @@ export class SubReturn extends AbstractNode {
 
     constructor(public result : Node) { super() }
 
-    deparse() : string { return `return ${this.result.deparse()}` }
+    deparse(depth : number = 0) : string { return `return ${this.result.deparse()}` }
 }
 
 // -----------------------------------------------------------------------------
@@ -273,11 +278,11 @@ export class Statement extends AbstractNode {
         super();
     }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         if (this.internal) return '';
-        let src = this.body.deparse();
+        let src = this.body.deparse(depth);
         if (src.charAt(src.length - 1) != '}') {
-            src = src + ';';
+            src = this.indent(depth) + src + ';';
         }
         return src;
     }
@@ -297,19 +302,21 @@ export class Conditional extends AbstractNode {
         public ifFalse  : Block = new Block([]),
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         if (this.ifFalse.statements.length == 0) {
             return [
-                `${this.keyword.deparse()} ${this.condExpr.deparse()}`,
-                    this.ifTrue.deparse()
-            ].join('\n')
+                this.indent(depth),
+                `${this.keyword.deparse()} ${this.condExpr.deparse()} `,
+                    this.ifTrue.deparse(depth + 1)
+            ].join('')
         } else {
             return [
-                `${this.keyword.deparse()} ${this.condExpr.deparse()}`,
-                    this.ifTrue.deparse(),
-                'else',
-                    this.ifFalse.deparse(),
-            ].join('\n')
+                this.indent(depth),
+                `${this.keyword.deparse()} ${this.condExpr.deparse()} `,
+                    this.ifTrue.deparse(depth + 1),
+                ' else ',
+                    this.ifFalse.deparse(depth + 1),
+            ].join('')
         }
     }
 }
@@ -323,11 +330,8 @@ export class ConditionalLoop extends AbstractNode {
         public body     : Block,
     ) { super() }
 
-    deparse() : string {
-        return [
-            `${this.keyword.deparse()} ${this.condExpr.deparse()}`,
-                this.body.deparse()
-        ].join('\n')
+    deparse(depth : number = 0) : string {
+        return `${this.indent(depth)}${this.keyword.deparse()} ${this.condExpr.deparse()} ${this.body.deparse(depth + 1)}`;
     }
 }
 
@@ -340,7 +344,7 @@ export class ConstInt extends AbstractNode {
 
     constructor(public literal : number) { super() }
 
-    deparse() : string { return String(this.literal) }
+    deparse(depth : number = 0) : string { return String(this.literal) }
 }
 
 export class ConstNumber extends AbstractNode {
@@ -348,7 +352,7 @@ export class ConstNumber extends AbstractNode {
 
     constructor(public literal : number) { super() }
 
-    deparse() : string { return String(this.literal) }
+    deparse(depth : number = 0) : string { return String(this.literal) }
 }
 
 export class ConstStr extends AbstractNode {
@@ -356,7 +360,7 @@ export class ConstStr extends AbstractNode {
 
     constructor(public literal : string) { super() }
 
-    deparse() : string { return `'${this.literal}'` }
+    deparse(depth : number = 0) : string { return `'${this.literal}'` }
 }
 
 export class ConstTrue extends AbstractNode {
@@ -364,7 +368,7 @@ export class ConstTrue extends AbstractNode {
 
     constructor() { super() }
 
-    deparse() : string { return 'true' }
+    deparse(depth : number = 0) : string { return 'true' }
 }
 
 export class ConstFalse extends AbstractNode {
@@ -372,7 +376,7 @@ export class ConstFalse extends AbstractNode {
 
     constructor() { super() }
 
-    deparse() : string { return 'false' }
+    deparse(depth : number = 0) : string { return 'false' }
 }
 
 export class ConstUndef extends AbstractNode {
@@ -380,7 +384,7 @@ export class ConstUndef extends AbstractNode {
 
     constructor() { super() }
 
-    deparse() : string { return 'undef' }
+    deparse(depth : number = 0) : string { return 'undef' }
 }
 
 // -----------------------------------------------------------------------------
@@ -396,7 +400,7 @@ export class GlobVar extends AbstractNode {
         public slot : GlobSlot
     ) { super() }
 
-    deparse() : string { return this.slot + this.name }
+    deparse(depth : number = 0) : string { return this.slot + this.name }
 }
 
 export class GlobFetch extends AbstractNode {
@@ -407,7 +411,7 @@ export class GlobFetch extends AbstractNode {
         public slot : GlobSlot
     ) { super() }
 
-    deparse() : string { return this.slot + this.name }
+    deparse(depth : number = 0) : string { return this.slot + this.name }
 }
 
 export class GlobStore extends AbstractNode {
@@ -418,7 +422,7 @@ export class GlobStore extends AbstractNode {
         public value : Node,
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `${this.ident.deparse()} = ${this.value.deparse()}`
     }
 }
@@ -426,7 +430,7 @@ export class GlobStore extends AbstractNode {
 export class GlobDeclare extends GlobStore {
     override kind : NodeKind = NodeKind.GLOBDECLARE;
 
-    override deparse () : string {
+    override deparse (depth : number = 0) : string {
         let src = super.deparse();
         return `our ${src}`
     }
@@ -441,7 +445,7 @@ export class ScalarFetch extends AbstractNode {
 
     constructor(public name : string) { super() }
 
-    deparse() : string { return '$' + this.name }
+    deparse(depth : number = 0) : string { return '$' + this.name }
 }
 
 export class ScalarStore extends AbstractNode {
@@ -452,7 +456,7 @@ export class ScalarStore extends AbstractNode {
         public value : Node,
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `$${this.name} = ${this.value.deparse()}`
     }
 }
@@ -460,7 +464,7 @@ export class ScalarStore extends AbstractNode {
 export class ScalarDeclare extends ScalarStore {
     override kind : NodeKind = NodeKind.DECLARE;
 
-    override deparse () : string {
+    override deparse (depth : number = 0) : string {
         let src = super.deparse();
         return `my ${src}`
     }
@@ -477,7 +481,7 @@ export class ArrayLiteral extends AbstractNode {
         public items : Node[],
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `+[ ${this.items.map((i) => i.deparse()).join(', ')} ]`
     }
 }
@@ -490,7 +494,7 @@ export class ArrayElemFetch extends AbstractNode {
         public index : Node,
     ) { super() }
 
-    deparse() : string { return `@${this.name}[${this.index.deparse()}]` }
+    deparse(depth : number = 0) : string { return `@${this.name}[${this.index.deparse()}]` }
 }
 
 export class ArrayElemStore extends AbstractNode {
@@ -502,7 +506,7 @@ export class ArrayElemStore extends AbstractNode {
         public value : Node,
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `@${this.name}[${this.index.deparse()}] = ${this.value.deparse()}`
     }
 }
@@ -512,7 +516,7 @@ export class ArrayFetch extends AbstractNode {
 
     constructor(public name : string) { super() }
 
-    deparse() : string { return '@' + this.name }
+    deparse(depth : number = 0) : string { return '@' + this.name }
 }
 
 export class ArrayStore extends AbstractNode {
@@ -523,7 +527,7 @@ export class ArrayStore extends AbstractNode {
         public value : Node,
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `@${this.name} = ${this.value.deparse()}`
     }
 }
@@ -536,7 +540,7 @@ export class ArrayDeclare extends AbstractNode {
         public value : Node,
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `my @${this.name} = (${this.value.deparse()})`
     }
 }
@@ -557,7 +561,7 @@ export class BuiltInUnary extends BuiltIn {
         public arg  : Node,
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `${this.name}(${this.arg.deparse()})`
     }
 }
@@ -570,7 +574,7 @@ export class BuiltInFunction extends BuiltIn {
         public args : Node[],
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `${this.name}(${this.args.map((a) => a.deparse()).join(', ')})`
     }
 }
@@ -597,7 +601,7 @@ export class BinaryOp extends AbstractNode {
         public rhs      : Node,
     ) { super() }
 
-    deparse() : string {
+    deparse(depth : number = 0) : string {
         return `${this.lhs.deparse()} ${this.operator} ${this.rhs.deparse()}`
     }
 }

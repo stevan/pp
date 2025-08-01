@@ -55,10 +55,11 @@ export function EndToEndTestRunner (src : string[], config : any) : Interpreter 
     for (const parseTree of treeParser.run(lexer.run(tokenizer.run(source)))) {
 
         if (isVerbose) {
-            logger.group(`Statement (${statementCount.toString().padStart(3, '0')}):`);
-            logger.group(`ParseTree:`);
-            logger.log("-".repeat(process.stdout.columns - 3));
-            logger.log(prettyPrintParseTree(parseTree));
+            logger.group(
+                `\x1b[42m  Statement (${statementCount.toString().padStart(3, '0')}):` +
+                " ".repeat(process.stdout.columns - 19) + "\x1b[0m");
+            logger.group(`\x1b[45m  ParseTree:` + " ".repeat(process.stdout.columns - 14) + "\x1b[0m");
+            logger.log('\n', prettyPrintParseTree(parseTree));
             logger.groupEnd()
         }
 
@@ -68,12 +69,12 @@ export function EndToEndTestRunner (src : string[], config : any) : Interpreter 
         program.statements.push(node as Statement);
 
         if (isVerbose) {
-            logger.group(`AST:`);
-            logger.log(node, '\n');
+            logger.group(`\x1b[43m  AST:` + " ".repeat(process.stdout.columns - 8) + "\x1b[0m");
+            logger.log('\n', node, '\n');
             logger.groupEnd();
 
-            logger.group(`Deparse:`);
-            logger.log(node.deparse(), '\n');
+            logger.group(`\x1b[44m  Deparse:` + " ".repeat(process.stdout.columns - 12) + "\x1b[0m");
+            logger.log('\n' + node.deparse(), '\n');
             logger.groupEnd();
 
             logger.groupEnd();
