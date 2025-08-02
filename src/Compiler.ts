@@ -1,16 +1,11 @@
 
 import { logger, walkTraversalOrder } from './Tools'
 
-import { Program } from './Parser/AST'
-import {
-    OP, COP, UNOP, BINOP, LOGOP, LISTOP,
-    MaybeOP, OpTree
-} from './Runtime/API'
-
+import { CompilerConfig } from './Types'
 import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
-
-export type CompilerConfig = any;
+import { Program } from './Parser/AST'
+import { OpTree } from './Runtime/API'
 
 export class Compiler {
     public config  : CompilerConfig;

@@ -1,6 +1,7 @@
 
 import { logger } from './Tools'
 
+import { ParserConfig } from './Types'
 import { ParseTree, ExpressionKind } from './Parser/TreeParser'
 
 import * as AST from './Parser/AST'
@@ -100,8 +101,6 @@ export class HMMM extends AST.AbstractNode {
 
 
 // -----------------------------------------------------------------------------
-
-export type ParserConfig = any;
 
 export class Parser {
     public config : ParserConfig;
