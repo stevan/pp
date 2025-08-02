@@ -10,11 +10,15 @@ import {
 import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
 
+export type CompilerConfig = any;
+
 export class Compiler {
+    public config  : CompilerConfig;
     public opcodes : InstructionSet;
     public emitter : OpTreeEmitter;
 
-    constructor () {
+    constructor (config : CompilerConfig = {}) {
+        this.config  = config;
         this.emitter = new OpTreeEmitter();
         this.opcodes = loadInstructionSet();
     }

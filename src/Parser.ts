@@ -101,7 +101,14 @@ export class HMMM extends AST.AbstractNode {
 
 // -----------------------------------------------------------------------------
 
+export type ParserConfig = any;
+
 export class Parser {
+    public config : ParserConfig;
+
+    constructor(config : ParserConfig = {}) {
+        this.config = config;
+    }
 
     parse (parseTree: ParseTree) : Node {
         return visitParseTree(parseTree, (tree, children, depth) => { return this.buildAST(tree, children, depth) });
