@@ -1,11 +1,8 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger } from '../src/Tools'
-
 import { Pad, StackFrame }    from '../src/Runtime'
 import { IV }                 from '../src/Runtime/API'
-import { Interpreter }        from '../src/Interpreter'
 import { EndToEndTestRunner } from '../src/Tester/EndToEndTestRunner'
 
 let interpreter = EndToEndTestRunner([`
