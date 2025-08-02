@@ -20,3 +20,5 @@ Is it Perl?
 After building, you can run the example from this directory:
 
     ./examples/99-bottles.opal
+    ./bin/opal examples/99-bottles.opal
+    ./bin/opal -e 'say "Hello, world!";'

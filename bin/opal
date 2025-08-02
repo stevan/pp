@@ -14,24 +14,34 @@ const opalPath = path.resolve(__dirname, '../js/src/Opal.js');
 // Import Opal using the absolute path
 const { Opal } = await import(opalPath);
 
-const file = process.argv[2];
+const args = process.argv.slice(2);
+const opal = new Opal({ quiet: true });
 
-if (!file) {
-    console.error('Please provide a file to run.');
+if (args.length === 0) {
+    console.error('Please provide a file to run, or use the -e flag to execute code.');
     process.exit(1);
 }
 
-fs.readFile(file, 'utf8', (err, data) => {
-    if (err) {
-        console.error(`Error reading file: ${err.message}`);
+if (args[0] === '-e') {
+    const code = args[1];
+    if (!code) {
+        console.error('Error: -e requires an argument');
         process.exit(1);
     }
+    opal.run([code]);
+} else {
+    const file = args[0];
+    fs.readFile(file, 'utf8', (err, data) => {
+        if (err) {
+            console.error(`Error reading file: ${err.message}`);
+            process.exit(1);
+        }
 
-    const lines = data.split('\n');
-    if (lines[0].startsWith('#!')) {
-        lines.shift();
-    }
+        const lines = data.split('\n');
+        if (lines[0].startsWith('#!')) {
+            lines.shift();
+        }
 
-    const opal = new Opal({ quiet: true });
-    opal.run(lines);
-});
+        opal.run(lines);
+    });
+}
