@@ -1,7 +1,6 @@
 
-
-
-import { RuntimeConfig, Thread, ThreadID, SymbolTable, PV } from './Runtime'
+import { RuntimeConfig } from './Types'
+import { Thread, ThreadID, SymbolTable, PV } from './Runtime'
 import { OpTree } from './Runtime/API'
 
 class ThreadMap extends Map<ThreadID, Thread> {

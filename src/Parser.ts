@@ -1,6 +1,7 @@
 
 
 
+import { ParserConfig } from './Types'
 import { ParseTree, ExpressionKind } from './Parser/TreeParser'
 
 import * as AST from './Parser/AST'
@@ -102,6 +103,11 @@ export class HMMM extends AST.AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class Parser {
+    public config : ParserConfig;
+
+    constructor(config : ParserConfig = {}) {
+        this.config = config;
+    }
 
     parse (parseTree: ParseTree) : Node {
         return visitParseTree(parseTree, (tree, children, depth) => { return this.buildAST(tree, children, depth) });

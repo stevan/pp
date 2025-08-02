@@ -1,6 +1,7 @@
 
 import { walkTraversalOrder } from './Tools'
 
+import { CompilerConfig } from './Types'
 import { Program } from './Parser/AST'
 import {
     OpTree
@@ -8,12 +9,16 @@ import {
 
 import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
+import { Program } from './Parser/AST'
+import { OpTree } from './Runtime/API'
 
 export class Compiler {
+    public config  : CompilerConfig;
     public opcodes : InstructionSet;
     public emitter : OpTreeEmitter;
 
-    constructor () {
+    constructor (config : CompilerConfig = {}) {
+        this.config  = config;
         this.emitter = new OpTreeEmitter();
         this.opcodes = loadInstructionSet();
     }

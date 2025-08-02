@@ -8,6 +8,8 @@ import { inspect } from "node:util"
 // =============================================================================
 
 import { logger } from './Tools'
+
+import { RuntimeConfig } from './Types'
 import {
     Any, PV, CV, GV,
     OP, MaybeOP, OpTree,
@@ -18,11 +20,9 @@ export type { PV } from './Runtime/API'
 
 // -----------------------------------------------------------------------------
 
-export type RuntimeConfig = any;
+export type ThreadID = number
 
-export type ThreadID = number;
-
-export type Opcode = (i : StackFrame, op : OP) => MaybeOP;
+export type Opcode = (i : StackFrame, op : OP) => MaybeOP
 
 export type MaybeOpcode = Opcode | undefined
 export type MaybeStackFrame = StackFrame | undefined
