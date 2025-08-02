@@ -1,4 +1,4 @@
-#!/usr/bin/env /Users/ovid/projects/perl/pp/bin/opal
+#!/usr/bin/env bin/opal
 
 my $num = 99;
 while ($num > 0) {

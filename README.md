@@ -14,3 +14,9 @@ Is it Perl?
     npm install
     npm run build
     npm test
+
+# Example
+
+After building, you can run the example from this directory:
+
+    ./examples/99-bottles.opal
