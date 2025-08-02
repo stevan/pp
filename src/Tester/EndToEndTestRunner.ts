@@ -19,8 +19,19 @@ import { Parser }      from '../Parser'
 import { Compiler }    from '../Compiler'
 import { Interpreter } from '../Interpreter'
 
-import { Node, Statement } from '../Parser/AST'
+import { Statement } from '../Parser/AST'
 
+/**
+ * Provides a simple, end-to-end interface for running code through the entire pipeline.
+ * It takes source code as input and handles tokenizing, lexing, parsing, compiling,
+ * and interpreting the code.
+ *
+ * @param {string[]} src - An array of strings, where each string is a line of source code.
+ * @param {object} config - A configuration object.
+ * @param {boolean} [config.verbose=false] - If true, logs detailed information about each stage of the pipeline.
+ * @param {boolean} [config.quiet=false] - If true, suppresses all logging output, including timing information.
+ * @returns {Interpreter} The interpreter instance after the code has been executed. This can be inspected to check the final state, such as the contents of STDOUT.
+ */
 export function EndToEndTestRunner (src : string[], config : any) : Interpreter {
     let isVerbose   = config.verbose ?? false;
     let isQuiet     = config.quiet   ?? isVerbose;
@@ -87,7 +98,7 @@ export function EndToEndTestRunner (src : string[], config : any) : Interpreter 
 
     if (isVerbose) {
         logger.log("=".repeat(process.stdout.columns - 1));
-        logger.log('Compilier');
+        logger.log('Compiler');
         logger.log("=".repeat(process.stdout.columns - 1));
     }
 

@@ -11,10 +11,12 @@ import { logger } from './Tools'
 
 import { RuntimeConfig } from './Types'
 import {
-    Any, SV, PV, CV, GV,
+    Any, PV, CV, GV,
     OP, MaybeOP, OpTree,
     Stash, newStash, Glob, newGlob, isGlob,
 } from './Runtime/API'
+
+export type { PV } from './Runtime/API'
 
 // -----------------------------------------------------------------------------
 

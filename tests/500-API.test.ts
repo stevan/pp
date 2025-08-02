@@ -2,9 +2,8 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { logger, prettyPrinter, walkExecOrder, walkTraversalOrder } from '../src/Tools'
+
 import {
-    newStash,
     newGlob,
     newPV,
     newAV,
@@ -13,7 +12,6 @@ import {
     SV_True,
     SV_Undef,
     newRV,
-    isGlob, isStash,
     assertIsGlob,
 } from '../src/Runtime/API'
 import { SymbolTable } from '../src/Runtime'

@@ -5,29 +5,27 @@
 // is emited by the AST and then executed by the interpreter.
 // =============================================================================
 
-import { logger } from '../Tools'
+
 import {
-    Any, SV, IV, NV, PV, CV, Stash,
+    Any, IV, NV, PV, CV,
 
     SV_True, SV_False, SV_Undef,
 
-    List,
-
-    newStash, newCV, newIV, newPV, newNV, newAV,
+    newCV, newIV, newPV, newNV, newAV,
 
     isSV, isAV, isCV,
 
-    assertIsSV, assertIsPV, assertIsIV, assertIsCV, assertIsAV,
+    assertIsSV, assertIsPV, assertIsCV, assertIsAV,
     assertIsGlob, assertIsBool,
     assertIsComparable, assertIsNumeric, assertIsStringy,
 
-    SVtoPV, AnytoPV, isUndef, isTrue, isFalse,
-    setGlobScalar, setGlobCode, getGlobSlot, GlobSlot,
+    SVtoPV, AnytoPV, isTrue, isFalse,
+    setGlobScalar, setGlobCode, getGlobSlot,
 
-    OP, BINOP, LOGOP, LOOPOP, DECLARE, MaybeOP, OpTree,
+    OP, BINOP, LOGOP, LOOPOP, DECLARE, MaybeOP,
 } from '../Runtime/API'
 
-import { Opcode, SymbolTable, StackFrame } from '../Runtime'
+import { Opcode, StackFrame } from '../Runtime'
 
 // -----------------------------------------------------------------------------
 // the instruction set ...

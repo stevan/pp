@@ -9,10 +9,9 @@ import {
     ConstInt, ConstStr,
     ArrayDeclare,
     ArrayLiteral,
-    ArrayFetch,
     ArrayElemFetch,
     Subtract,
-    Say, Join,
+    Say,
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'

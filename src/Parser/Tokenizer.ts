@@ -1,5 +1,5 @@
 
-import { logger } from '../Tools'
+
 
 const IS_NUMBER   = /^-?[0-9][0-9_]*(\.[0-9]+)?$/;
 const IS_STRING   = /^"[^"\n]*"|'[^'\n]*'$/;

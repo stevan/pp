@@ -4,9 +4,9 @@ import  assert  from "node:assert"
 import { logger, prettyPrinter, walkExecOrder, walkTraversalOrder } from '../src/Tools'
 import {
     Program, Statement,
-    ScalarStore, ScalarFetch, ScalarDeclare,
+    ScalarDeclare,
     ConstInt,
-    Add, Block, ConstUndef, GlobVar, GlobDeclare, GlobFetch
+    GlobVar, GlobDeclare, GlobFetch
 } from '../src/Parser/AST'
 
 import { Compiler } from '../src/Compiler'

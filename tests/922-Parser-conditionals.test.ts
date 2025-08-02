@@ -1,7 +1,6 @@
 
 
 import {
-    ParseTree,
     ExpressionKind
 } from '../src/Parser/TreeParser'
 

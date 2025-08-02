@@ -1,7 +1,12 @@
 
-import { logger, walkTraversalOrder } from './Tools'
+import { walkTraversalOrder } from './Tools'
 
 import { CompilerConfig } from './Types'
+import { Program } from './Parser/AST'
+import {
+    OpTree
+} from './Runtime/API'
+
 import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
 import { Program } from './Parser/AST'

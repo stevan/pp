@@ -1,5 +1,5 @@
 
-import { logger } from './Tools'
+
 
 import { ParserConfig } from './Types'
 import { ParseTree, ExpressionKind } from './Parser/TreeParser'
