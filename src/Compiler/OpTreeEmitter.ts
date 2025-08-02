@@ -9,7 +9,6 @@ import {
     Scope,
     Program, Block, Statement,
     ExpressionNode, ListExpression, ParenExpression,
-    Bareword,
     SubBody, SubDefinition, SubCall, SubReturn, CallSub,
     Conditional, ConditionalLoop,
     ConstInt, ConstNumber, ConstStr, ConstTrue, ConstFalse, ConstUndef,
@@ -17,15 +16,13 @@ import {
     ScalarFetch, ScalarStore, ScalarDeclare,
     ArrayFetch, ArrayStore, ArrayDeclare, ArrayLiteral,
     ArrayElemFetch, ArrayElemStore,
-    BuiltIn, BuiltInFunction, BuiltInUnary, Say, Join,
-    BinaryOp, Add, Multiply, Subtract, Modulus,
-    Equal, NotEqual,
-    LessThan, GreaterThan, LessThanOrEqual, GreaterThanOrEqual,
+    BuiltIn, BuiltInFunction, BuiltInUnary,
+    BinaryOp,
 } from '../Parser/AST'
 
 import {
     OP, COP, UNOP, BINOP, LOGOP, LISTOP, LOOPOP,
-    NOOP, DECLARE,
+    DECLARE,
     OpTree,
     GlobSlot,
 } from '../Runtime/API'

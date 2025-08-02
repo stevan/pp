@@ -9,7 +9,7 @@ import { inspect } from "node:util"
 
 import { logger } from './Tools'
 import {
-    Any, SV, PV, CV, GV,
+    Any, PV, CV, GV,
     OP, MaybeOP, OpTree,
     Stash, newStash, Glob, newGlob, isGlob,
 } from './Runtime/API'

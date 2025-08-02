@@ -1,10 +1,9 @@
 
-import { logger, walkTraversalOrder } from './Tools'
+import { walkTraversalOrder } from './Tools'
 
 import { Program } from './Parser/AST'
 import {
-    OP, COP, UNOP, BINOP, LOGOP, LISTOP,
-    MaybeOP, OpTree
+    OpTree
 } from './Runtime/API'
 
 import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'

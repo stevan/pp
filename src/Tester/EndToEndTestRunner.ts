@@ -19,7 +19,7 @@ import { Parser }      from '../Parser'
 import { Compiler }    from '../Compiler'
 import { Interpreter } from '../Interpreter'
 
-import { Node, Statement } from '../Parser/AST'
+import { Statement } from '../Parser/AST'
 
 /**
  * Provides a simple, end-to-end interface for running code through the entire pipeline.

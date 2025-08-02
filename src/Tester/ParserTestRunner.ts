@@ -4,7 +4,7 @@ import  assert  from "node:assert"
 
 import { Console } from 'console';
 
-import { Tokenizer, Token }      from '../Parser/Tokenizer'
+import { Tokenizer }      from '../Parser/Tokenizer'
 import { Lexer, Lexed }          from '../Parser/Lexer'
 import {
     TreeParser,
