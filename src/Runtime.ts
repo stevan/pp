@@ -14,6 +14,8 @@ import {
     Stash, newStash, Glob, newGlob, isGlob,
 } from './Runtime/API'
 
+export type { PV } from './Runtime/API'
+
 // -----------------------------------------------------------------------------
 
 export type RuntimeConfig = any;

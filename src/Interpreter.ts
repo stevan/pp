@@ -1,7 +1,7 @@
 
 
 
-import { RuntimeConfig, Thread, ThreadID, SymbolTable } from './Runtime'
+import { RuntimeConfig, Thread, ThreadID, SymbolTable, PV } from './Runtime'
 import { OpTree } from './Runtime/API'
 
 class ThreadMap extends Map<ThreadID, Thread> {
@@ -35,5 +35,9 @@ export class Interpreter {
 
     run (root : OpTree) : void {
         this.main.run(root);
+    }
+
+    get STDOUT() : any[] {
+        return this.main.STD_buffer.map((pv : PV) => pv.value);
     }
 }
