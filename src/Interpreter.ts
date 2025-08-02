@@ -1,7 +1,8 @@
 
-import { RuntimeConfig } from './Types'
-import { Thread, ThreadID, SymbolTable, PV } from './Runtime'
-import { OpTree } from './Runtime/API'
+import { RuntimeConfig, OutputStream } from './Types'
+import { OpTreeStream } from './Compiler'
+import { Thread, ThreadID, SymbolTable } from './Runtime'
+import { OpTree, PV } from './Runtime/API'
 
 class ThreadMap extends Map<ThreadID, Thread> {
     addThread(t : Thread) : void { this.set(t.tid, t) }
@@ -32,8 +33,8 @@ export class Interpreter {
         return thread;
     }
 
-    run (root : OpTree) : void {
-        this.main.run(root);
+    async *run (source : OpTreeStream) : OutputStream {
+        yield* this.main.run(source);
     }
 
     get STDOUT() : any[] {

@@ -5,6 +5,10 @@
 // is emited by the AST and then executed by the interpreter.
 // =============================================================================
 
+import {
+    walkTraversalOrder,
+    prettyPrinter
+} from '../Tools'
 
 import {
     Any, IV, NV, PV, CV,
@@ -21,6 +25,9 @@ import {
 
     SVtoPV, AnytoPV, isTrue, isFalse,
     setGlobScalar, setGlobCode, getGlobSlot,
+
+    Stash,
+    GlobSlot,
 
     OP, BINOP, LOGOP, LOOPOP, DECLARE, MaybeOP,
 } from '../Runtime/API'
@@ -189,6 +196,22 @@ export function loadInstructionSet () : InstructionSet {
     // ---------------------------------------------------------------------
     // Builtins
     // ---------------------------------------------------------------------
+
+    opcodes.set('concise', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+        let name = args[0] as Any;
+        assertIsPV(name);
+
+        let gv = i.executor().root.autovivify(name.value);
+        assertIsGlob(gv);
+
+        let cv = getGlobSlot(gv, GlobSlot.CODE);
+        assertIsCV(cv);
+
+        i.executor().toSTDOUT( args.map((arg) => AnytoPV(arg)).flat(1) );
+        walkTraversalOrder(prettyPrinter, cv.contents.leave);
+        return op.next;
+    });
 
     opcodes.set('say', (i, op) => {
         let args = collectArgumentsFromStack(i);

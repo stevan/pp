@@ -271,6 +271,12 @@ export class SubReturn extends AbstractNode {
 // Statements
 // -----------------------------------------------------------------------------
 
+export class EmptyStatement extends AbstractNode {
+    override kind : NodeKind = NodeKind.STATEMENT;
+
+    deparse(depth : number = 0) : string { return ';' }
+}
+
 export class Statement extends AbstractNode {
     override kind : NodeKind = NodeKind.STATEMENT;
 

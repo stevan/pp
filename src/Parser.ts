@@ -2,7 +2,7 @@
 
 
 import { ParserConfig } from './Types'
-import { ParseTree, ExpressionKind } from './Parser/TreeParser'
+import { ParseTree, ParseTreeStream, ExpressionKind } from './Parser/TreeParser'
 
 import * as AST from './Parser/AST'
 import { Node } from './Parser/AST'
@@ -100,6 +100,8 @@ export class HMMM extends AST.AbstractNode {
 }
 
 
+export type ASTNodeStream = AsyncGenerator<Node, void, void>;
+
 // -----------------------------------------------------------------------------
 
 export class Parser {
@@ -107,6 +109,12 @@ export class Parser {
 
     constructor(config : ParserConfig = {}) {
         this.config = config;
+    }
+
+    async *run (source : ParseTreeStream) : ASTNodeStream {
+        for await (const tree of source) {
+            yield this.parse(tree);
+        }
     }
 
     parse (parseTree: ParseTree) : Node {
@@ -279,6 +287,8 @@ export class Parser {
             case ExpressionKind.STATEMENT:
                 if (children.length == 1) {
                     return new AST.Statement(children[0] as Node);
+                } else if (children.length == 0) {
+                    return new AST.EmptyStatement();
                 } else {
                     return new HMMM(tree, `... statements probably shouldn't have more than one child, but we got ${children.length}`);
                 }

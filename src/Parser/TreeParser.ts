@@ -1,7 +1,7 @@
 
 import { logger } from '../Tools'
 
-import { Lexed } from './Lexer'
+import { Lexed, LexedStream } from './Lexer'
 
 // -----------------------------------------------------------------------------
 
@@ -43,6 +43,8 @@ export type Expression = {
   }
 
 export type ParseTree = Term | Expression | Operation
+
+export type ParseTreeStream = AsyncGenerator<ParseTree, void, void>;
 
 // -----------------------------------------------------------------------------
 
@@ -153,7 +155,7 @@ export class TreeParser {
         return destination;
     }
 
-    *run (source : Generator<Lexed, void, void>) : Generator<ParseTree, void, void> {
+    async *run (source : LexedStream) : ParseTreeStream {
         let STACK : Expression[] = [
             {
                 type  : 'EXPRESSION',
@@ -168,7 +170,7 @@ export class TreeParser {
 
         const shouldYieldStatement = () : boolean => STACK.length == 1;
 
-        for (const lexed of source) {
+        for await (const lexed of source) {
             if (this.config.verbose) {
                 logger.log('== BEFORE ===========================================');
                 logger.log('STACK :', STACK);

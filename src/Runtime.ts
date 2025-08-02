@@ -9,14 +9,14 @@ import { inspect } from "node:util"
 
 import { logger } from './Tools'
 
-import { RuntimeConfig } from './Types'
+
+import { RuntimeConfig, OutputStream } from './Types'
+import { OpTreeStream } from './Compiler'
 import {
     Any, PV, CV, GV,
     OP, MaybeOP, OpTree,
     Stash, newStash, Glob, newGlob, isGlob,
 } from './Runtime/API'
-
-export type { PV } from './Runtime/API'
 
 // -----------------------------------------------------------------------------
 
@@ -127,6 +127,8 @@ export class StackFrame {
     private parent : MaybeStackFrame;
     private thread : Thread;
 
+    private optree_history : OpTree[] = [];
+
     constructor(
             optree    : OpTree,
             return_to : MaybeOP,
@@ -139,6 +141,13 @@ export class StackFrame {
         this.return_to  = return_to;
         this.thread     = thread;
         this.parent     = parent;
+        this.current_op = optree.enter;
+    }
+
+    appendOpTree (optree : OpTree) : void {
+        this.optree_history.push(this.optree);
+
+        this.optree     = optree;
         this.current_op = optree.enter;
     }
 
@@ -262,92 +271,83 @@ export class Thread {
         this.frames.unshift(frame);
     }
 
-    prepareInteractiveRoot () : void {
-        let halt = new OP('halt', {});
-        // XXX: gross ... do better
-        halt.metadata.compiler.opcode = (i : StackFrame, op : OP) => undefined;
+    async *run (source : OpTreeStream) : OutputStream {
+        let prepared = false;
 
-        let optree = new OpTree(halt, halt);
-
-        let frame = new StackFrame(
-            optree,
-            halt,
-            this,
-            undefined
-        );
-
-        optree.enter.config.name = '(main)';
-
-        this.frames.unshift(frame);
-    }
-
-    init () {
-        this.prepareInteractiveRoot();
-    }
-
-    run (root : OpTree) : void {
-        this.prepareRootFrame(root);
-        this.execute();
-    }
-
-    execute () : void {
-        let frame = this.frames[0] as StackFrame;
-
-        let depth = this.frames.length;
-        while (frame.current_op != undefined) {
-
-            let op : MaybeOP = frame.current_op;
-            if (op == undefined) throw new Error(`Expected an OP, and could not find one`);
-
-            let opcode = op.metadata.compiler.opcode;
-            if (opcode == undefined)
-                throw new Error(`Unlinked OP, no opcode (${op.name} = ${JSON.stringify(op.config)})`)
-
-            depth = this.frames.length
-
-            if (this.config.DEBUG) {
-                logger.group(`\x1b[36m${frame.optree.enter.config.name}\x1b[0m ->[\x1b[33m${op.name}\x1b[0m, \x1b[36m${op.metadata.uid}\x1b[0m]`);
+        for await (const optree of source) {
+            if (!prepared) {
+                this.prepareRootFrame(optree);
+                prepared = true;
             }
 
-            let next_op = opcode(frame, op);
-            if (next_op == undefined) {
-                if (this.config.DEBUG) logger.groupEnd();
-                break;
-            }
+            let frame = this.frames[0] as StackFrame;
+            frame.appendOpTree(optree);
 
-            if (this.config.DEBUG) {
-                let avail_width = (process.stdout.columns - (this.frames.length * 2)) - 2;
+            let depth = this.frames.length;
+            while (frame.current_op != undefined) {
 
-                if (this.frames.length > depth) {
-                    logger.log('\x1b[32m╭─' + '─'.repeat(avail_width) + '\x1b[0m');
-                    logger.log(
-                        `\x1b[32m│ \x1b[42m\x1b[30m ${this.frames[0]?.optree.enter.config.name} ▼ \x1b[0m`,
-                        this.frames[0]?.stack
-                    );
-                    logger.group('\x1b[32m╰─' + '─'.repeat(avail_width) + '\x1b[0m');
+                let op : MaybeOP = frame.current_op;
+                if (op == undefined) throw new Error(`Expected an OP, and could not find one`);
+
+                let opcode = op.metadata.compiler.opcode;
+                if (opcode == undefined)
+                    throw new Error(`Unlinked OP, no opcode (${op.name} = ${JSON.stringify(op.config)})`)
+
+                depth = this.frames.length
+
+                if (this.config.DEBUG) {
+                    logger.group(`\x1b[36m${frame.optree.enter.config.name}\x1b[0m ->[\x1b[33m${op.name}\x1b[0m, \x1b[36m${op.metadata.uid}\x1b[0m]`);
                 }
-                else if (this.frames.length < depth) {
+
+                let next_op = opcode(frame, op);
+
+                if (this.STD_buffer.length > 0) {
+                    yield this.STD_buffer.splice(0).map((pv) => pv.value);
+                }
+
+                if (this.ERR_buffer.length > 0) {
+                    yield this.ERR_buffer.splice(0).map((pv) => pv.value);
+                }
+
+                if (next_op == undefined) {
+                    if (this.config.DEBUG) logger.groupEnd();
+                    break;
+                }
+
+                if (this.config.DEBUG) {
+                    let avail_width = (process.stdout.columns - (this.frames.length * 2)) - 2;
+
+                    if (this.frames.length > depth) {
+                        logger.log('\x1b[32m╭─' + '─'.repeat(avail_width) + '\x1b[0m');
+                        logger.log(
+                            `\x1b[32m│ \x1b[42m\x1b[30m ${this.frames[0]?.optree.enter.config.name} ▼ \x1b[0m`,
+                            this.frames[0]?.stack
+                        );
+                        logger.group('\x1b[32m╰─' + '─'.repeat(avail_width) + '\x1b[0m');
+                    }
+                    else if (this.frames.length < depth) {
+                        logger.groupEnd();
+                        logger.log('\x1b[33m╭─' + '─'.repeat(avail_width) + '\x1b[0m');
+                        logger.log(
+                            `\x1b[33m│ \x1b[43m\x1b[30m ${this.frames[0]?.optree.enter.config.name} ▲ \x1b[0m`,
+                            this.frames[0]?.stack
+                        );
+                        logger.log('\x1b[33m╰─' + '─'.repeat(avail_width) + '\x1b[0m');
+                    } else {
+
+                        logger.log('\x1b[34m├─\x1b[35m stack :\x1b[0m', frame.stack.toReversed());
+                        logger.log('\x1b[34m╰──\x1b[35m pads :\x1b[0m', frame.padlist);
+                    }
                     logger.groupEnd();
-                    logger.log('\x1b[33m╭─' + '─'.repeat(avail_width) + '\x1b[0m');
-                    logger.log(
-                        `\x1b[33m│ \x1b[43m\x1b[30m ${this.frames[0]?.optree.enter.config.name} ▲ \x1b[0m`,
-                        this.frames[0]?.stack
-                    );
-                    logger.log('\x1b[33m╰─' + '─'.repeat(avail_width) + '\x1b[0m');
-                } else {
-
-                    logger.log('\x1b[34m├─\x1b[35m stack :\x1b[0m', frame.stack.toReversed());
-                    logger.log('\x1b[34m╰──\x1b[35m pads :\x1b[0m', frame.padlist);
                 }
-                logger.groupEnd();
+
+                frame = this.frames[0] as StackFrame;
+                frame.current_op = next_op;
             }
 
-            frame = this.frames[0] as StackFrame;
-            frame.current_op = next_op;
-        }
-
-        if (this.config.DEBUG) {
-            logger.log('HALT!');
+            if (this.config.DEBUG) {
+                logger.log('HALT!');
+            }
         }
     }
 
@@ -360,26 +360,26 @@ export class Thread {
 
     toSTDOUT (args : PV[]) : void {
         this.STD_buffer.push(...args);
-        if (this.config.DEBUG) {
-            console.log('\x1b[44m  STDOUT ▶ :\x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
-        } else {
-            if (!this.config.QUIET) {
-                // FIXME: this should use stdout
-                console.log(args.map((pv) => pv.value).join(''));
-            }
-        }
+        //if (this.config.DEBUG) {
+        //    console.log('\x1b[44m  STDOUT ▶ :\x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
+        //} else {
+        //    if (!this.config.QUIET) {
+        //        // FIXME: this should use stdout
+        //        console.log(args.map((pv) => pv.value).join(''));
+        //    }
+        //}
     }
 
     toSTDERR (args : PV[]) : void {
         this.ERR_buffer.push(...args);
-        if (this.config.DEBUG) {
-            console.log('\x1b[41m  STDERR ▶ \x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
-        } else {
-            if (!this.config.QUIET) {
-                // FIXME: this should use stderr
-                console.log(args.map((pv) => pv.value).join(''));
-            }
-        }
+        //if (this.config.DEBUG) {
+        //    console.log('\x1b[41m  STDERR ▶ \x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
+        //} else {
+        //    if (!this.config.QUIET) {
+        //        // FIXME: this should use stderr
+        //        console.log(args.map((pv) => pv.value).join(''));
+        //    }
+        //}
     }
 
 }

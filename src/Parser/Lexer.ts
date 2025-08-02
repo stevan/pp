@@ -1,5 +1,5 @@
 
-import { Token } from './Tokenizer'
+import { Token, TokenStream } from './Tokenizer'
 
 export type LexedType =
     | 'OPEN'
@@ -20,10 +20,12 @@ export interface Lexed {
     token : Token,
 }
 
+export type LexedStream = AsyncGenerator<Lexed, void, void>;
+
 export class Lexer {
 
-    *run (source : Generator<Token, void, void>) : Generator<Lexed, void, void> {
-        for (const token of source) {
+    async *run (source : TokenStream) : LexedStream {
+        for await (const token of source) {
             switch (token.type) {
             case 'BRACKET' :
                 switch (token.source) {
@@ -156,6 +158,9 @@ export class Lexer {
                     case 'return'  :
                         yield { type : 'UNOP', token : token }
                         break;
+
+                    // debugging
+                    case 'concise' :
 
                     // strings
                     case 'join'  :

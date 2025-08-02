@@ -1,5 +1,5 @@
 
-
+import { SourceStream } from '../Types'
 
 const IS_NUMBER   = /^-?[0-9][0-9_]*(\.[0-9]+)?$/;
 const IS_STRING   = /^"[^"\n]*"|'[^'\n]*'$/;
@@ -18,8 +18,10 @@ export interface Token {
     source : string,
 }
 
+export type TokenStream = AsyncGenerator<Token, void, void>;
+
 export class Tokenizer {
-    *run (source : Generator<string, void, void>) : Generator<Token, void, void> {
+    async *run (source : SourceStream) : TokenStream {
 
         const newToken = (tokenType : TokenType, src : string) : Token => {
             return {
@@ -28,7 +30,7 @@ export class Tokenizer {
             }
         }
 
-        for (const chunk of source) {
+        for await (const chunk of source) {
             let match;
             while ((match = SPLITTER.exec(chunk)) !== null) {
                 let m = match[0] as string;
