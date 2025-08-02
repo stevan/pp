@@ -339,10 +339,8 @@ export class Thread {
         if (this.config.DEBUG) {
             console.log('\x1b[44m  STDOUT ▶ :\x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
         } else {
-            if (!this.config.QUIET) {
-                // FIXME: this should use stdout
-                console.log(args.map((pv) => pv.value).join(''));
-            }
+            // FIXME: this should use stdout
+            console.log(args.map((pv) => pv.value).join(''));
         }
     }
 

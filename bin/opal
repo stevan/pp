@@ -32,6 +32,6 @@ fs.readFile(file, 'utf8', (err, data) => {
         lines.shift();
     }
 
-    const opal = new Opal({ quiet: false });
+    const opal = new Opal({ quiet: true });
     opal.run(lines);
 });
