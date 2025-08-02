@@ -2,14 +2,9 @@
 import { walkTraversalOrder } from './Tools'
 
 import { CompilerConfig } from './Types'
-import { Program } from './Parser/AST'
-import {
-    OpTree
-} from './Runtime/API'
-
 import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
-import { Program } from './Parser/AST'
+import { Program, Statement } from './Parser/AST'
 import { OpTree } from './Runtime/API'
 
 export class Compiler {
@@ -40,5 +35,24 @@ export class Compiler {
         );
 
         return prog;
+    }
+
+    compileStatement (statement : Statement) : OpTree {
+        let stmt = statement.accept(this.emitter);
+
+        let uid_seq = 0;
+
+        // link the OPs and Opcodes
+        walkTraversalOrder(
+            (op, d) => {
+                let opcode = this.opcodes.get(op.name);
+                if (opcode == undefined) throw new Error(`Unable to find opcode(${op.name})`);
+                op.metadata.uid             = ++uid_seq;
+                op.metadata.compiler.opcode = opcode;
+            },
+            stmt.leave
+        );
+
+        return stmt;
     }
 }

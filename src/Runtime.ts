@@ -133,13 +133,13 @@ export class StackFrame {
             thread    : Thread,
             parent?   : MaybeStackFrame,
         ) {
-        this.stack       = [];
-        this.padlist     = [ new Pad() ];
-        this.optree      = optree;
-        this.return_to   = return_to;
-        this.thread = thread;
-        this.parent      = parent;
-        this.current_op  = optree.enter;
+        this.stack      = [];
+        this.padlist    = [ new Pad() ];
+        this.optree     = optree;
+        this.return_to  = return_to;
+        this.thread     = thread;
+        this.parent     = parent;
+        this.current_op = optree.enter;
     }
 
     // -------------------------------------------------------------------------
@@ -262,9 +262,35 @@ export class Thread {
         this.frames.unshift(frame);
     }
 
+    prepareInteractiveRoot () : void {
+        let halt = new OP('halt', {});
+        // XXX: gross ... do better
+        halt.metadata.compiler.opcode = (i : StackFrame, op : OP) => undefined;
+
+        let optree = new OpTree(halt, halt);
+
+        let frame = new StackFrame(
+            optree,
+            halt,
+            this,
+            undefined
+        );
+
+        optree.enter.config.name = '(main)';
+
+        this.frames.unshift(frame);
+    }
+
+    init () {
+        this.prepareInteractiveRoot();
+    }
+
     run (root : OpTree) : void {
         this.prepareRootFrame(root);
+        this.execute();
+    }
 
+    execute () : void {
         let frame = this.frames[0] as StackFrame;
 
         let depth = this.frames.length;
@@ -280,9 +306,7 @@ export class Thread {
             depth = this.frames.length
 
             if (this.config.DEBUG) {
-                logger.group(
-
-    `\x1b[36m${frame.optree.enter.config.name}\x1b[0m ->[\x1b[33m${op.name}\x1b[0m, \x1b[36m${op.metadata.uid}\x1b[0m]`);
+                logger.group(`\x1b[36m${frame.optree.enter.config.name}\x1b[0m ->[\x1b[33m${op.name}\x1b[0m, \x1b[36m${op.metadata.uid}\x1b[0m]`);
             }
 
             let next_op = opcode(frame, op);
