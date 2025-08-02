@@ -7,3 +7,10 @@ If it ...
 - but is *not* `perl` 
 
 Is it Perl?
+
+# Building
+
+    cd path/to/this/repo
+    npm install
+    npm run build
+    npm test
