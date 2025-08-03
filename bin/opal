@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+const { Opal } = require('../js/src/Opal.js');
+
+const args = process.argv.slice(2);
+const opal = new Opal({ quiet: true });
+
+if (args.length === 0) {
+    console.error('Please provide a file to run, or use the -e flag to execute code.');
+    process.exit(1);
+}
+
+if (args[0] === '-e') {
+    const code = args[1];
+    if (!code) {
+        console.error('Error: -e requires an argument');
+        process.exit(1);
+    }
+    opal.run([code]);
+} else {
+    const file = args[0];
+    fs.readFile(file, 'utf8', (err, data) => {
+        if (err) {
+            console.error(`Error reading file: ${err.message}`);
+            process.exit(1);
+        }
+
+        const lines = data.split('\n');
+        if (lines[0].startsWith('#!')) {
+            lines.shift();
+        }
+
+        opal.run(lines);
+    });
+}
