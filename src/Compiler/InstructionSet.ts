@@ -58,6 +58,37 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     // ---------------------------------------------------------------------
+    // Debugging ops
+    // ---------------------------------------------------------------------
+
+    opcodes.set('concise', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+
+        // FIXME:
+        // handle these things better
+        // and return errors, instead
+        // of calling assert* functions.
+
+        let name = args[0] as Any;
+        assertIsPV(name);
+
+        let gv = i.executor().root.autovivify(name.value);
+        assertIsGlob(gv);
+
+        let cv = getGlobSlot(gv, GlobSlot.CODE);
+        assertIsCV(cv);
+
+        // FIXME: convert this walker * pretty-print
+        // function to return a string that we can print
+        // instead writing directly to the console
+        // see notes in Tools.ts
+        walkTraversalOrder(prettyPrinter, cv.contents.leave);
+
+        i.executor().toSTDOUT( args.map((arg) => AnytoPV(arg)).flat(1) );
+        return op.next;
+    });
+
+    // ---------------------------------------------------------------------
     // Enter/Leave
     // ---------------------------------------------------------------------
 
@@ -196,22 +227,6 @@ export function loadInstructionSet () : InstructionSet {
     // ---------------------------------------------------------------------
     // Builtins
     // ---------------------------------------------------------------------
-
-    opcodes.set('concise', (i, op) => {
-        let args = collectArgumentsFromStack(i);
-        let name = args[0] as Any;
-        assertIsPV(name);
-
-        let gv = i.executor().root.autovivify(name.value);
-        assertIsGlob(gv);
-
-        let cv = getGlobSlot(gv, GlobSlot.CODE);
-        assertIsCV(cv);
-
-        i.executor().toSTDOUT( args.map((arg) => AnytoPV(arg)).flat(1) );
-        walkTraversalOrder(prettyPrinter, cv.contents.leave);
-        return op.next;
-    });
 
     opcodes.set('say', (i, op) => {
         let args = collectArgumentsFromStack(i);

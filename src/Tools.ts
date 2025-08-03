@@ -33,6 +33,11 @@ export function *SourceStream (source : string[]) : Generator<string, void, void
 // Compiler Helpers
 // -----------------------------------------------------------------------------
 
+// FIXME:
+// Move these into the Compiler and
+// make them accumulate and return
+// things instead.
+
 export function walkExecOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
     while (op != undefined) {
         f(op, depth);
@@ -57,8 +62,12 @@ export function walkTraversalOrder(f : (o : OP, d : number) => void, op : OP, de
     }
 }
 
-// can be uses for both exec and traversal order
+// FIXME:
+// also adjust the prettyPrinter to return a
+// string instead of printing it to the console.
 
+// NOTE:
+// can be uses for both exec and traversal order
 export function prettyPrinter (op : OP, depth : number) : void {
     const opType = (op : OP) : string => {
         switch (true) {

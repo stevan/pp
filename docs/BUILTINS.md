@@ -2,6 +2,9 @@
 # BUILTINS
 <!----------------------------------------------------------------------------->
 
+So this is a kind of first sketch of the minimum functionality that we will 
+support. It needs more work and more details. 
+
 <!----------------------------------------------------------------------------->
 ## Boolean Operations
 <!----------------------------------------------------------------------------->

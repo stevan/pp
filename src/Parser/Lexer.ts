@@ -72,6 +72,17 @@ export class Lexer {
                         break;
 
                     // =========================================================
+                    // Debugging
+                    // =========================================================
+                    // these are basically treated like builtins
+                    // but will do things that mess with the
+                    // guts of the system to help in debugging
+
+                    case 'concise' :
+                        yield { type : 'LISTOP', token : token }
+                        break;
+
+                    // =========================================================
                     // Literals
                     // =========================================================
 
@@ -158,9 +169,6 @@ export class Lexer {
                     case 'return'  :
                         yield { type : 'UNOP', token : token }
                         break;
-
-                    // debugging
-                    case 'concise' :
 
                     // strings
                     case 'join'  :
