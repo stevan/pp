@@ -1,0 +1,33 @@
+
+import { test } from "node:test"
+import  assert  from "node:assert"
+
+import {
+    SimpleTestRunner, TestResult
+} from '../src/Opal/TestRunner/SimpleTestRunner'
+
+test("... factorial function test", async (t) => {
+
+    await SimpleTestRunner([`
+
+        sub fact ($n) {
+            if ($n == 0) {
+                return 1;
+            } else {
+                return $n * fact( $n - 1 );
+            }
+        }
+
+        say fact(10);
+
+    `], (result : TestResult) => {
+
+        assert.strictEqual(
+            result.output.buffer[0],
+            "3628800",
+            '... got the correct value for fact(10)'
+        )
+    })
+})
+
+

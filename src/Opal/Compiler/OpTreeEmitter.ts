@@ -550,7 +550,7 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
         case NodeKind.GLOBFETCH     : return this.emitGlobFetch(n as GlobFetch);
         case NodeKind.GLOBSTORE     : return this.emitGlobStore(n as GlobStore);
         default:
-            throw new Error(`Unknown (or un-used) NodeKind (${JSON.stringify(n)})`)
+            throw new Error(`Unknown (or un-used) NodeKind (${n.kind}) in (${JSON.stringify(n)})`)
         }
     }
 }

@@ -1,0 +1,93 @@
+import assert from "node:assert"
+
+import {
+    logger,
+    prettyPrinter,
+} from '../Tools'
+
+import {
+    SourceStream,
+    OutputStream,
+
+    InputSource,
+    OutputSink,
+
+    RuntimeConfig,
+} from '../Types'
+
+import { REPL }          from '../Input/REPL'
+import { Tokenizer }     from '../Parser/Tokenizer'
+import { Lexer }         from '../Parser/Lexer'
+import { TreeParser }    from '../Parser/TreeParser'
+import { Parser }        from '../Parser'
+import { Compiler, walkExecOrder, walkTraversalOrder } from '../Compiler'
+import { Interpreter }   from '../Interpreter'
+import { ConsoleOutput } from '../Output/ConsoleOutput'
+
+import * as AST        from '../Parser/AST'
+import { StackFrame }  from '../Runtime'
+
+export class TestInput implements InputSource {
+    constructor(public source : string[]) {}
+
+    async *run() : SourceStream {
+        let i = 0;
+        while (i < this.source.length) {
+            yield this.source[i] as string;
+            i++;
+        }
+    }
+}
+
+export class TestOutput implements OutputSink {
+    public buffer : string[] = [];
+
+    async run (source: OutputStream) : Promise<void> {
+        for await (const result of source) {
+            this.buffer.push(...result);
+        }
+    }
+}
+
+export type TestResult = { result : 'OK', interpreter : Interpreter, output : TestOutput }
+
+export async function SimpleTestRunner (
+                            source : string[],
+                            test   : (result : TestResult) => void,
+                            config : RuntimeConfig = {}
+                        ) : Promise<void> {
+
+    let input       = new TestInput(source);
+    let tokenizer   = new Tokenizer();
+    let lexer       = new Lexer();
+    let treeParser  = new TreeParser();
+    let parser      = new Parser();
+    let compiler    = new Compiler();
+    let interpreter = new Interpreter(config);
+    let output      = new TestOutput();
+
+    let result : TestResult;
+    try {
+        await output.run(
+            interpreter.run(
+                compiler.run(
+                    parser.run(
+                        treeParser.run(
+                            lexer.run(
+                                tokenizer.run(
+                                    input.run()
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        );
+
+        test({ result : 'OK', interpreter, output });
+
+    } catch (e) {
+        assert.fail(`... test failed with: ${e}`);
+    }
+
+}

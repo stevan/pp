@@ -1,9 +1,7 @@
 import {
     logger,
     prettyPrinter,
-    walkExecOrder,
-    walkTraversalOrder,
-} from './Tools'
+} from './Opal/Tools'
 
 import {
     SourceStream,
@@ -13,19 +11,19 @@ import {
     OutputSink,
 
     RuntimeConfig,
-} from './Types'
+} from './Opal/Types'
 
-import { REPL }          from './REPL'
-import { Tokenizer }     from './Parser/Tokenizer'
-import { Lexer }         from './Parser/Lexer'
-import { TreeParser }    from './Parser/TreeParser'
-import { Parser }        from './Parser'
-import { Compiler }      from './Compiler'
-import { Interpreter }   from './Interpreter'
-import { ConsoleOutput } from './ConsoleOutput'
+import { REPL }          from './Opal/Input/REPL'
+import { Tokenizer }     from './Opal/Parser/Tokenizer'
+import { Lexer }         from './Opal/Parser/Lexer'
+import { TreeParser }    from './Opal/Parser/TreeParser'
+import { Parser }        from './Opal/Parser'
+import { Compiler, walkTraversalOrder } from './Opal/Compiler'
+import { Interpreter }   from './Opal/Interpreter'
+import { ConsoleOutput } from './Opal/Output/ConsoleOutput'
 
-import * as AST        from './Parser/AST'
-import { StackFrame }  from './Runtime'
+import * as AST        from './Opal/Parser/AST'
+import { StackFrame }  from './Opal/Runtime'
 
 export class Opal {
     private input       : InputSource;

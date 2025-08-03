@@ -1,5 +1,5 @@
 
-import { OutputStream, OutputSink } from './Types';
+import { OutputStream, OutputSink } from '../Types';
 
 export class ConsoleOutput implements OutputSink {
     constructor(public prefix : string = '') {}

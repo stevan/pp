@@ -3,7 +3,7 @@ import * as readline from 'readline';
 import {
     InputSource,
     SourceStream,
-} from './Types'
+} from '../Types'
 
 export class REPL implements InputSource {
     private readline : readline.ReadLine;

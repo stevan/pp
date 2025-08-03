@@ -5,10 +5,8 @@
 // is emited by the AST and then executed by the interpreter.
 // =============================================================================
 
-import {
-    walkTraversalOrder,
-    prettyPrinter
-} from '../Tools'
+import { prettyPrinter } from '../Tools'
+import { walkTraversalOrder } from '../Compiler'
 
 import {
     Any, IV, NV, PV, CV,
