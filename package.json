@@ -1,4 +1,9 @@
 {
+  "name": "opal-cli",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "bin/opal",
+  "bin": "bin/opal",
   "devDependencies": {
     "@types/node": "^22.13.17",
     "typescript": "^5.5.2"
@@ -7,6 +12,17 @@
     "build": "rm -rf ./js && tsc",
     "test": "tsc && node --test js/tests/*.test.js",
     "parser-test": "tsc && node --test js/tests/*-Parser.test.js",
-    "parser-devel": "tsc && node --test js/tests/999-Parser.playground.js"
+    "parser-devel": "tsc && node --test js/tests/999-Parser.playground.js",
+    "package": "pkg . --out-path dist/"
+  },
+  "pkg": {
+    "assets": [
+      "js/src/**/*"
+    ],
+    "targets": [
+      "node18-linux-x64",
+      "node18-macos-x64",
+      "node18-win-x64"
+    ]
   }
 }
