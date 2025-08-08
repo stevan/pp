@@ -19,6 +19,17 @@ export const logger = new Console({
     },
 });
 
+export const monitorLog = new Console({
+    stdout           : process.stdout,
+    stderr           : process.stderr,
+    inspectOptions   : {
+        compact      : true,
+        breakLength  : Infinity,
+        depth        : 2,
+    },
+    groupIndentation : 4,
+});
+
 
 // FIXME:
 // also adjust the prettyPrinter to return a
