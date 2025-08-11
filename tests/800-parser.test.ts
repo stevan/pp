@@ -5,6 +5,8 @@ import  assert  from "node:assert"
 import { InputSource, SourceStream    } from '../src/Opal/Types'
 import { Parser } from '../src/Opal/Parser'
 
+import * as AST from '../src/Opal/Parser/AST'
+
 export class TestInput implements InputSource {
     constructor(public source : string[]) {}
 
@@ -18,7 +20,7 @@ export class TestInput implements InputSource {
 }
 
 
-test('... testing', async (t) => {
+test('... testing parser', async (t) => {
 
     let parser = new Parser();
     let source = new TestInput([`
@@ -36,9 +38,7 @@ test('... testing', async (t) => {
     `]);
 
     parser.parse(source).then((ast) => {
-        console.log(JSON.stringify(ast, null, 2));
+        assert.ok(ast instanceof AST.Program, '... it is an AST.Program');
     });
-
-
 });
 
