@@ -26,7 +26,8 @@ test('... testing compiler', async (t) => {
 
     let parser   = new Parser();
     let compiler = new Compiler();
-    let source   = new TestInput([`
+
+    let fact   = new TestInput([`
 
         sub fact ($n) {
             if ($n == 0) {
@@ -36,11 +37,20 @@ test('... testing compiler', async (t) => {
             }
         }
 
+    `]);
+
+
+    let source   = new TestInput([`
+        use fact;
+
         say fact(10);
 
     `]);
 
     parser.parse(source).then((ast) => {
+        console.log(JSON.stringify(ast, null, 2));
+
+
         assert.ok(ast instanceof AST.Program, '... it is an AST.Program');
 
         let unit = compiler.compile(ast);

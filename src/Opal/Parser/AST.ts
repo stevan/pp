@@ -30,6 +30,7 @@ export enum NodeKind {
     LITERAL       = 'LITERAL',
     BAREWORD      = 'BAREWORD',
     KEYWORD       = 'KEYWORD',
+    PRAGMA        = 'PRAGMA',
     BUILTIN       = 'BUILTIN',
     BINARYOP      = 'BINARYOP',
     FETCH         = 'FETCH',
@@ -604,6 +605,23 @@ export class ArrayDeclare extends AbstractNode {
 
     deparse(depth : number = 0) : string {
         return `my @${this.name} = (${this.value.deparse()})`
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Pragma
+// -----------------------------------------------------------------------------
+
+export class Pragma extends AbstractNode {
+    override kind : NodeKind = NodeKind.PRAGMA;
+
+    constructor(
+        public name : string, // TODO: make this an enum (use|no)
+        public args : Node[],
+    ) { super() }
+
+    deparse(depth : number = 0) : string {
+        return `${this.name} (${this.args.map((a) => a.deparse()).join(', ')})`
     }
 }
 

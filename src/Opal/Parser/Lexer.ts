@@ -9,6 +9,7 @@ export type LexedType =
     | 'UNOP'
     | 'LISTOP'
     | 'KEYWORD'
+    | 'PRAGMA'
     | 'CONTROL'
     | 'BAREWORD'
     | 'IDENTIFIER'
@@ -191,6 +192,17 @@ export class Lexer {
                         break;
 
                     // =========================================================
+                    // Pragmas
+                    // =========================================================
+                    // these are resolved at compile time, and are basically
+                    // just listops;
+
+                    case 'use'     :
+                    case 'no'      :
+                        yield { type : 'LISTOP', token : token }
+                        break;
+
+                    // =========================================================
                     // Variable Scoping
                     // =========================================================
                     // these are also resolved at compile time for the most part
@@ -240,9 +252,6 @@ export class Lexer {
                     // Keywords are resolved at compile time and will construct
                     // the symbol table for runtime
                     // ---------------------------------------------------------
-                    case 'use'     :
-                    case 'no'      :
-
                     case 'sub'     :
                     case 'package' :
                     case 'class'   :

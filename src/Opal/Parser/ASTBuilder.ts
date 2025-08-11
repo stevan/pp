@@ -85,7 +85,12 @@ export class ASTBuilder {
             case 'LISTOP':
                 if (children.length == 1) {
                     let list = children[0] as AST.ListExpression;
-                    return new AST.BuiltInFunction(tree.operator.token.source, list.items);
+                    switch (tree.operator.token.source) {
+                    case 'use':
+                        return new AST.Pragma(tree.operator.token.source, list.items);
+                    default:
+                        return new AST.BuiltInFunction(tree.operator.token.source, list.items);
+                    }
                 }
                 else {
                     return new AST.ParserError(tree, children, `Expected a ListExpression for a LISTOP ${JSON.stringify(children)}`)
