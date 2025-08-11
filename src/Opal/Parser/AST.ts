@@ -5,7 +5,8 @@
 // abstract syntax tree, with deparsing functionality
 // =============================================================================
 
-import { GlobSlot } from '../Runtime/API'
+import { GlobSlot  } from '../Runtime/API'
+import { ParseTree } from './TreeParser'
 
 // -----------------------------------------------------------------------------
 // Node Kind
@@ -71,6 +72,8 @@ export enum NodeKind {
     GLOBDECLARE   = 'GLOBDECLARE',
 }
 
+export type NodeType = string;
+
 // -----------------------------------------------------------------------------
 // Interfaces
 // -----------------------------------------------------------------------------
@@ -94,6 +97,8 @@ export interface Node {
 // the base of everything ...
 export abstract class AbstractNode implements Node {
     kind : NodeKind = NodeKind.ABSTRACT;
+
+    constructor(public type : NodeType = this.constructor.name) {}
 
     abstract deparse (depth? : number) : string;
 
@@ -138,6 +143,65 @@ export class ParenExpression extends ExpressionNode {
         return `(${this.item.deparse()})`;
     }
 }
+
+// -----------------------------------------------------------------------------
+// Errors
+// -----------------------------------------------------------------------------
+
+export class ParserError extends AbstractNode {
+    override kind : NodeKind = NodeKind.ABSTRACT;
+
+    constructor(
+        public tree : ParseTree,
+        public args : Node[],
+        public msg  : string,
+    ) { super() }
+
+    deparse() : string {
+        return `ErrorNode(${this.msg})`;
+    }
+}
+
+export class TODO extends AbstractNode {
+    override kind : NodeKind = NodeKind.ABSTRACT;
+
+    constructor(
+        public tree : ParseTree,
+        public msg  : string,
+    ) { super() }
+
+    deparse() : string {
+        return `TODO(${this.msg})`;
+    }
+}
+
+export class FIXME extends AbstractNode {
+    override kind : NodeKind = NodeKind.ABSTRACT;
+
+    constructor(
+        public tree : ParseTree,
+        public msg  : string,
+    ) { super() }
+
+    deparse() : string {
+        return `FIXME(${this.msg})`;
+    }
+}
+
+
+export class HMMM extends AbstractNode {
+    override kind : NodeKind = NodeKind.ABSTRACT;
+
+    constructor(
+        public tree : ParseTree,
+        public msg  : string,
+    ) { super() }
+
+    deparse() : string {
+        return `HMMM(${this.msg})`;
+    }
+}
+
 
 // -----------------------------------------------------------------------------
 
@@ -201,35 +265,20 @@ export class SubBody extends Block {}
 export class SubDefinition extends AbstractNode {
     override kind : NodeKind = NodeKind.SUBDEFINITION;
 
-    private _name   : Bareword;
-    private _params : ListExpression;
-    private _body   : SubBody;
-
     constructor(
-        name   : Bareword,
-        params : ExpressionNode,
-        block  : Block,
-    ) {
-        super();
-        this._name   = name;
-        this._params = (params instanceof ParenExpression)
-                            ? new ListExpression([(params as ParenExpression).item])
-                            : params as ListExpression;
-        this._body   = (block instanceof SubBody)
-                            ? block
-                            : new SubBody(block.statements);
-    }
+        public ident  : Bareword,
+        public params : ListExpression,
+        public body   : SubBody,
+    ) { super() }
 
-    get name   () : string   { return this._name.name }
-    get body   () : Block    { return this._body }
-    get params () : string[] {
-        return this._params.items.map((p) => {
+    getParameters () : string[] {
+        return this.params.items.map((p) => {
             return (p as any)?.name
         })
     }
 
     deparse(depth : number = 0) : string {
-        return `sub ${this._name.deparse()} ${this._params.deparse()} ${this._body.deparse(depth + 1)}`
+        return `sub ${this.ident.deparse()} ${this.params.deparse()} ${this.body.deparse(depth + 1)}`
     }
 }
 
@@ -280,12 +329,11 @@ export class EmptyStatement extends AbstractNode {
 export class Statement extends AbstractNode {
     override kind : NodeKind = NodeKind.STATEMENT;
 
-    constructor(public body : Node, public internal : boolean = false) {
+    constructor(public body : Node) {
         super();
     }
 
     deparse(depth : number = 0) : string {
-        if (this.internal) return '';
         let src = this.body.deparse(depth);
         if (src.charAt(src.length - 1) != '}') {
             src = this.indent(depth) + src + ';';

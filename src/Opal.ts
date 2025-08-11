@@ -16,9 +16,6 @@ import {
     RuntimeConfig,
 } from './Opal/Types'
 
-import { Tokenizer,  TokenStream     } from './Opal/Parser/Tokenizer'
-import { Lexer,      LexedStream     } from './Opal/Parser/Lexer'
-import { TreeParser, ParseTreeStream } from './Opal/Parser/TreeParser'
 import { Parser,     ASTNodeStream   } from './Opal/Parser'
 import { Compiler,   OpTreeStream    } from './Opal/Compiler'
 
@@ -28,9 +25,6 @@ import { ConsoleOutput } from './Opal/Output/ConsoleOutput'
 
 export class Opal {
     private input       : InputSource;
-    private tokenizer   : Tokenizer;
-    private lexer       : Lexer;
-    private treeParser  : TreeParser;
     private parser      : Parser;
     private compiler    : Compiler;
     private interpreter : Interpreter;
@@ -38,9 +32,6 @@ export class Opal {
 
     constructor(config: RuntimeConfig = {}) {
         this.input       = new REPL();
-        this.tokenizer   = new Tokenizer();
-        this.lexer       = new Lexer();
-        this.treeParser  = new TreeParser();
         this.parser      = new Parser();
         this.compiler    = new Compiler();
         this.interpreter = new Interpreter(config);
@@ -52,19 +43,14 @@ export class Opal {
             this.interpreter.run(
                 this.compiler.run(
                     this.parser.run(
-                        this.treeParser.run(
-                            this.lexer.run(
-                                this.tokenizer.run(
-                                    this.input.run()
-                                )
-                            )
-                        )
+                        this.input.run()
                     )
                 )
             )
         )
     }
 
+    /*
 
     async monitor () : Promise<void> {
         return this.output.run(
@@ -160,4 +146,5 @@ export class Opal {
             monitorLog.log(  `<${label}> ◀───╯`);
         }
     }
+    */
 }

@@ -277,10 +277,10 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
     emitSubDefinition (node : SubDefinition) : OpTree {
         let body = this.visit(node.body);
 
-        body.enter.config.name   = node.name;
-        body.enter.config.params = node.params;
+        body.enter.config.name   = node.ident.name;
+        body.enter.config.params = node.getParameters();
 
-        let op = new DECLARE( body, { name : node.name } );
+        let op = new DECLARE( body, { name : node.ident.name } );
         return new OpTree(op, op)
     }
 

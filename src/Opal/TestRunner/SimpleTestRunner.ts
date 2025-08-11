@@ -16,9 +16,6 @@ import {
 } from '../Types'
 
 import { REPL }          from '../Input/REPL'
-import { Tokenizer }     from '../Parser/Tokenizer'
-import { Lexer }         from '../Parser/Lexer'
-import { TreeParser }    from '../Parser/TreeParser'
 import { Parser }        from '../Parser'
 import { Compiler, walkExecOrder, walkTraversalOrder } from '../Compiler'
 import { Interpreter }   from '../Interpreter'
@@ -58,9 +55,6 @@ export async function SimpleTestRunner (
                         ) : Promise<void> {
 
     let input       = new TestInput(source);
-    let tokenizer   = new Tokenizer();
-    let lexer       = new Lexer();
-    let treeParser  = new TreeParser();
     let parser      = new Parser();
     let compiler    = new Compiler();
     let interpreter = new Interpreter(config);
@@ -72,13 +66,7 @@ export async function SimpleTestRunner (
             interpreter.run(
                 compiler.run(
                     parser.run(
-                        treeParser.run(
-                            lexer.run(
-                                tokenizer.run(
-                                    input.run()
-                                )
-                            )
-                        )
+                        input.run()
                     )
                 )
             )
