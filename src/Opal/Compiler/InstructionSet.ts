@@ -6,7 +6,7 @@
 // =============================================================================
 
 import { prettyPrinter } from '../Tools'
-import { walkTraversalOrder } from '../Compiler'
+import { walkTraversalOrder } from './OpTreeWalker'
 
 import {
     Any, IV, NV, PV, CV,

@@ -17,9 +17,11 @@ import {
 
 import { REPL }          from '../Input/REPL'
 import { Parser }        from '../Parser'
-import { Compiler, walkExecOrder, walkTraversalOrder } from '../Compiler'
+import { Compiler }      from '../Compiler'
 import { Interpreter }   from '../Interpreter'
 import { ConsoleOutput } from '../Output/ConsoleOutput'
+
+import { walkExecOrder, walkTraversalOrder } from '../Compiler/OpTreeWalker'
 
 import * as AST        from '../Parser/AST'
 import { StackFrame }  from '../Runtime'

@@ -9,31 +9,9 @@ import { OpTree, OP, UNOP, LOGOP, MaybeOP } from './Runtime/API'
 import * as AST          from './Parser/AST'
 import { ASTNodeStream } from './Parser'
 
-// -----------------------------------------------------------------------------
+import { CompilationUnit } from './Compiler/CompilationUnit'
 
-export function walkExecOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
-    while (op != undefined) {
-        f(op, depth);
-
-        if (op.name == 'goto' && depth > 0) return;
-
-        if (op instanceof LOGOP && op.other) {
-            walkExecOrder(f, op.other, depth + 1);
-        }
-
-        if (op.next == undefined) return;
-        op = op.next;
-    }
-}
-
-export function walkTraversalOrder(f : (o : OP, d : number) => void, op : OP, depth : number = 0) {
-    f(op, depth);
-    if (op instanceof UNOP) {
-        for (let k : MaybeOP = op.first; k != undefined; k = k.sibling) {
-            walkTraversalOrder(f, k, depth + 1);
-        }
-    }
-}
+import { walkTraversalOrder, walkExecOrder } from './Compiler/OpTreeWalker'
 
 // -----------------------------------------------------------------------------
 
@@ -54,10 +32,10 @@ export class Compiler {
         for await (const node of source) {
             switch (true) {
             case (node instanceof AST.Program):
-                yield this.compile(node);
+                yield this.compileStream(node);
                 break;
             case (node instanceof AST.Statement):
-                yield this.compile(new AST.Program([node]));
+                yield this.compileStream(new AST.Program([node]));
                 break;
             case (node instanceof AST.EmptyStatement):
                 // do nothing, just wait for the next one
@@ -68,8 +46,8 @@ export class Compiler {
         }
     }
 
-    compile (program : AST.Program) : OpTree {
-        let prog = program.accept(this.emitter);
+    compileStream (program : AST.Program) : OpTree {
+        let optree = program.accept(this.emitter);
 
         let uid_seq = 0;
 
@@ -81,10 +59,16 @@ export class Compiler {
                 op.metadata.uid             = ++uid_seq;
                 op.metadata.compiler.opcode = opcode;
             },
-            prog.leave
+            optree.leave
         );
 
-        return prog;
+        return optree;
+    }
+
+    compile (program : AST.Program) : CompilationUnit {
+        let optree = program.accept(this.emitter);
+        let unit   = new CompilationUnit( optree );
+        return unit;
     }
 
 }

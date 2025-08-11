@@ -35,11 +35,11 @@ export class Parser {
 
     async parse (input : InputSource) : Promise<AST.Program> {
         return new Promise<AST.Program>(async (resolve, reject) => {
-            let unit = new AST.Program([]);
+            let program = new AST.Program([]);
             for await (const node of this.run(input.run())) {
-                unit.statements.push(node as AST.Statement);
+                program.statements.push(node as AST.Statement);
             }
-            resolve(unit);
+            resolve(program);
         });
     }
 }
