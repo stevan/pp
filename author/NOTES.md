@@ -5,6 +5,70 @@
 <!----------------------------------------------------------------------------->
 
 
+```
+Parser {
+    
+    let %INC : Map<Filename, Promise<AST>>;
+    
+    let $UNIT => new Promise<AST>(...);
+
+    // takes an inital input stream ...
+    while: Input Stream 
+            -> Toke/Lex 
+            -> Statement {
+        // loops through each statement
+        switch (s.keyword) {
+            // if it is a use statement, then
+            case 'use': 
+                // we add a Promise<AST>
+                // to the %INC hash  
+                %INC{s.keyword.module_filename} = new Promise<AST>((resolve) => {
+                    let p = new Parser(s.keyword.module_filename, this);
+                    p.run().then((ast) => resolve(ast));    
+                });
+                break;            
+            // if it is the end of the file 
+            case 'EOF':
+                // then we return a Promse to resolve all the 
+                // %INC entries and the unit
+                return new Promise<this>((resolve) => {
+                    Promise<AST[]>.all([ $UNIT, %INC.values() ]);
+                })
+            default:
+                // otherwise we just add the statement to the unit.
+                $UNIT.addStatement(s);
+        }        
+    }
+                
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
