@@ -6,7 +6,7 @@
 
 import {
     NodeVisitor, Node, NodeKind,
-    Scope,
+    Scope, Pragma,
     Program, Block, Statement,
     ExpressionNode, ListExpression, ParenExpression,
     SubBody, SubDefinition, SubCall, SubReturn, CallSub,
@@ -508,8 +508,19 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
 
     // -------------------------------------------------------------------------
 
+    emitPragma (node : Pragma) : OpTree {
+        let op =  new OP('use', {
+            bareword : node.bareword.name,
+        });
+        return new OpTree(op, op);
+    }
+
+    // -------------------------------------------------------------------------
+
     visit (n : Node) : OpTree {
         switch (n.kind) {
+        // pragmas ...
+        case NodeKind.PRAGMA        : return this.emitPragma(n as Pragma);
         // definitions ...
         case NodeKind.DECLARE       : return this.emitDeclare(n);
         case NodeKind.GLOBDECLARE   : return this.emitGlobDeclare(n as GlobDeclare);

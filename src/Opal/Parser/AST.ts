@@ -245,8 +245,25 @@ export abstract class Scope extends AbstractNode {
 // -----------------------------------------------------------------------------
 
 export class Program extends Scope {
-    public dependencies : Require[] = []
+    public pragmas : Pragma[] = []
 
+}
+
+// -----------------------------------------------------------------------------
+// Pragma
+// -----------------------------------------------------------------------------
+
+export class Pragma extends AbstractNode {
+    override kind : NodeKind = NodeKind.PRAGMA;
+
+    constructor(
+        public name     : string, // TODO: make this an enum (use|no)
+        public bareword : Bareword,
+    ) { super() }
+
+    deparse(depth : number = 0) : string {
+        return `${this.name} ${this.bareword.deparse()}`
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -611,22 +628,6 @@ export class ArrayDeclare extends AbstractNode {
     }
 }
 
-// -----------------------------------------------------------------------------
-// Pragma
-// -----------------------------------------------------------------------------
-
-export class Pragma extends AbstractNode {
-    override kind : NodeKind = NodeKind.PRAGMA;
-
-    constructor(
-        public name : string, // TODO: make this an enum (use|no)
-        public args : Node[],
-    ) { super() }
-
-    deparse(depth : number = 0) : string {
-        return `${this.name} (${this.args.map((a) => a.deparse()).join(', ')})`
-    }
-}
 
 // -----------------------------------------------------------------------------
 // Builtins

@@ -196,8 +196,8 @@ export class Lexer {
                     // =========================================================
                     // We are starting with just
 
-                    case 'require' :
-                        yield { type : 'LISTOP', token : token }
+                    case 'use' :
+                        yield { type : 'PRAGMA', token : token }
                         break;
 
                     // =========================================================

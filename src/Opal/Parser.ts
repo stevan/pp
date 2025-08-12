@@ -39,8 +39,8 @@ export class Parser {
 
             for await (const node of this.run(input.run())) {
                 let statement = node as AST.Statement;
-                if (statement.body instanceof AST.Require) {
-                    program.dependencies.push(statement.body);
+                if (statement.body instanceof AST.Pragma) {
+                    program.pragmas.push(statement.body);
                 }
                 program.statements.push(statement);
             }

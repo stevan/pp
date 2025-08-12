@@ -41,7 +41,7 @@ test('... testing compiler', async (t) => {
 
 
     let source   = new TestInput([`
-        require './fact';
+        use Fact;
 
         say fact(10);
     `]);
@@ -55,10 +55,10 @@ test('... testing compiler', async (t) => {
         let unit = compiler.compile(ast);
         assert.ok(unit instanceof CompilationUnit, '... it is a compilation unit');
 
-        //console.log('EXEC:');
-        //unit.prettyPrintExec();
-        //console.log('TREE:');
-        //unit.prettyPrintTree();
+        console.log('EXEC:');
+        unit.prettyPrintExec();
+        console.log('TREE:');
+        unit.prettyPrintTree();
     });
 });
 

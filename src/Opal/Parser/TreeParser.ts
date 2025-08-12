@@ -14,6 +14,7 @@ export enum ExpressionKind {
     STATEMENT = 'STATEMENT',
     CONTROL   = 'CONTROL',
     DEFINE    = 'DEFINE',
+    PRAGMA    = 'PRAGMA',
     // explicit
     PARENS    = 'PARENS',
     SQUARE    = 'SQUARE',
@@ -127,7 +128,8 @@ export class TreeParser {
 
         while (stack.length > 1) {
             let from = stack.at(-1) as Expression;
-            if (from.kind == ExpressionKind.LIST) {
+            if (from.kind == ExpressionKind.LIST
+            ||  from.kind == ExpressionKind.PRAGMA) {
                 //logger.log('... found LIST', from);
                 //logger.log('... PRE OPERATOR SPILL', stack);
                 let list = stack.pop() as Expression;
@@ -198,8 +200,12 @@ export class TreeParser {
             // -----------------------------------------------------------------
             // Expression Entry points
             // -----------------------------------------------------------------
-                // keyword entry positon
+            case 'PRAGMA':
+                // pragma entry positon
+                STACK.push(newExpression(ExpressionKind.PRAGMA, lexed));
+                break;
             case 'KEYWORD':
+                // keyword entry positon
                 STACK.push(newExpression(ExpressionKind.DEFINE, lexed));
                 break;
             case 'CONTROL':

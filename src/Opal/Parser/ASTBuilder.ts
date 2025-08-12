@@ -192,6 +192,15 @@ export class ASTBuilder {
             switch (tree.kind) {
             case ExpressionKind.BARE:
                 return new AST.HMMM(tree, '... this should never actually happen, as BARE Expressions are kind of internal');
+            case ExpressionKind.PRAGMA:
+                if (children.length == 1) {
+                    return new AST.Pragma(
+                        tree.lexed[0]?.token.source as string,
+                        children[0] as AST.Bareword
+                    );
+                } else {
+                    return new AST.ParserError(tree, children, `Unexpected pragma args ${JSON.stringify(tree)}`);
+                }
             case ExpressionKind.STATEMENT:
                 if (children.length == 1) {
                     return new AST.Statement(children[0] as Node);
