@@ -360,26 +360,10 @@ export class Thread {
 
     toSTDOUT (args : PV[]) : void {
         this.STD_buffer.push(...args);
-        //if (this.config.DEBUG) {
-        //    console.log('\x1b[44m  STDOUT ▶ :\x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
-        //} else {
-        //    if (!this.config.QUIET) {
-        //        // FIXME: this should use stdout
-        //        console.log(args.map((pv) => pv.value).join(''));
-        //    }
-        //}
     }
 
     toSTDERR (args : PV[]) : void {
         this.ERR_buffer.push(...args);
-        //if (this.config.DEBUG) {
-        //    console.log('\x1b[41m  STDERR ▶ \x1b[45m', args.map((pv) => pv.value).join(''), '\x1b[0m');
-        //} else {
-        //    if (!this.config.QUIET) {
-        //        // FIXME: this should use stderr
-        //        console.log(args.map((pv) => pv.value).join(''));
-        //    }
-        //}
     }
 
 }

@@ -31,9 +31,6 @@ export class Compiler {
     async *run (source : ASTNodeStream) : OpTreeStream {
         for await (const node of source) {
             switch (true) {
-            case (node instanceof AST.Program):
-                yield this.compileStream(node);
-                break;
             case (node instanceof AST.Statement):
                 yield this.compileStream(new AST.Program([node]));
                 break;
@@ -70,5 +67,4 @@ export class Compiler {
         let unit   = new CompilationUnit( optree );
         return unit;
     }
-
 }
