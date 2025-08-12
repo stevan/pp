@@ -15,6 +15,8 @@ import {
     RuntimeConfig,
 } from '../Types'
 
+import { FromArray } from '../Input/FromArray'
+
 import { REPL }          from '../Input/REPL'
 import { Parser }        from '../Parser'
 import { Compiler }      from '../Compiler'
@@ -26,17 +28,7 @@ import { walkExecOrder, walkTraversalOrder } from '../Compiler/OpTreeWalker'
 import * as AST        from '../Parser/AST'
 import { StackFrame }  from '../Runtime'
 
-export class TestInput implements InputSource {
-    constructor(public source : string[]) {}
-
-    async *run() : SourceStream {
-        let i = 0;
-        while (i < this.source.length) {
-            yield this.source[i] as string;
-            i++;
-        }
-    }
-}
+export class TestInput extends FromArray {}
 
 export class TestOutput implements OutputSink {
     public buffer : string[] = [];

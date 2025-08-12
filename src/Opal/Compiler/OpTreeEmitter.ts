@@ -511,6 +511,7 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
     emitPragma (node : Pragma) : OpTree {
         let op =  new OP('use', {
             bareword : node.bareword.name,
+            resolver : node.resolver, // pass the resolver onto the runtime
         });
         return new OpTree(op, op);
     }

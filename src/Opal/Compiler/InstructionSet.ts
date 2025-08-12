@@ -46,6 +46,11 @@ export function loadInstructionSet () : InstructionSet {
     // Compile Time Ops
     // ---------------------------------------------------------------------
 
+    opcodes.set('use', (i, op) => {
+        // what to do at runtime??
+        return op.next
+    });
+
     opcodes.set('declare', (i, op) => {
         if (!(op instanceof DECLARE)) throw new Error('Y NO DECLARE?')
         let cv = newCV(op.declaration);

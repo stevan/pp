@@ -27,11 +27,23 @@ export class Parser {
     }
 
     async *run (source : SourceStream) : ASTNodeStream {
-        yield*  this.builder.run(
-                this.treeParser.run(
-                this.lexer.run(
-                this.tokenizer.run(source))));
+        for await (const node of
+            this.builder.run(
+            this.treeParser.run(
+            this.lexer.run(
+            this.tokenizer.run(
+                source
+        ))))){
+            let statement = node as AST.Statement;
+            if (statement.body instanceof AST.Pragma) {
+                let pragma = statement.body as AST.Pragma;
+                pragma.resolver = (input) => this.parse(input);
+            }
+            yield statement;
+        }
     }
+
+
 
     async parse (input : InputSource) : Promise<AST.Program> {
         return new Promise<AST.Program>(async (resolve, reject) => {

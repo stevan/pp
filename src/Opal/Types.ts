@@ -10,8 +10,10 @@ export type RuntimeConfig  = any
 // Source & Sink
 // -----------------------------------------------------------------------------
 
-export type SourceStream  = AsyncGenerator<string,   void, void>;
-export type OutputStream  = AsyncGenerator<string[], void, void>;
+export type Source = string;
+
+export type SourceStream  = AsyncGenerator<Source,   void, void>;
+export type OutputStream  = AsyncGenerator<Source[], void, void>;
 
 export interface OutputSink {
     run(source: OutputStream) : Promise<void>;

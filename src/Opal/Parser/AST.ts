@@ -5,6 +5,8 @@
 // abstract syntax tree, with deparsing functionality
 // =============================================================================
 
+import { InputSource  } from '../Types'
+
 import { GlobSlot  } from '../Runtime/API'
 import { ParseTree } from './TreeParser'
 
@@ -253,8 +255,12 @@ export class Program extends Scope {
 // Pragma
 // -----------------------------------------------------------------------------
 
+export type Rentry = (s: InputSource) => Promise<Program>;
+
 export class Pragma extends AbstractNode {
     override kind : NodeKind = NodeKind.PRAGMA;
+
+    public resolver : Rentry | undefined;
 
     constructor(
         public name     : string, // TODO: make this an enum (use|no)
