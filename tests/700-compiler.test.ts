@@ -27,7 +27,7 @@ test('... testing compiler', async (t) => {
     let parser   = new Parser();
     let compiler = new Compiler();
 
-    let fact   = new TestInput([`
+    let fact_src = new TestInput([`
 
         sub fact ($n) {
             if ($n == 0) {
@@ -40,21 +40,35 @@ test('... testing compiler', async (t) => {
     `]);
 
 
-    let source   = new TestInput([`
+    let source = new TestInput([`
         use Fact;
 
         say fact(10);
     `]);
 
-    parser.parse(source).then((ast) => {
+    parser.parse(source).then(async (ast) => {
         console.log(JSON.stringify(ast, null, 2));
-
-
         assert.ok(ast instanceof AST.Program, '... it is an AST.Program');
+
+        let pragma  = ast.pragmas[0] as AST.Pragma;
+        let resolve = pragma.resolver as AST.Rentry;
+        let FactAST = await resolve(fact_src);
+        console.log(JSON.stringify(FactAST, null, 2));
+        assert.ok(FactAST instanceof AST.Program, '... FactAST is an AST.Program');
 
         let unit = compiler.compile(ast);
         assert.ok(unit instanceof CompilationUnit, '... it is a compilation unit');
 
+        let FactUnit = compiler.compile(FactAST);
+        assert.ok(FactUnit instanceof CompilationUnit, '... FactUnit is a compilation unit');
+
+        console.log('Fact:');
+        console.log('EXEC:');
+        FactUnit.prettyPrintExec();
+        console.log('TREE:');
+        FactUnit.prettyPrintTree();
+
+        console.log('(main):');
         console.log('EXEC:');
         unit.prettyPrintExec();
         console.log('TREE:');
