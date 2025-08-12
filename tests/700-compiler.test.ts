@@ -41,10 +41,9 @@ test('... testing compiler', async (t) => {
 
 
     let source   = new TestInput([`
-        use fact;
+        require './fact';
 
         say fact(10);
-
     `]);
 
     parser.parse(source).then((ast) => {

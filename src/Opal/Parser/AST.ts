@@ -244,7 +244,10 @@ export abstract class Scope extends AbstractNode {
 // Programs
 // -----------------------------------------------------------------------------
 
-export class Program extends Scope {}
+export class Program extends Scope {
+    public dependencies : Require[] = []
+
+}
 
 // -----------------------------------------------------------------------------
 // Blocks
@@ -659,12 +662,12 @@ export class BuiltInFunction extends BuiltIn {
     }
 }
 
-export class Say extends BuiltInFunction {
-    constructor(args : Node[]) { super('say', args) }
-}
+// -----------------------------------------------------------------------------
+// ... specialized builtins
+// -----------------------------------------------------------------------------
 
-export class Join extends BuiltInFunction {
-    constructor(args : Node[]) { super('join', args) }
+export class Require extends BuiltInFunction {
+    constructor(args : Node[]) { super('require', args) }
 }
 
 // -----------------------------------------------------------------------------

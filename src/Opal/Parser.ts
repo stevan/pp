@@ -36,9 +36,15 @@ export class Parser {
     async parse (input : InputSource) : Promise<AST.Program> {
         return new Promise<AST.Program>(async (resolve, reject) => {
             let program = new AST.Program([]);
+
             for await (const node of this.run(input.run())) {
-                program.statements.push(node as AST.Statement);
+                let statement = node as AST.Statement;
+                if (statement.body instanceof AST.Require) {
+                    program.dependencies.push(statement.body);
+                }
+                program.statements.push(statement);
             }
+
             resolve(program);
         });
     }

@@ -192,13 +192,11 @@ export class Lexer {
                         break;
 
                     // =========================================================
-                    // Pragmas
+                    // Code Loading
                     // =========================================================
-                    // these are resolved at compile time, and are basically
-                    // just listops;
+                    // We are starting with just
 
-                    case 'use'     :
-                    case 'no'      :
+                    case 'require' :
                         yield { type : 'LISTOP', token : token }
                         break;
 

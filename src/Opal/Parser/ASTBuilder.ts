@@ -86,8 +86,8 @@ export class ASTBuilder {
                 if (children.length == 1) {
                     let list = children[0] as AST.ListExpression;
                     switch (tree.operator.token.source) {
-                    case 'use':
-                        return new AST.Pragma(tree.operator.token.source, list.items);
+                    case 'require':
+                        return new AST.Require(list.items);
                     default:
                         return new AST.BuiltInFunction(tree.operator.token.source, list.items);
                     }
