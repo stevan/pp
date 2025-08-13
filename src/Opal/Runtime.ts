@@ -11,6 +11,7 @@ import { logger } from './Tools'
 
 import { RuntimeConfig, OutputStream, InputSource } from './Types'
 import { OpTreeStream } from './Compiler'
+import { Tape } from './Compiler/Tape'
 import {
     Any, PV, CV, GV,
     PRAGMA,
@@ -276,12 +277,27 @@ export class Thread {
     }
 
     async *run (source : OpTreeStream) : OutputStream {
-        let prepared = false;;
+        let prepared = false;
 
         for await (const optree of source) {
+            //console.log("RUN", optree);
             if (!prepared) {
                 this.prepareRootFrame(optree);
                 prepared = true;
+            }
+
+            while (optree.pragmas.length) {
+                let pragma = optree.pragmas.pop() as PRAGMA;
+
+                let src = this.loadCode(`${pragma.config.bareword}.opal`);
+                //console.log("INTERPRETER/src:", src);
+
+                let ot = await pragma.resolver(src);
+                //console.log("INTERPRETER/ot:", ot);
+
+                let tape = new Tape(ot);
+                yield* this.run(tape.run());
+                //console.log("FOOOOOOO");
             }
 
             let frame = this.frames[0] as StackFrame;
@@ -304,14 +320,6 @@ export class Thread {
                 }
 
                 let next_op = opcode(frame, op);
-
-                if (next_op instanceof PRAGMA) {
-                    let source = this.loadCode(`${next_op.config.bareword}.opal`);
-                    //console.log("INTERPRETER/src:", source);
-                    let optree = await next_op.resolver(source);
-                    console.log("INTERPRETER/optree:", optree);
-                    break;
-                }
 
                 if (this.STD_buffer.length > 0) {
                     yield this.STD_buffer.splice(0).map((pv) => pv.value);

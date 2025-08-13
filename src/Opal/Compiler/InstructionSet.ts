@@ -48,7 +48,7 @@ export function loadInstructionSet () : InstructionSet {
 
     opcodes.set('use', (i, op) => {
         //if (!(op instanceof PRAGMA)) throw new Error('Y NO PRAGMA?')
-        console.log("INSTRUCTION", op);
+        //console.log("INSTRUCTION", op);
         return op.next
     });
 

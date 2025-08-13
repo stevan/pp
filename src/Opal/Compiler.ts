@@ -4,7 +4,7 @@ import { CompilerConfig } from './Types'
 
 import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
-import { OpTree, OP, UNOP, LOGOP, MaybeOP } from './Runtime/API'
+import { OpTree, OP, UNOP, LOGOP, MaybeOP, PRAGMA } from './Runtime/API'
 
 import * as AST          from './Parser/AST'
 import { ASTNodeStream } from './Parser'
@@ -43,9 +43,7 @@ export class Compiler {
         }
     }
 
-    compileStream (fragment : AST.Fragment) : OpTree {
-        let optree = fragment.accept(this.emitter);
-
+    linkOpTree (optree : OpTree) : OpTree {
         let uid_seq = 0;
 
         // link the OPs and Opcodes
@@ -55,11 +53,21 @@ export class Compiler {
                 if (opcode == undefined) throw new Error(`Unable to find opcode(${op.name})`);
                 op.metadata.uid             = ++uid_seq;
                 op.metadata.compiler.opcode = opcode;
+                if (op instanceof PRAGMA) {
+                    let unlinked = op.resolver;
+                    op.resolver = (src) => unlinked(src).then((ot) => this.linkOpTree(ot));
+                    optree.pragmas.push(op);
+                }
             },
             optree.leave
         );
 
         return optree;
+    }
+
+    compileStream (fragment : AST.Fragment) : OpTree {
+        let optree = fragment.accept(this.emitter);
+        return this.linkOpTree(optree);
     }
 
     compile (program : AST.Program) : CompilationUnit {
