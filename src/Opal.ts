@@ -20,7 +20,7 @@ import { Parser,     ASTNodeStream   } from './Opal/Parser'
 import { Compiler,   OpTreeStream    } from './Opal/Compiler'
 
 import { REPL }          from './Opal/Input/REPL'
-import { Interpreter }   from './Opal/Interpreter'
+import { Interpreter, defaultRuntimeConfig }   from './Opal/Interpreter'
 import { ConsoleOutput } from './Opal/Output/ConsoleOutput'
 
 export class Opal {
@@ -30,7 +30,7 @@ export class Opal {
     private interpreter : Interpreter;
     private output      : OutputSink;
 
-    constructor(config: RuntimeConfig = {}) {
+    constructor(config: RuntimeConfig = defaultRuntimeConfig) {
         this.input       = new REPL();
         this.parser      = new Parser();
         this.compiler    = new Compiler();

@@ -22,9 +22,10 @@ import {
 
 import {
     OP, COP, UNOP, BINOP, LOGOP, LISTOP, LOOPOP,
-    DECLARE,
+    DECLARE, PRAGMA,
     OpTree,
     GlobSlot,
+    OpTreeResolver,
 } from '../Runtime/API'
 
 export class OpTreeEmitter implements NodeVisitor<OpTree> {
@@ -509,11 +510,23 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
     // -------------------------------------------------------------------------
 
     emitPragma (node : Pragma) : OpTree {
-        let op =  new OP('use', {
-            bareword : node.bareword.name,
-            resolver : node.resolver, // pass the resolver onto the runtime
-        });
-        return new OpTree(op, op);
+        let use =  new PRAGMA(
+            'use',
+            (src) => {
+                return new Promise<OpTree>((resolve) => {
+                    //console.log('IN COMPILER RESOLVER', node);
+                    node.resolver(src).then((ast) => {
+                        //console.log('GOT NODE', ast);
+                        resolve(this.visit(ast))
+                    });
+                })
+            },
+            {
+                bareword : node.bareword.name,
+            }
+        );
+
+        return new OpTree(use, use);
     }
 
     // -------------------------------------------------------------------------

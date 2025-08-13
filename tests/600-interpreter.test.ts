@@ -2,6 +2,13 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
+import {
+    logger,
+    prettyPrinter,
+} from '../src/Opal/Tools'
+
+import { walkExecOrder, walkTraversalOrder } from '../src/Opal/Compiler/OpTreeWalker'
+
 import { InputSource, SourceStream } from '../src/Opal/Types'
 import { Parser } from '../src/Opal/Parser'
 import { Compiler } from '../src/Opal/Compiler'
@@ -22,28 +29,25 @@ export class TestInput implements InputSource {
     }
 }
 
-test('... testing interpreter', async (t) => {
+
+test('... testing compiler', async (t) => {
 
     let parser      = new Parser();
     let compiler    = new Compiler();
     let interpreter = new Interpreter();
 
-    let source   = new TestInput([`
-        say "Hello World";
+    let source = new TestInput([`
+        use Fact;
+
+        say fact(10);
     `]);
 
-    parser.parse(source).then((ast) => {
-        console.log(JSON.stringify(ast, null, 2));
-        assert.ok(ast instanceof AST.Program, '... it is an AST.Program');
-
-        let unit = compiler.compile(ast);
-        assert.ok(unit instanceof CompilationUnit, '... it is a compilation unit');
-        //console.log('EXEC:');
-        //unit.prettyPrintExec();
-        //console.log('TREE:');
-        //unit.prettyPrintTree();
-
-        //interpreter.execute(unit);
-    });
+    for await (const out of interpreter.run(
+                            compiler.run(parser.run(source.run())))
+                            )
+    {
+        console.log(out);
+        //walkTraversalOrder(prettyPrinter, out.leave);
+    }
 });
 

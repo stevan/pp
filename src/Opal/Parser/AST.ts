@@ -248,19 +248,20 @@ export abstract class Scope extends AbstractNode {
 
 export class Program extends Scope {
     public pragmas : Pragma[] = []
-
 }
+
+export class Fragment extends Program {}
 
 // -----------------------------------------------------------------------------
 // Pragma
 // -----------------------------------------------------------------------------
 
-export type Rentry = (s: InputSource) => Promise<Program>;
+export type ASTResolver = (s: InputSource) => Promise<Program>;
 
 export class Pragma extends AbstractNode {
     override kind : NodeKind = NodeKind.PRAGMA;
 
-    public resolver : Rentry | undefined;
+    public resolver : ASTResolver = (s) => { throw new Error('Unable to resolve AST for Pragma') };
 
     constructor(
         public name     : string, // TODO: make this an enum (use|no)

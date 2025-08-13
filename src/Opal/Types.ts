@@ -4,7 +4,15 @@
 
 export type ParserConfig   = any
 export type CompilerConfig = any;
-export type RuntimeConfig  = any
+export type RuntimeConfig  = {
+    lib      : string,
+    resolver : LibResolver,
+    DEBUG    : boolean,
+}
+
+// -----------------------------------------------------------------------------
+
+export type LibResolver = (config : RuntimeConfig, path : string) => InputSource;
 
 // -----------------------------------------------------------------------------
 // Source & Sink

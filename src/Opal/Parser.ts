@@ -35,9 +35,14 @@ export class Parser {
                 source
         ))))){
             let statement = node as AST.Statement;
+            //console.log(statement);
             if (statement.body instanceof AST.Pragma) {
                 let pragma = statement.body as AST.Pragma;
-                pragma.resolver = (input) => this.parse(input);
+                //console.log("INTERPRETER/resolver:", pragma);
+                pragma.resolver = (input) => {
+                    //console.log('IN PARSER RESOLVER: ', input);
+                    return this.parse(input);
+                }
             }
             yield statement;
         }
@@ -50,6 +55,7 @@ export class Parser {
             let program = new AST.Program([]);
 
             for await (const node of this.run(input.run())) {
+                //console.log('in PARSE', node);
                 let statement = node as AST.Statement;
                 if (statement.body instanceof AST.Pragma) {
                     program.pragmas.push(statement.body);

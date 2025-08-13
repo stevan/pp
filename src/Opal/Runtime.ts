@@ -9,11 +9,11 @@ import { inspect } from "node:util"
 
 import { logger } from './Tools'
 
-
-import { RuntimeConfig, OutputStream } from './Types'
+import { RuntimeConfig, OutputStream, InputSource } from './Types'
 import { OpTreeStream } from './Compiler'
 import {
     Any, PV, CV, GV,
+    PRAGMA,
     OP, MaybeOP, OpTree,
     Stash, newStash, Glob, newGlob, isGlob,
 } from './Runtime/API'
@@ -219,6 +219,10 @@ export class Thread {
         this.root    = root;
     }
 
+    loadCode (path : string) : InputSource {
+        return this.config.resolver(this.config, path);
+    }
+
     invokeCV (cv : CV, args : Any[]) : MaybeOP {
         let parent = this.frames[0] as StackFrame;
         let frame  = new StackFrame(
@@ -272,7 +276,7 @@ export class Thread {
     }
 
     async *run (source : OpTreeStream) : OutputStream {
-        let prepared = false;
+        let prepared = false;;
 
         for await (const optree of source) {
             if (!prepared) {
@@ -300,6 +304,14 @@ export class Thread {
                 }
 
                 let next_op = opcode(frame, op);
+
+                if (next_op instanceof PRAGMA) {
+                    let source = this.loadCode(`${next_op.config.bareword}.opal`);
+                    //console.log("INTERPRETER/src:", source);
+                    let optree = await next_op.resolver(source);
+                    console.log("INTERPRETER/optree:", optree);
+                    break;
+                }
 
                 if (this.STD_buffer.length > 0) {
                     yield this.STD_buffer.splice(0).map((pv) => pv.value);

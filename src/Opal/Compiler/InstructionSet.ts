@@ -27,7 +27,7 @@ import {
     Stash,
     GlobSlot,
 
-    OP, BINOP, LOGOP, LOOPOP, DECLARE, MaybeOP,
+    OP, BINOP, LOGOP, LOOPOP, DECLARE, PRAGMA, MaybeOP,
 } from '../Runtime/API'
 
 import { Opcode, StackFrame } from '../Runtime'
@@ -47,7 +47,8 @@ export function loadInstructionSet () : InstructionSet {
     // ---------------------------------------------------------------------
 
     opcodes.set('use', (i, op) => {
-        // what to do at runtime??
+        //if (!(op instanceof PRAGMA)) throw new Error('Y NO PRAGMA?')
+        console.log("INSTRUCTION", op);
         return op.next
     });
 

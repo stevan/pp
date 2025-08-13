@@ -32,7 +32,7 @@ export class Compiler {
         for await (const node of source) {
             switch (true) {
             case (node instanceof AST.Statement):
-                yield this.compileStream(new AST.Program([node]));
+                yield this.compileStream(new AST.Fragment([node]));
                 break;
             case (node instanceof AST.EmptyStatement):
                 // do nothing, just wait for the next one
@@ -43,8 +43,8 @@ export class Compiler {
         }
     }
 
-    compileStream (program : AST.Program) : OpTree {
-        let optree = program.accept(this.emitter);
+    compileStream (fragment : AST.Fragment) : OpTree {
+        let optree = fragment.accept(this.emitter);
 
         let uid_seq = 0;
 

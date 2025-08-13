@@ -1,6 +1,8 @@
 
 import { inspect } from "node:util"
 
+import { InputSource  } from '../Types'
+
 // =============================================================================
 // API
 // -----------------------------------------------------------------------------
@@ -102,7 +104,6 @@ export class LOOPOP extends BINOP {
     public last_op : MaybeOP;
 }
 
-
 // TODO:
 // Implement these ops, and very likely
 // replace some current usage with these.
@@ -125,6 +126,21 @@ struct pvop {
 
 */
 
+// --------------------------
+// compile time ops
+// --------------------------
+
+export type OpTreeResolver = (s: InputSource) => Promise<OpTree>;
+
+export class PRAGMA extends UNOP {
+    public resolver : OpTreeResolver;
+
+    constructor(name : string, resolver : OpTreeResolver, config : OpConfig) {
+        super(name, config);
+        this.resolver = resolver;
+    }
+}
+
 // declaration
 
 export class DECLARE extends UNOP {
@@ -140,8 +156,9 @@ export class DECLARE extends UNOP {
 // -----------------------------------------------------------------------------
 
 export class OpTree {
-    public enter : OP;
-    public leave : OP;
+    public pragmas : PRAGMA[] = [];
+    public enter   : OP;
+    public leave   : OP;
 
     constructor(enter : OP, leave : OP) {
         this.enter = enter;
@@ -150,6 +167,7 @@ export class OpTree {
 
     [inspect.custom] () {
         return {
+            pragmas : this.pragmas,
             enter : {
                 uid  : this.enter.metadata.uid,
                 name : this.enter.name,

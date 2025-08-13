@@ -20,7 +20,7 @@ import { FromArray } from '../Input/FromArray'
 import { REPL }          from '../Input/REPL'
 import { Parser }        from '../Parser'
 import { Compiler }      from '../Compiler'
-import { Interpreter }   from '../Interpreter'
+import { Interpreter, defaultRuntimeConfig }   from '../Interpreter'
 import { ConsoleOutput } from '../Output/ConsoleOutput'
 
 import { walkExecOrder, walkTraversalOrder } from '../Compiler/OpTreeWalker'
@@ -45,7 +45,7 @@ export type TestResult = { result : 'OK', interpreter : Interpreter, output : Te
 export async function SimpleTestRunner (
                             source : string[],
                             test   : (result : TestResult) => void,
-                            config : RuntimeConfig = {}
+                            config : RuntimeConfig = defaultRuntimeConfig
                         ) : Promise<void> {
 
     let input       = new TestInput(source);

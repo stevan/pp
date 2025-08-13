@@ -51,7 +51,7 @@ test('... testing compiler', async (t) => {
         assert.ok(ast instanceof AST.Program, '... it is an AST.Program');
 
         let pragma  = ast.pragmas[0] as AST.Pragma;
-        let resolve = pragma.resolver as AST.Rentry;
+        let resolve = pragma.resolver as AST.ASTResolver;
         let FactAST = await resolve(fact_src);
         console.log(JSON.stringify(FactAST, null, 2));
         assert.ok(FactAST instanceof AST.Program, '... FactAST is an AST.Program');

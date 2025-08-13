@@ -1,12 +1,19 @@
 
-import { RuntimeConfig, OutputStream } from './Types'
+import { RuntimeConfig, OutputStream, InputSource } from './Types'
 import { OpTreeStream } from './Compiler'
 import { Thread, ThreadID, SymbolTable } from './Runtime'
 import { OpTree, PV } from './Runtime/API'
+import { FromFile } from './Input/FromFile'
 
 class ThreadMap extends Map<ThreadID, Thread> {
     addThread(t : Thread) : void { this.set(t.tid, t) }
 }
+
+export const defaultRuntimeConfig : RuntimeConfig = {
+    DEBUG    : false,
+    lib      : './tests/lib/',
+    resolver : (config, path) : InputSource => { return new FromFile(config.lib + path) },
+};
 
 export class Interpreter {
     public config  : RuntimeConfig;
@@ -16,11 +23,16 @@ export class Interpreter {
 
     private tid_seq : ThreadID = 0;
 
-    constructor (config : RuntimeConfig = {}) {
-        this.config  = config;
+    constructor (config : RuntimeConfig = defaultRuntimeConfig) {
+        this.config  = this.loadConfig(config);
         this.root    = new SymbolTable('main');
         this.threads = new ThreadMap();
         this.main    = this.initializeMainThread();
+    }
+
+    private loadConfig (config : RuntimeConfig) : RuntimeConfig {
+        // XXX : verify stuff or something
+        return config;
     }
 
     private initializeMainThread () : Thread {

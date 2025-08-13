@@ -96,7 +96,7 @@ const BracketToKind = (src : string) : ExpressionKind => {
 // ...
 
 export class TreeParser {
-    constructor(public config : any = {}) {}
+    constructor(public config : any = { verbose : false }) {}
 
     private endExpression (expr : Expression) : void {
         while (expr.opers.length > 0) {
@@ -282,6 +282,10 @@ export class TreeParser {
                 // restore the top variable ...
                 TOP = STACK.at(-1) as Expression;
 
+                if (TOP == undefined) {
+                    console.log("FUCK", STACK, expr);
+                }
+
                 // Now check the TOP variable to see
                 // if we need to do anything more
                 switch (expr.kind) {
@@ -307,7 +311,6 @@ export class TreeParser {
                         // now push the control expression
                         // on the stack ...
                         control.stack.push(expr);
-
 
                         // restore the top variable ...
                         TOP = STACK.at(-1) as Expression;

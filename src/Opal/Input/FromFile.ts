@@ -15,6 +15,7 @@ export class FromFile implements InputSource {
         yield new Promise<Source>((resolve) => {
             fs.readFile(this.path, 'utf8', (err, data) => {
                 if (err) throw new Error(`Got error ${err}`);
+                //console.log("GOT DATA", data);
                 resolve(data);
             });
         })

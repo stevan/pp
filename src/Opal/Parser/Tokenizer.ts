@@ -5,8 +5,6 @@ const IS_NUMBER   = /^-?[0-9][0-9_]*(\.[0-9]+)?$/;
 const IS_STRING   = /^"[^"\n]*"|'[^'\n]*'$/;
 const IS_BRACKET  = /^\+\{|\+\[|\[|\]|\{|\}|\(|\)$/;
 
-const SPLITTER = /\+\{|\+\[|[\;\,\[\]\{\}\(\)]{1}|"([^"])*"|'([^'])*'|[^\;\s\,\[\]\{\}\(\)]+/g;
-
 export type TokenType =
     | 'STRING'    // single and double quoted strings
     | 'NUMBER'    // basic int & float parsing only
@@ -21,7 +19,10 @@ export interface Token {
 export type TokenStream = AsyncGenerator<Token, void, void>;
 
 export class Tokenizer {
+
     async *run (source : SourceStream) : TokenStream {
+
+        const SPLITTER = /\+\{|\+\[|[\;\,\[\]\{\}\(\)]{1}|"([^"])*"|'([^'])*'|[^\;\s\,\[\]\{\}\(\)]+/g;
 
         const newToken = (tokenType : TokenType, src : string) : Token => {
             return {
@@ -31,9 +32,12 @@ export class Tokenizer {
         }
 
         for await (const chunk of source) {
+            //console.log('CHUNK', `|${chunk}|`);
             let match;
             while ((match = SPLITTER.exec(chunk)) !== null) {
+                //console.log(match);
                 let m = match[0] as string;
+                //console.log('MATCH', m);
                 switch (true) {
                 case IS_STRING.test(m):
                     yield newToken('STRING', m.slice(1,-1));

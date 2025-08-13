@@ -27,6 +27,7 @@ export class Lexer {
 
     async *run (source : TokenStream) : LexedStream {
         for await (const token of source) {
+            //console.log('TOKEN', token);
             switch (token.type) {
             case 'BRACKET' :
                 switch (token.source) {
