@@ -4,6 +4,7 @@ import { OpTreeStream } from './Compiler'
 import { Thread, ThreadID, SymbolTable } from './Runtime'
 import { OpTree, PV } from './Runtime/API'
 import { FromFile } from './Input/FromFile'
+import { Linker } from './Runtime/Linker'
 
 class ThreadMap extends Map<ThreadID, Thread> {
     addThread(t : Thread) : void { this.set(t.tid, t) }
@@ -17,6 +18,7 @@ export const defaultRuntimeConfig : RuntimeConfig = {
 
 export class Interpreter {
     public config  : RuntimeConfig;
+    public linker  : Linker;
     public main    : Thread;
     public root    : SymbolTable;
     public threads : ThreadMap;
@@ -25,6 +27,7 @@ export class Interpreter {
 
     constructor (config : RuntimeConfig = defaultRuntimeConfig) {
         this.config  = this.loadConfig(config);
+        this.linker  = new Linker();
         this.root    = new SymbolTable('main');
         this.threads = new ThreadMap();
         this.main    = this.initializeMainThread();
@@ -46,7 +49,7 @@ export class Interpreter {
     }
 
     async *run (source : OpTreeStream) : OutputStream {
-        yield* this.main.run(source);
+        yield* this.main.run(this.linker.link(source));
     }
 
     get STDOUT() : any[] {

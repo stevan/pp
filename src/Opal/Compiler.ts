@@ -2,7 +2,6 @@
 
 import { CompilerConfig } from './Types'
 
-import { InstructionSet, loadInstructionSet } from './Compiler/InstructionSet'
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
 import { OpTree, OP, UNOP, LOGOP, MaybeOP, PRAGMA } from './Runtime/API'
 
@@ -11,7 +10,7 @@ import { ASTNodeStream } from './Parser'
 
 import { CompilationUnit } from './Compiler/CompilationUnit'
 
-import { walkTraversalOrder, walkExecOrder } from './Compiler/OpTreeWalker'
+import { Linker } from './Runtime/Linker'
 
 // -----------------------------------------------------------------------------
 
@@ -19,13 +18,13 @@ export type OpTreeStream = AsyncGenerator<OpTree, void, void>;
 
 export class Compiler {
     public config  : CompilerConfig;
-    public opcodes : InstructionSet;
     public emitter : OpTreeEmitter;
+    public linker  : Linker;
 
     constructor (config : CompilerConfig = {}) {
         this.config  = config;
         this.emitter = new OpTreeEmitter();
-        this.opcodes = loadInstructionSet();
+        this.linker  = new Linker();
     }
 
     async *run (source : ASTNodeStream) : OpTreeStream {
@@ -43,31 +42,9 @@ export class Compiler {
         }
     }
 
-    linkOpTree (optree : OpTree) : OpTree {
-        let uid_seq = 0;
-
-        // link the OPs and Opcodes
-        walkTraversalOrder(
-            (op, d) => {
-                let opcode = this.opcodes.get(op.name);
-                if (opcode == undefined) throw new Error(`Unable to find opcode(${op.name})`);
-                op.metadata.uid             = ++uid_seq;
-                op.metadata.compiler.opcode = opcode;
-                if (op instanceof PRAGMA) {
-                    let unlinked = op.resolver;
-                    op.resolver = (src) => unlinked(src).then((ot) => this.linkOpTree(ot));
-                    optree.pragmas.push(op);
-                }
-            },
-            optree.leave
-        );
-
-        return optree;
-    }
-
     compileStream (fragment : AST.Fragment) : OpTree {
         let optree = fragment.accept(this.emitter);
-        return this.linkOpTree(optree);
+        return optree;
     }
 
     compile (program : AST.Program) : CompilationUnit {

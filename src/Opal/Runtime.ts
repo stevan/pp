@@ -280,24 +280,20 @@ export class Thread {
         let prepared = false;
 
         for await (const optree of source) {
-            //console.log("RUN", optree);
             if (!prepared) {
                 this.prepareRootFrame(optree);
                 prepared = true;
             }
 
+            // Run all the PRAGMAs before running
+            // the OpTree itself ...
             while (optree.pragmas.length) {
                 let pragma = optree.pragmas.pop() as PRAGMA;
+                let src    = this.loadCode(`${pragma.config.bareword}.opal`);
+                let ot     = await pragma.resolver(src);
+                let tape   = new Tape(ot);
 
-                let src = this.loadCode(`${pragma.config.bareword}.opal`);
-                //console.log("INTERPRETER/src:", src);
-
-                let ot = await pragma.resolver(src);
-                //console.log("INTERPRETER/ot:", ot);
-
-                let tape = new Tape(ot);
                 yield* this.run(tape.run());
-                //console.log("FOOOOOOO");
             }
 
             let frame = this.frames[0] as StackFrame;

@@ -6,8 +6,8 @@
 // =============================================================================
 
 import { prettyPrinter } from '../Tools'
-import { walkTraversalOrder } from './OpTreeWalker'
-
+import { walkTraversalOrder } from '../Compiler/OpTreeWalker'
+import { Opcode, StackFrame } from '../Runtime'
 import {
     Any, IV, NV, PV, CV,
 
@@ -28,9 +28,7 @@ import {
     GlobSlot,
 
     OP, BINOP, LOGOP, LOOPOP, DECLARE, PRAGMA, MaybeOP,
-} from '../Runtime/API'
-
-import { Opcode, StackFrame } from '../Runtime'
+} from './API'
 
 // -----------------------------------------------------------------------------
 // the instruction set ...
