@@ -11,7 +11,7 @@ import { logger } from './Tools'
 
 import { RuntimeConfig, OutputStream, InputSource, Output } from './Types'
 import { OpTreeStream } from './Compiler'
-import { Single } from './Runtime/Tape'
+import { Tape, Single, Mix } from './Runtime/Tape'
 import {
     Any, PV, CV, GV,
     PRAGMA,
@@ -127,7 +127,7 @@ export class StackFrame {
 
     private parent : MaybeStackFrame;
     private thread : Thread;
-    private tape   : Tape;
+    private tape   : Mix;
 
     constructor(
             optree    : OpTree,
@@ -146,7 +146,7 @@ export class StackFrame {
     }
 
     appendOpTree (optree : OpTree) : void {
-        this.tape.optrees.push(optree);
+        this.tape.append(optree);
         this.optree     = optree;
         this.current_op = optree.enter;
     }

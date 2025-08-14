@@ -16,7 +16,11 @@ export class Single implements Tape {
 
 
 export class Mix implements Tape {
-    constructor(public optrees : OpTree = []) {}
+    constructor(public optrees : OpTree[] = []) {}
+
+    append (optree : OpTree) : void {
+        this.optrees.push(optree);
+    }
 
     async *run () : OpTreeStream {
         let index = 0;
