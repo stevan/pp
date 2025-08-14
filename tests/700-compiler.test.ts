@@ -5,7 +5,6 @@ import  assert  from "node:assert"
 import { InputSource, SourceStream } from '../src/Opal/Types'
 import { Parser } from '../src/Opal/Parser'
 import { Compiler } from '../src/Opal/Compiler'
-import { CompilationUnit } from '../src/Opal/Compiler/CompilationUnit'
 
 import * as AST from '../src/Opal/Parser/AST'
 
@@ -57,22 +56,22 @@ test('... testing compiler', async (t) => {
         assert.ok(FactAST instanceof AST.Program, '... FactAST is an AST.Program');
 
         let unit = compiler.compile(ast);
-        assert.ok(unit instanceof CompilationUnit, '... it is a compilation unit');
+        //assert.ok(unit instanceof CompilationUnit, '... it is a compilation unit');
 
         let FactUnit = compiler.compile(FactAST);
-        assert.ok(FactUnit instanceof CompilationUnit, '... FactUnit is a compilation unit');
+        //assert.ok(FactUnit instanceof CompilationUnit, '... FactUnit is a compilation unit');
 
-        console.log('Fact:');
-        console.log('EXEC:');
-        FactUnit.prettyPrintExec();
-        console.log('TREE:');
-        FactUnit.prettyPrintTree();
-
-        console.log('(main):');
-        console.log('EXEC:');
-        unit.prettyPrintExec();
-        console.log('TREE:');
-        unit.prettyPrintTree();
+        //console.log('Fact:');
+        //console.log('EXEC:');
+        //FactUnit.prettyPrintExec();
+        //console.log('TREE:');
+        //FactUnit.prettyPrintTree();
+//
+        //console.log('(main):');
+        //console.log('EXEC:');
+        //unit.prettyPrintExec();
+        //console.log('TREE:');
+        //unit.prettyPrintTree();
     });
 });
 

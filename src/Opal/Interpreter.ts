@@ -1,5 +1,5 @@
 
-import { RuntimeConfig, OutputStream, InputSource } from './Types'
+import { RuntimeConfig, OutputStream, InputSource, OutputSink, Output } from './Types'
 import { OpTreeStream } from './Compiler'
 import { Thread, ThreadID, SymbolTable } from './Runtime'
 import { OpTree, PV } from './Runtime/API'
@@ -50,6 +50,11 @@ export class Interpreter {
 
     async *run (source : OpTreeStream) : OutputStream {
         yield* this.main.run(this.linker.link(source));
+    }
+
+    execute (optree: OpTree) : Output {
+        let linked = this.linker.linkOpTree(optree);
+        return this.main.execute(linked);
     }
 
     get STDOUT() : any[] {

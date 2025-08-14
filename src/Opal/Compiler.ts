@@ -3,12 +3,11 @@
 import { CompilerConfig } from './Types'
 
 import { OpTreeEmitter } from './Compiler/OpTreeEmitter'
+import { walkTraversalOrder } from './Compiler/OpTreeWalker'
 import { OpTree, OP, UNOP, LOGOP, MaybeOP, PRAGMA } from './Runtime/API'
 
 import * as AST          from './Parser/AST'
 import { ASTNodeStream } from './Parser'
-
-import { CompilationUnit } from './Compiler/CompilationUnit'
 
 // -----------------------------------------------------------------------------
 
@@ -38,14 +37,37 @@ export class Compiler {
         }
     }
 
-    compileStream (fragment : AST.Fragment) : OpTree {
-        let optree = fragment.accept(this.emitter);
+    private finalizeOpTree (optree: OpTree) : OpTree {
+        let uid_seq = 0;
+
+        // link the OPs and Opcodes
+        walkTraversalOrder(
+            (op, d) => {
+                op.metadata.uid = ++uid_seq;
+                if (op instanceof PRAGMA) {
+                    let nonfinal = op.resolver;
+                    op.resolver = (src) => nonfinal(src).then((ot) => this.finalizeOpTree(ot));
+                    optree.pragmas.push(op);
+                }
+            },
+            optree.leave
+        );
+
         return optree;
     }
 
-    compile (program : AST.Program) : CompilationUnit {
+    // NOTE:
+    // these two are identical for now, but we may want
+    // to do something different later on, we I am going
+    // to leave them here for now.
+
+    compileStream (fragment : AST.Fragment) : OpTree {
+        let optree = fragment.accept(this.emitter);
+        return this.finalizeOpTree(optree);
+    }
+
+    compile (program : AST.Program) : OpTree {
         let optree = program.accept(this.emitter);
-        let unit   = new CompilationUnit( optree );
-        return unit;
+        return this.finalizeOpTree(optree);
     }
 }

@@ -22,18 +22,18 @@ export class Linker {
     linkOpTree (optree : OpTree) : OpTree {
         let uid_seq = 0;
 
-        // link the OPs and Opcodes
+        // add the linker to the Pragma resolvers
+        for (const pragma of optree.pragmas) {
+            let unlinked = pragma.resolver;
+            pragma.resolver = (src) => unlinked(src).then((ot) => this.linkOpTree(ot));
+        }
+
+        // link the OPs and Opcodes together
         walkTraversalOrder(
             (op, d) => {
                 let opcode = this.opcodes.get(op.name);
                 if (opcode == undefined) throw new Error(`Unable to find opcode(${op.name})`);
-                op.metadata.uid             = ++uid_seq;
                 op.metadata.compiler.opcode = opcode;
-                if (op instanceof PRAGMA) {
-                    let unlinked = op.resolver;
-                    op.resolver = (src) => unlinked(src).then((ot) => this.linkOpTree(ot));
-                    optree.pragmas.push(op);
-                }
             },
             optree.leave
         );

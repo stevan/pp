@@ -517,7 +517,9 @@ export class OpTreeEmitter implements NodeVisitor<OpTree> {
                     //console.log('IN COMPILER RESOLVER', node);
                     node.resolver(src).then((ast) => {
                         //console.log('GOT NODE', ast);
-                        resolve(this.visit(ast))
+                        let ot = this.visit(ast);
+                        //console.log("OT", ot);
+                        resolve(ot);
                     });
                 })
             },
