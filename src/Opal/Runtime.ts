@@ -11,7 +11,7 @@ import { logger } from './Tools'
 
 import { RuntimeConfig, OutputStream, InputSource, Output } from './Types'
 import { OpTreeStream } from './Compiler'
-import { Tape } from './Runtime/Tape'
+import { Single } from './Runtime/Tape'
 import {
     Any, PV, CV, GV,
     PRAGMA,
@@ -286,8 +286,7 @@ export class Thread {
                 let pragma = optree.pragmas.pop() as PRAGMA;
                 let src    = this.loadCode(`${pragma.config.bareword}.opal`);
                 let ot     = await pragma.resolver(src);
-                let tape   = new Tape(ot);
-
+                let tape   = new Single(ot);
                 yield* this.run(tape.run());
             }
 
