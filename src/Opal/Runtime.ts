@@ -11,7 +11,7 @@ import { logger } from './Tools'
 
 import { RuntimeConfig, OutputStream, InputSource } from './Types'
 import { OpTreeStream } from './Compiler'
-import { Tape } from './Compiler/Tape'
+import { Tape } from './Runtime/Tape'
 import {
     Any, PV, CV, GV,
     PRAGMA,
