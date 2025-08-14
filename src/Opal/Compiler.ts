@@ -10,8 +10,6 @@ import { ASTNodeStream } from './Parser'
 
 import { CompilationUnit } from './Compiler/CompilationUnit'
 
-import { Linker } from './Runtime/Linker'
-
 // -----------------------------------------------------------------------------
 
 export type OpTreeStream = AsyncGenerator<OpTree, void, void>;
@@ -19,12 +17,10 @@ export type OpTreeStream = AsyncGenerator<OpTree, void, void>;
 export class Compiler {
     public config  : CompilerConfig;
     public emitter : OpTreeEmitter;
-    public linker  : Linker;
 
     constructor (config : CompilerConfig = {}) {
         this.config  = config;
         this.emitter = new OpTreeEmitter();
-        this.linker  = new Linker();
     }
 
     async *run (source : ASTNodeStream) : OpTreeStream {
