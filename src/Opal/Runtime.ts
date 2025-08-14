@@ -127,8 +127,7 @@ export class StackFrame {
 
     private parent : MaybeStackFrame;
     private thread : Thread;
-
-    private optree_history : OpTree[] = [];
+    private tape   : Tape;
 
     constructor(
             optree    : OpTree,
@@ -138,6 +137,7 @@ export class StackFrame {
         ) {
         this.stack      = [];
         this.padlist    = [ new Pad() ];
+        this.tape       = new Mix([ optree ]);
         this.optree     = optree;
         this.return_to  = return_to;
         this.thread     = thread;
@@ -146,8 +146,7 @@ export class StackFrame {
     }
 
     appendOpTree (optree : OpTree) : void {
-        this.optree_history.push(this.optree);
-
+        this.tape.optrees.push(optree);
         this.optree     = optree;
         this.current_op = optree.enter;
     }
@@ -304,9 +303,6 @@ export class Thread {
             frame = this.prepareRootFrame(optree);
         }
 
-        // FIXME:
-        // this should be a Tape so we don't need
-        // to care, just say frame.tape.append(optree)
         frame.appendOpTree(optree);
 
         let depth = this.frames.length;

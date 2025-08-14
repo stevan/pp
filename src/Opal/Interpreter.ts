@@ -5,6 +5,7 @@ import { Thread, ThreadID, SymbolTable } from './Runtime'
 import { OpTree, PV } from './Runtime/API'
 import { FromFile } from './Input/FromFile'
 import { Linker } from './Runtime/Linker'
+import { Tape } from './Runtime/Tape'
 
 class ThreadMap extends Map<ThreadID, Thread> {
     addThread(t : Thread) : void { this.set(t.tid, t) }
@@ -50,6 +51,10 @@ export class Interpreter {
 
     async *run (source : OpTreeStream) : OutputStream {
         yield* this.main.run(this.linker.link(source));
+    }
+
+    async *play (tape: Tape) : OutputStream {
+        yield* this.main.run(this.linker.link(tape.run()));
     }
 
     execute (optree: OpTree) : Output {

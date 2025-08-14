@@ -13,3 +13,17 @@ export class Single implements Tape {
         yield this.optree;
     }
 }
+
+
+export class Mix implements Tape {
+    constructor(public optrees : OpTree = []) {}
+
+    async *run () : OpTreeStream {
+        let index = 0;
+        while (index < this.optrees.length) {
+            let optree = this.optrees[index] as OpTree;
+            yield optree;
+            index++;
+        }
+    }
+}

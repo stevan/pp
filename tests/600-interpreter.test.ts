@@ -14,6 +14,7 @@ import { Parser } from '../src/Opal/Parser'
 import { Compiler } from '../src/Opal/Compiler'
 import { Interpreter } from '../src/Opal/Interpreter'
 import { Linker } from '../src/Opal/Runtime/Linker'
+import { Mix } from '../src/Opal/Runtime/Tape'
 
 import {
     PRAGMA
@@ -88,8 +89,11 @@ test('... testing compiler', async (t) => {
         console.log('TREE:');
         walkTraversalOrder(prettyPrinter, factOp.leave);
 
-        console.log(interpreter.execute(factOp));
-        console.log(interpreter.execute(optree));
+        let tape = new Mix([ factOp, optree ]);
+
+        for await (const out of interpreter.play(tape)) {
+            console.log('GOT', out);
+        }
 
     });
 
