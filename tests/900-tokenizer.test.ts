@@ -22,6 +22,37 @@ test('... tokenizeing empty string', async (t) => {
 });
 
 
+test('... tokenizeing empty string w/ comment', async (t) => {
+    let input  = new TestInput([ '# with comment' ]);
+    let tokens = await captureTokenizerOuput(tokenizer.run(input.run()));
+    assert.strictEqual(tokens.length, 0, '... empty string returns no tokens');
+});
+
+test('... tokenizeing single number w/ comment', async (t) => {
+    let input  = new TestInput([ '1 # with comment' ]);
+    let tokens = await captureTokenizerOuput(tokenizer.run(input.run()));
+    assert.strictEqual(tokens.length, 1, '... got one token');
+    assert.strictEqual(tokens[0]?.source, '1', '... got right token');
+});
+
+test('... tokenizeing single number statement w/ comment', async (t) => {
+    let input  = new TestInput([ `
+        # comment before
+        1; # with comment
+        # comment after
+        20;
+
+        # the end
+` ]);
+    let tokens = await captureTokenizerOuput(tokenizer.run(input.run()));
+    //console.log(tokens);
+    assert.strictEqual(tokens.length, 4, '... got one token');
+    assert.strictEqual(tokens[0]?.source, '1', '... got right token');
+    assert.strictEqual(tokens[1]?.source, ';', '... got right token');
+    assert.strictEqual(tokens[2]?.source, '20', '... got right token');
+    assert.strictEqual(tokens[3]?.source, ';', '... got right token');
+});
+
 test('... tokenizeing numbers', async (t) => {
     let source = [
         '1',

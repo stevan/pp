@@ -1,5 +1,5 @@
 
-use v5.40;
+use v5.40; # ignore me
 
 my $count = 1;
 my $fails = 0;

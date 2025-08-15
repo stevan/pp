@@ -38,19 +38,11 @@ export class Tokenizer {
 
             for (const line of lines) {
                 if (line.trim() === '') continue;
-                //console.log('line', line);
-
-                let clean = line; //.split('#')[0];
-                if (clean == undefined) continue;
-
-                //console.log('clean', clean);
-                //if (clean == undefined || clean.trim() === '') continue;
 
                 let match;
-                while ((match = SPLITTER.exec(clean)) !== null) {
-                    //console.log(match);
+                while ((match = SPLITTER.exec(line)) !== null) {
+                    let inComment = false;
                     let m = match[0] as string;
-                    //console.log('MATCH', m);
                     switch (true) {
                     case IS_STRING.test(m):
                         yield newToken('STRING', m.slice(1,-1));
@@ -62,7 +54,16 @@ export class Tokenizer {
                         yield newToken('BRACKET', m);
                         break;
                     default:
+                        if (m == '#') {
+                            inComment = true;
+                            break;
+                        }
                         yield newToken('ATOM', m);
+                    }
+
+                    if (inComment) {
+                        SPLITTER.lastIndex = 0;
+                        break;
                     }
                 }
             }
