@@ -77,33 +77,26 @@ test('... testing compiler', async (t) => {
         let factOp = await pragmaOp.resolver(fact_src);
         //console.log('(main) Fact OpTree', factOp);
 
-        console.log('(main):');
-        console.log('EXEC:');
-        walkExecOrder(prettyPrinter, optree.enter);
-        console.log('TREE:');
-        walkTraversalOrder(prettyPrinter, optree.leave);
+        //console.log('(main):');
+        //console.log('EXEC:');
+        //walkExecOrder(prettyPrinter, optree.enter);
+        //console.log('TREE:');
+        //walkTraversalOrder(prettyPrinter, optree.leave);
 
-        console.log('(main):');
-        console.log('EXEC:');
-        walkExecOrder(prettyPrinter, factOp.enter);
-        console.log('TREE:');
-        walkTraversalOrder(prettyPrinter, factOp.leave);
+        //console.log('(main):');
+        //console.log('EXEC:');
+        //walkExecOrder(prettyPrinter, factOp.enter);
+        //console.log('TREE:');
+        //walkTraversalOrder(prettyPrinter, factOp.leave);
 
         let tape = new Mix([ factOp, optree ]);
 
         for await (const out of interpreter.play(tape)) {
-            console.log('GOT', out);
+            if (out.length != 0) {
+                assert.ok((out[0] as string) == '3628800', '... got the expected result');
+            }
         }
 
     });
-
-    //for await (const out of interpreter.run(
-    //                        compiler.run(parser.run(source.run())))
-    //                        )
-    //{
-    //    console.log(out);
-    //    //walkTraversalOrder(prettyPrinter, out.leave);
-    //}
-
 });
 
