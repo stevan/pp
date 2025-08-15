@@ -3,12 +3,14 @@ import { test } from "node:test"
 import  assert  from "node:assert"
 
 import {
-    SimpleTestRunner, TestResult
-} from '../src/Opal/TestRunner/SimpleTestRunner'
+    TestImage, TestResult, TestInput,
+} from '../src/Opal/TestRunner/TestImage'
 
 test("... fibonacci function test", async (t) => {
 
-    await SimpleTestRunner([`
+    let img = new TestImage();
+
+    await img.run([`
 
         sub fib ($n) {
             if ($n < 2) {

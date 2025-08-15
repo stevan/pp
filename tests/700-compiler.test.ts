@@ -22,7 +22,7 @@ export class TestInput implements InputSource {
 }
 
 
-test('... testing compiler', async (t) => {
+test('... testing by-hand compiler usage', async (t) => {
 
     let parser   = new Parser();
     let compiler = new Compiler();

@@ -3,12 +3,14 @@ import { test } from "node:test"
 import  assert  from "node:assert"
 
 import {
-    SimpleTestRunner, TestResult
-} from '../src/Opal/TestRunner/SimpleTestRunner'
+    TestImage, TestResult, TestInput,
+} from '../src/Opal/TestRunner/TestImage'
 
 test("... basic say(LIST) test", async (t) => {
 
-    await SimpleTestRunner([`
+    let img = new TestImage();
+
+    await img.run([`
 
         my $x = 1;
         say 1, (1 + $x), ($x + (1 + $x));
@@ -25,7 +27,9 @@ test("... basic say(LIST) test", async (t) => {
 
 test("... basic say(w/ expressions) test", async (t) => {
 
-    await SimpleTestRunner([`
+    let img = new TestImage();
+
+    await img.run([`
 
         say 1 + 2;
         say 1 + 2 - 3;
@@ -45,7 +49,9 @@ test("... basic say(w/ expressions) test", async (t) => {
 
 test("... basic say(LIST w/ expressions) test", async (t) => {
 
-    await SimpleTestRunner([`
+    let img = new TestImage();
+
+    await img.run([`
 
         say(1, 2 + 2, 3);
         say(1, (2 + 2), 3);
@@ -62,7 +68,9 @@ test("... basic say(LIST w/ expressions) test", async (t) => {
 
 test("... basic say(join(LIST) test", async (t) => {
 
-    await SimpleTestRunner([`
+    let img = new TestImage();
+
+    await img.run([`
 
         my $x = 1;
         say join ', ', 1, (1 + $x), ($x + (1 + $x));

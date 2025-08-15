@@ -3,12 +3,14 @@ import { test } from "node:test"
 import  assert  from "node:assert"
 
 import {
-    SimpleTestRunner, TestResult
-} from '../src/Opal/TestRunner/SimpleTestRunner'
+    TestImage, TestResult, TestInput,
+} from '../src/Opal/TestRunner/TestImage'
 
 test("... 99 bottles of beer test", async (t) => {
 
-    await SimpleTestRunner([`
+    let img = new TestImage();
+
+    await img.run([`
 
 my $num = 99;
 while ($num > 0) {

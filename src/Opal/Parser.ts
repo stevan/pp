@@ -48,8 +48,6 @@ export class Parser {
         }
     }
 
-
-
     async parse (input : InputSource) : Promise<AST.Program> {
         return new Promise<AST.Program>(async (resolve, reject) => {
             let program = new AST.Program([]);

@@ -3,7 +3,7 @@ import { test } from "node:test"
 import  assert  from "node:assert"
 
 import { Tokenizer, TokenStream } from '../src/Opal/Parser/Tokenizer'
-import { TestInput } from '../src/Opal/TestRunner/SimpleTestRunner'
+import { TestInput } from '../src/Opal/TestRunner/TestImage'
 
 async function captureTokenizerOuput (input : TokenStream) {
     let tokens = []

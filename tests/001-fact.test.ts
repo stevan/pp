@@ -3,13 +3,14 @@ import { test } from "node:test"
 import  assert  from "node:assert"
 
 import {
-    SimpleTestRunner, TestResult
-} from '../src/Opal/TestRunner/SimpleTestRunner'
+    TestImage, TestResult, TestInput,
+} from '../src/Opal/TestRunner/TestImage'
 
 test("... factorial function test", async (t) => {
 
-    await SimpleTestRunner([`
+    let img = new TestImage();
 
+    await img.run([`
         sub fact ($n) {
             if ($n == 0) {
                 return 1;
@@ -18,8 +19,8 @@ test("... factorial function test", async (t) => {
             }
         }
 
-        say fact(10);
 
+        say fact(10);
     `], (result : TestResult) => {
 
         assert.strictEqual(

@@ -3,15 +3,17 @@ import { test } from "node:test"
 import  assert  from "node:assert"
 
 import {
-    SimpleTestRunner, TestResult
-} from '../src/Opal/TestRunner/SimpleTestRunner'
+    TestImage, TestResult, TestInput,
+} from '../src/Opal/TestRunner/TestImage'
 
 import { Pad, StackFrame }    from '../src/Opal/Runtime'
 import { IV }                 from '../src/Opal/Runtime/API'
 
 test("... addition test", async (t) => {
 
-    await SimpleTestRunner([`
+    let img = new TestImage();
+
+    await img.run([`
 
         my $x = 1;
         my $y = 2;
