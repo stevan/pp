@@ -104,28 +104,6 @@ export class LOOPOP extends BINOP {
     public last_op : MaybeOP;
 }
 
-// TODO:
-// Implement these ops, and very likely
-// replace some current usage with these.
-/*
-
-struct svop {
-    BASEOP
-    SV *    op_sv;
-};
-
-struct padop {
-    BASEOP
-    PADOFFSET   op_padix;
-};
-
-struct pvop {
-    BASEOP
-    char *  op_pv;
-};
-
-*/
-
 // --------------------------
 // compile time ops
 // --------------------------

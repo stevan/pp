@@ -170,7 +170,11 @@ export class StackFrame {
             }
             index++;
         }
-        throw new Error(`Unable to find lexical(${name}) in any scope`);
+
+        if (this.parent == undefined)
+            throw new Error(`Unable to get lexical(${name}) in any scope`);
+
+        return this.parent.getLexical(name);
     }
 
     createLexical (name : string, value : Any) : void {
@@ -187,7 +191,11 @@ export class StackFrame {
             }
             index++;
         }
-        this.createLexical(name, value);
+
+        if (this.parent == undefined)
+            throw new Error(`Unable to set lexical(${name}) in any scope`);
+
+        return this.parent.setLexical(name, value);
     }
 
     // -------------------------------------------------------------------------
