@@ -12,7 +12,7 @@ test("... who tests the tester", async (t) => {
 
     await img.run([`
 
-        our $count = 0;
+        my $count = 1;
 
         sub ok ($test, $count, $msg) {
             if ($test == true) {
@@ -22,7 +22,7 @@ test("... who tests the tester", async (t) => {
             }
         }
 
-        ok(10 == 10, 1, '... pass');
+        ok(10 == 10, $count, '... pass');
 
 
     `], (result : TestResult) => {

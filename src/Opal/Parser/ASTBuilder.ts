@@ -2,6 +2,7 @@
 
 import { ParseTree, ParseTreeStream, ExpressionKind } from './TreeParser'
 import { visitParseTree } from './ParseTreeVisitor'
+import { GlobSlot  } from '../Runtime/API'
 
 import * as AST from './AST'
 import { Node } from './AST'
@@ -119,7 +120,21 @@ export class ASTBuilder {
                         return new AST.ParserError(tree, children, `Expected one operands for my() and got ${JSON.stringify(children)}`)
                     }
                 case 'our':
-                    return new AST.TODO(tree, 'Glob assignment');
+                    if (children.length == 1) {
+                        let operand = children[0] as Node;
+
+                        if (operand instanceof AST.ScalarStore) {
+                            return new AST.GlobDeclare(
+                                new AST.GlobVar(operand.name, GlobSlot.SCALAR),
+                                operand.value
+                            );
+                        }
+                        else {
+                            return new AST.TODO(tree, `Support Glob assignment for Arrays, Hashes, Code and Globs(?) -> GOT(${JSON.stringify(operand)})`)
+                        }
+                    } else {
+                        return new AST.ParserError(tree, children, `Expected one operands for our() and got ${JSON.stringify(children)}`)
+                    }
                 default:
                     return new AST.BuiltInUnary(tree.operator.token.source, children[0] as Node);
                 }
