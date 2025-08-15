@@ -175,7 +175,7 @@ export class ASTBuilder {
                 case '*':
                     return new AST.Multiply(children[0] as Node, children[1] as Node);
                 case '/':
-                    return new AST.Modulus(children[0] as Node, children[1] as Node);
+                    return new AST.Divide(children[0] as Node, children[1] as Node);
                 case '%':
                     return new AST.Modulus(children[0] as Node, children[1] as Node);
                 // -----------------------------------------------------------------

@@ -1,6 +1,12 @@
 
+use v5.40;
+
 my $count = 1;
 my $fails = 0;
+
+sub todo ($msg) {
+    diag('TODO: ' . $msg);
+}
 
 sub diag ($msg) {
     say '# ' . $msg;
@@ -27,6 +33,11 @@ sub ok ($test, $msg) {
 
 sub is ($got, $expected, $msg) {
     ok($got == $expected, $msg);
+    if ($got != $expected) {
+        diag('Failed test ' . $msg);
+        diag('       got: ' . $got);
+        diag('  expected: ' . $expected);
+    }
 }
 
 sub isnt ($got, $expected, $msg) {

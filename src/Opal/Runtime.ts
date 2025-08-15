@@ -290,11 +290,17 @@ export class Thread {
             // Run all the PRAGMAs before running
             // the OpTree itself ...
             while (optree.pragmas.length) {
-                let pragma = optree.pragmas.pop() as PRAGMA;
-                let src    = this.loadCode(`${pragma.config.bareword}.opal.pm`);
-                let ot     = await pragma.resolver(src);
-                let tape   = new Single(ot);
-                yield* this.run(tape.run());
+                let pragma   = optree.pragmas.pop() as PRAGMA;
+                let bareword = pragma.config.bareword;
+                switch (true) {
+                case bareword.startsWith('v'):
+                    break;
+                default:
+                    let src    = this.loadCode(`${pragma.config.bareword}.opal.pm`);
+                    let ot     = await pragma.resolver(src);
+                    let tape   = new Single(ot);
+                    yield* this.run(tape.run());
+                }
             }
 
             yield this.execute(optree);

@@ -26,4 +26,6 @@ ok(2 != true, '... two is not true');
 ok('hello' eq 'hello', '... string is string');
 ok('hello' ne 'goodbye', '... string is not other string');
 
+todo('test errors of ==/eq usage (when it is implemented)');
+
 done();

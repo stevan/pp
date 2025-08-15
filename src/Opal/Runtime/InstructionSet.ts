@@ -230,10 +230,18 @@ export function loadInstructionSet () : InstructionSet {
     // Builtins
     // ---------------------------------------------------------------------
 
-    opcodes.set('say', (i, op) => {
+    opcodes.set('print', (i, op) => {
         let args = collectArgumentsFromStack(i);
         i.executor().toSTDOUT(
             args.map((arg) => AnytoPV(arg)).flat(1)
+        );
+        return op.next;
+    });
+
+    opcodes.set('say', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+        i.executor().toSTDOUT(
+            args.map((arg) => AnytoPV(arg)).flat(1),
         );
         return op.next;
     });

@@ -32,24 +32,38 @@ export class Tokenizer {
         }
 
         for await (const chunk of source) {
-            //console.log('CHUNK', `|${chunk}|`);
-            let match;
-            while ((match = SPLITTER.exec(chunk)) !== null) {
-                //console.log(match);
-                let m = match[0] as string;
-                //console.log('MATCH', m);
-                switch (true) {
-                case IS_STRING.test(m):
-                    yield newToken('STRING', m.slice(1,-1));
-                    break;
-                case IS_NUMBER.test(m):
-                    yield newToken('NUMBER', m);
-                    break;
-                case IS_BRACKET.test(m):
-                    yield newToken('BRACKET', m);
-                    break;
-                default:
-                    yield newToken('ATOM', m);
+            if (chunk.trim() === '') continue;
+
+            let lines = chunk.split('\n');
+
+            for (const line of lines) {
+                if (line.trim() === '') continue;
+                //console.log('line', line);
+
+                let clean = line; //.split('#')[0];
+                if (clean == undefined) continue;
+
+                //console.log('clean', clean);
+                //if (clean == undefined || clean.trim() === '') continue;
+
+                let match;
+                while ((match = SPLITTER.exec(clean)) !== null) {
+                    //console.log(match);
+                    let m = match[0] as string;
+                    //console.log('MATCH', m);
+                    switch (true) {
+                    case IS_STRING.test(m):
+                        yield newToken('STRING', m.slice(1,-1));
+                        break;
+                    case IS_NUMBER.test(m):
+                        yield newToken('NUMBER', m);
+                        break;
+                    case IS_BRACKET.test(m):
+                        yield newToken('BRACKET', m);
+                        break;
+                    default:
+                        yield newToken('ATOM', m);
+                    }
                 }
             }
         }

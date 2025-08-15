@@ -722,7 +722,7 @@ export class Subtract extends BinaryOp {
 }
 
 export class Divide extends BinaryOp {
-    constructor(lhs : Node, rhs : Node) {super('modulus', '%', lhs, rhs) }
+    constructor(lhs : Node, rhs : Node) {super('divide', '/', lhs, rhs) }
 }
 
 export class Modulus extends BinaryOp {
