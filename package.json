@@ -6,6 +6,7 @@
   "scripts": {
     "build": "rm -rf ./js && tsc",
     "repl" : "tsc && node js/bin/repl.js",
-    "test" : "tsc && node --test js/tests/*.test.js"
+    "test" : "tsc && node --test js/tests/*.test.js",
+    "prove" : "tsc && node js/bin/prove.js"
   }
 }

@@ -13,7 +13,7 @@ test("... basic if/else test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         my $foo = 0;
         if ($foo == 0) {
@@ -22,7 +22,7 @@ test("... basic if/else test", async (t) => {
             $foo = 10;
         }
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         let frame = result.interpreter.main.frames[0] as StackFrame;
         let pad   = frame.padlist.at(-1)  as Pad;

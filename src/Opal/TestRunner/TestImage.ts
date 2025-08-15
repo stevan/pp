@@ -4,6 +4,7 @@ import { logger } from '../Tools'
 
 import { OutputStream, OutputSink, SourceStream, InputSource, RuntimeConfig } from '../Types'
 import { FromArray } from '../Input/FromArray'
+import { FromFile  } from '../Input/FromFile'
 import { Parser, ASTNodeStream }  from '../Parser'
 import { Compiler, OpTreeStream } from '../Compiler'
 import { Interpreter }   from '../Interpreter'
@@ -12,6 +13,8 @@ export class TestInput extends FromArray {}
 
 export class TestOutput implements OutputSink {
     public buffer : string[] = [];
+
+    flush () : string[] { return this.buffer.splice(0) }
 
     async run (source: OutputStream) : Promise<void> {
         for await (const result of source) {
@@ -25,6 +28,8 @@ export type TestResult = {
     interpreter : Interpreter,
     output      : TestOutput
 }
+
+export type TestCallback = (result : TestResult) => void;
 
 export class TestImage {
     public parser      : Parser;
@@ -66,17 +71,12 @@ export class TestImage {
                     input.run())))
     }
 
-    async run(
-            source : string[],
-            test   : (result : TestResult) => void
-        ) : Promise<void> {
-
-        let input = new TestInput(source);
-
+    async run(input : InputSource, test : TestCallback) : Promise<void> {
         try {
             for (const preload of this.preloads) {
                 await this.output.run(this.execute(preload));
             }
+
             await this.output.run(this.execute(input));
 
             test({ result : 'OK', interpreter : this.interpreter, output : this.output });

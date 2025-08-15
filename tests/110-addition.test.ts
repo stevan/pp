@@ -13,13 +13,13 @@ test("... addition test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         my $x = 1;
         my $y = 2;
         my $z = $x + $x + $y + $x + $y + $x + $y + $x + $y;
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         let frame = result.interpreter.main.frames[0] as StackFrame;
         let pad   = frame.padlist.at(-1)  as Pad;

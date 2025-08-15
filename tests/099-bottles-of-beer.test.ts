@@ -10,7 +10,7 @@ test("... 99 bottles of beer test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
 my $num = 99;
 while ($num > 0) {
@@ -39,7 +39,7 @@ say "No more bottles of beer on the wall, no more bottles of beer.";
 say "Go to the store and buy some more, 99 bottles of beer on the wall.";
 
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         let strings = result.output.buffer;
 

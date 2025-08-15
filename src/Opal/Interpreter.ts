@@ -13,7 +13,7 @@ class ThreadMap extends Map<ThreadID, Thread> {
 
 export const defaultRuntimeConfig : RuntimeConfig = {
     DEBUG    : false,
-    lib      : './tests/lib/',
+    lib      : './lib/',
     resolver : (config, path) : InputSource => { return new FromFile(config.lib + path) },
 };
 

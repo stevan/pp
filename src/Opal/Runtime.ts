@@ -291,7 +291,7 @@ export class Thread {
             // the OpTree itself ...
             while (optree.pragmas.length) {
                 let pragma = optree.pragmas.pop() as PRAGMA;
-                let src    = this.loadCode(`${pragma.config.bareword}.opal`);
+                let src    = this.loadCode(`${pragma.config.bareword}.opal.pm`);
                 let ot     = await pragma.resolver(src);
                 let tape   = new Single(ot);
                 yield* this.run(tape.run());

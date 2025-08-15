@@ -10,13 +10,13 @@ test("... basic say(LIST) test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         my $x = 1;
         say 1, (1 + $x), ($x + (1 + $x));
 
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
         assert.deepStrictEqual(
             result.output.buffer,
             [ '1', '2' , '3'],
@@ -29,7 +29,7 @@ test("... basic say(w/ expressions) test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         say 1 + 2;
         say 1 + 2 - 3;
@@ -38,7 +38,7 @@ test("... basic say(w/ expressions) test", async (t) => {
         say (1 + 2) - (3 + 4);
         say ((1 + 2) - ((3 * 4) / 5));
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
         assert.deepStrictEqual(
             result.output.buffer,
             [ "3", "0", "0", "0", "-4", "1" ],
@@ -51,13 +51,13 @@ test("... basic say(LIST w/ expressions) test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         say(1, 2 + 2, 3);
         say(1, (2 + 2), 3);
         say(1, (2 + 2), 3 * (4 - 5));
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
         assert.deepStrictEqual(
             result.output.buffer,
             ["1","4","3","1","4","3","1","4","-3"],
@@ -70,12 +70,12 @@ test("... basic say(join(LIST) test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         my $x = 1;
         say join ', ', 1, (1 + $x), ($x + (1 + $x));
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
         assert.deepStrictEqual(
             result.output.buffer,
             ["1, 2, 3"],

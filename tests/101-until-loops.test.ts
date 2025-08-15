@@ -10,7 +10,7 @@ test("... simple until loop test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         my $x = 10;
         until ($x == 0) {
@@ -18,7 +18,7 @@ test("... simple until loop test", async (t) => {
             say $x;
         }
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         assert.deepStrictEqual(
             result.output.buffer,

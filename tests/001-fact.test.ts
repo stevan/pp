@@ -10,7 +10,7 @@ test("... factorial function test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
         sub fact ($n) {
             if ($n == 0) {
                 return 1;
@@ -21,7 +21,7 @@ test("... factorial function test", async (t) => {
 
 
         say fact(10);
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         assert.strictEqual(
             result.output.buffer[0],

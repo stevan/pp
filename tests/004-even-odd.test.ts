@@ -10,7 +10,7 @@ test("... even/odd recusive predicate function test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         sub is_even ($n) {
             if ($n <= 0) {
@@ -31,7 +31,7 @@ test("... even/odd recusive predicate function test", async (t) => {
         say is_even(10);
         say is_odd(12);
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         assert.strictEqual(
             result.output.buffer[0],

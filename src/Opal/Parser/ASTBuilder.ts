@@ -182,19 +182,25 @@ export class ASTBuilder {
                 // Equality
                 // -----------------------------------------------------------------
                 case '==':
+                case 'eq':
                     return new AST.Equal(children[0] as Node, children[1] as Node);
                 case '!=':
+                case 'ne':
                     return new AST.NotEqual(children[0] as Node, children[1] as Node);
                 // -----------------------------------------------------------------
                 // Ordering
                 // -----------------------------------------------------------------
                 case '<':
+                case 'lt':
                     return new AST.LessThan(children[0] as Node, children[1] as Node);
                 case '>':
+                case 'gt':
                     return new AST.GreaterThan(children[0] as Node, children[1] as Node);
                 case '<=':
+                case 'le':
                     return new AST.LessThanOrEqual(children[0] as Node, children[1] as Node);
                 case '>=':
+                case 'ge':
                     return new AST.GreaterThanOrEqual(children[0] as Node, children[1] as Node);
                 // -----------------------------------------------------------------
                 default:

@@ -8,41 +8,9 @@ import {
 
 test("... who tests the tester", async (t) => {
 
-    let img = new TestImage([
-        new TestInput([`
-            my $count = 1;
-            my $fails = 0;
-
-            sub pass ($msg) {
-                say join ' ', 'ok', $count, $msg;
-                $count = $count + 1;
-            }
-
-            sub fail ($msg) {
-                say join ' ', 'not ok', $count, $msg;
-                $count = $count + 1;
-                $fails = $fails + 1;
-            }
-
-            sub ok ($test, $msg) {
-                if ($test == true) {
-                    pass($msg);
-                } else {
-                    fail($msg);
-                }
-            }
-
-            sub is ($got, $expected, $msg) {
-                ok($got == $expected, $msg);
-            }
-
-            sub isnt ($got, $expected, $msg) {
-                ok($got != $expected, $msg);
-            }
-        `])
-    ]);
-
-    await img.run([`
+    let img = new TestImage();
+    await img.run(new TestInput([`
+        use Test;
 
         pass('... pass');
         fail('... fail');
@@ -53,7 +21,7 @@ test("... who tests the tester", async (t) => {
         is(200, 100, '... fail');
         isnt(200, 100, '... pass');
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         assert.deepStrictEqual(
             result.output.buffer,

@@ -10,10 +10,10 @@ test("... ??? test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         assert.strictEqual(
             result.output.buffer[0],

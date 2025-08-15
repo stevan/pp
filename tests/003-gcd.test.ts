@@ -10,7 +10,7 @@ test("... greatest common divisor function test", async (t) => {
 
     let img = new TestImage();
 
-    await img.run([`
+    await img.run(new TestInput([`
 
         sub gcd ($a, $b) {
             if ($b == 0) {
@@ -22,7 +22,7 @@ test("... greatest common divisor function test", async (t) => {
 
         say gcd(75025, 46368);
 
-    `], (result : TestResult) => {
+    `]), (result : TestResult) => {
 
         assert.strictEqual(
             result.output.buffer[0],
