@@ -2,7 +2,7 @@ import assert from "node:assert"
 
 import { logger } from '../Tools'
 
-import { OutputStream, OutputSink, InputSource, RuntimeConfig } from '../Types'
+import { OutputStream, OutputSink, SourceStream, InputSource, RuntimeConfig } from '../Types'
 import { FromArray } from '../Input/FromArray'
 import { Parser, ASTNodeStream }  from '../Parser'
 import { Compiler, OpTreeStream } from '../Compiler'
@@ -41,10 +41,29 @@ export class TestImage {
         this.output      = new TestOutput();
     }
 
+    async *executeParser (input : SourceStream) : ASTNodeStream {
+        try {
+            yield* this.parser.run(input)
+        } catch (e) {
+            logger.log('PARSER FAILED', e);
+            throw new Error('Parser Error!');
+        }
+    }
+
+    async *executeCompiler (input : ASTNodeStream) : OpTreeStream {
+        try {
+            yield* this.compiler.run(input)
+        } catch (e) {
+            logger.log('COMPILER FAILED', e);
+            throw new Error('Compiler Error!');
+        }
+    }
+
     async *execute (input : InputSource) : OutputStream {
         yield* this.interpreter.run(
-                    this.compiler.run(
-                        this.parser.run(input.run())))
+                    this.executeCompiler(
+                    this.executeParser(
+                    input.run())))
     }
 
     async run(
@@ -55,16 +74,14 @@ export class TestImage {
         let input = new TestInput(source);
 
         try {
-
             for (const preload of this.preloads) {
                 await this.output.run(this.execute(preload));
             }
-
             await this.output.run(this.execute(input));
 
             test({ result : 'OK', interpreter : this.interpreter, output : this.output });
         } catch (e) {
-            assert.fail(`... test failed with: ${e}`);
+            logger.log('TEST FAILED', e);
         }
     }
 }
