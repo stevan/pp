@@ -89,8 +89,14 @@ test('... testing by-hand interpreter usage', async (t) => {
         //console.log('TREE:');
         //walkTraversalOrder(prettyPrinter, factOp.leave);
 
-        let tape = new Mix([ factOp, optree ]);
+        //for await (const out of interpreter.execute(factOp)) {
+        //    console.log('FACT - GOT', out);
+        //}
+        //for await (const out of interpreter.execute(optree)) {
+        //    console.log('MAIN - GOT', out);
+        //}
 
+        let tape = new Mix([ factOp, optree ]);
         for await (const out of interpreter.play(tape)) {
             if (out.length != 0) {
                 assert.ok((out[0] as string) == '3628800', '... got the expected result');

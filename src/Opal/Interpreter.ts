@@ -26,7 +26,6 @@ export class Interpreter {
     public root    : SymbolTable;
     public threads : ThreadMap;
 
-    private process : NodeJS.Process;
     private tid_seq : ThreadID = 0;
 
     constructor (config : RuntimeConfig = defaultRuntimeConfig) {
@@ -35,7 +34,6 @@ export class Interpreter {
         this.root    = new SymbolTable('main');
         this.threads = new ThreadMap();
         this.main    = this.initializeMainThread();
-        this.process = process;
     }
 
     private loadConfig (config : RuntimeConfig) : RuntimeConfig {
@@ -61,7 +59,7 @@ export class Interpreter {
         yield* this.main.run(this.linker.link(tape.run()));
     }
 
-    execute (optree: OpTree) : Output {
+    execute (optree: OpTree) : OutputStream {
         let linked = this.linker.linkOpTree(optree);
         return this.main.execute(linked);
     }

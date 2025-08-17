@@ -22,7 +22,7 @@ export class BasicOutput implements OutputHandle {
         this.buffer.push(...args);
     }
 
-    get pending () : boolean { return this.buffer.length < 0 }
+    get pending () : boolean { return this.buffer.length > 0 }
 
     flush () : Output {
         return this.buffer.splice(0)
@@ -65,11 +65,11 @@ export class Thread implements Executor {
                 }
             }
 
-            yield this.execute(optree);
+            yield* this.execute(optree);
         }
     }
 
-    execute (optree : OpTree) : Output {
+    async *execute (optree : OpTree) : OutputStream {
         let frame = this.frames[0] as StackFrame;
 
         if (frame == undefined) {
@@ -98,11 +98,13 @@ export class Thread implements Executor {
             frame.current_op = next_op;
 
             if (this.output.pending) {
-                return this.output.flush();
+                yield this.output.flush() as Output;
             }
         }
 
-        return this.output.flush();
+        if (this.output.pending) {
+            yield this.output.flush() as Output;
+        }
     }
 
     // -------------------------------------------------------------------------

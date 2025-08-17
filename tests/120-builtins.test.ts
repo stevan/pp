@@ -6,6 +6,7 @@ import {
     TestImage, TestResult, TestInput,
 } from '../src/Opal/TestRunner/TestImage'
 
+
 test("... basic say(LIST) test", async (t) => {
 
     let img = new TestImage();
@@ -25,18 +26,23 @@ test("... basic say(LIST) test", async (t) => {
     })
 })
 
+
 test("... basic say(w/ expressions) test", async (t) => {
 
     let img = new TestImage();
 
     await img.run(new TestInput([`
 
-        say 1 + 2;
-        say 1 + 2 - 3;
-        say 1 + (2 - 3);
-        say (1 + 2) - 3;
-        say (1 + 2) - (3 + 4);
-        say ((1 + 2) - ((3 * 4) / 5));
+        sub sayit () {
+            say 1 + 2;
+            say 1 + 2 - 3;
+            say 1 + (2 - 3);
+            say (1 + 2) - 3;
+            say (1 + 2) - (3 + 4);
+            say ((1 + 2) - ((3 * 4) / 5));
+        }
+
+        sayit();
 
     `]), (result : TestResult) => {
         assert.deepStrictEqual(
@@ -46,6 +52,7 @@ test("... basic say(w/ expressions) test", async (t) => {
         );
     })
 })
+
 
 test("... basic say(LIST w/ expressions) test", async (t) => {
 
