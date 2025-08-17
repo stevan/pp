@@ -69,7 +69,7 @@ export class Thread implements Executor {
         }
     }
 
-    async *execute (optree : OpTree) : OutputStream {
+    *execute (optree : OpTree) : Generator<Output, void, void> {
         let frame = this.frames[0] as StackFrame;
 
         if (frame == undefined) {
@@ -88,6 +88,7 @@ export class Thread implements Executor {
             if (opcode == undefined)
                 throw new Error(`Unlinked OP, no opcode (${op.name} = ${JSON.stringify(op.config)})`)
 
+            console.log(`\x1b[3${this.tid}m[${this.tid}] :: op[${op.name}]\x1b[0m`)
             let next_op = opcode(frame, op);
 
             if (next_op == undefined) {
@@ -98,6 +99,7 @@ export class Thread implements Executor {
             frame.current_op = next_op;
 
             if (this.output.pending) {
+                console.log(`PENDING I/O FOR ${this.tid}`);
                 yield this.output.flush() as Output;
             }
         }

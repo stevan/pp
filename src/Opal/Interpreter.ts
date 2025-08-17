@@ -19,6 +19,20 @@ export const defaultRuntimeConfig : RuntimeConfig = {
     resolver : (config, path) : InputSource => { return new FromFile(config.lib + path) },
 };
 
+export class SyncOutput {
+    constructor(
+        public prefix  : string = '',
+        public postfix : string = '') {}
+
+    async *run (source: Generator<Output, void, void>) : AsyncGenerator<void, void, void> {
+        //console.log(this.prefix, '... running', this.postfix)
+        for (const result of source) {
+            console.log(this.prefix, ...result, this.postfix);
+            yield new Promise<void>((r) => r());
+        }
+    }
+}
+
 export class Interpreter {
     public config  : RuntimeConfig;
     public linker  : Linker;
@@ -33,7 +47,7 @@ export class Interpreter {
         this.linker  = new Linker();
         this.root    = new SymbolTable('main');
         this.threads = new ThreadMap();
-        this.main    = this.initializeMainThread();
+        this.main    = this.createNewThread();
     }
 
     private loadConfig (config : RuntimeConfig) : RuntimeConfig {
@@ -41,7 +55,7 @@ export class Interpreter {
         return config;
     }
 
-    private initializeMainThread () : Thread {
+    private createNewThread () : Thread {
         let thread = new Thread(
             ++this.tid_seq,
             this.root,
@@ -59,8 +73,18 @@ export class Interpreter {
         yield* this.main.run(this.linker.link(tape.run()));
     }
 
-    execute (optree: OpTree) : OutputStream {
+    execute (optree: OpTree) : Generator<Output, void, void> {
         let linked = this.linker.linkOpTree(optree);
         return this.main.execute(linked);
+    }
+
+    spawn (optree : OpTree) : Promise<void> {
+        let linked = this.linker.linkOpTree(optree);
+        let thread = this.createNewThread();
+        let sync   = new SyncOutput(`${thread.tid}`, ';');
+        return new Promise<void>(async (resolve) => {
+            for await (const unit of sync.run(thread.execute(linked))) {}
+            resolve();
+        });
     }
 }

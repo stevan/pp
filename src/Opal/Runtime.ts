@@ -31,7 +31,7 @@ export interface Executor {
     output : OutputHandle;
 
     run     (source : OpTreeStream) : OutputStream;
-    execute (optree : OpTree)       : OutputStream;
+    execute (optree : OpTree)       : Generator<Output, void, void>;
 
     invokeCV (cv : CV, args : Any[]) : MaybeOP;
     returnFromCV () : MaybeOP;
