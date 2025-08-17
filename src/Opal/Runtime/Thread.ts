@@ -3,7 +3,7 @@ import { inspect } from "node:util"
 
 import { logger } from '../Tools'
 
-import { RuntimeConfig, OutputStream, InputSource, Output } from '../Types'
+import { RuntimeConfig, SyncOutputStream, OutputStream, InputSource, Output } from '../Types'
 import { OpTreeStream } from '../Compiler'
 import { StackFrame } from './StackFrame'
 import { Tape, Single, Mix } from './Tape'
@@ -69,7 +69,7 @@ export class Thread implements Executor {
         }
     }
 
-    *execute (optree : OpTree) : Generator<Output, void, void> {
+    *execute (optree : OpTree) : SyncOutputStream {
         let frame = this.frames[0] as StackFrame;
 
         if (frame == undefined) {

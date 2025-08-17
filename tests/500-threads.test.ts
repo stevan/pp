@@ -35,7 +35,6 @@ export class TestInput implements InputSource {
     }
 }
 
-
 let test001 = async () => {
 
     let parser      = new Parser();
@@ -62,21 +61,16 @@ let test001 = async () => {
         say 'Thread 2 - Completed';
     `]);
 
-    //let c1 = new ConsoleOutput('\x1b[34mT[001]:\x1b[31m', '\x1b[0m');
-    //let c2 = new ConsoleOutput('\x1b[31mT[002]:\x1b[34m', '\x1b[0m');
+    let c1 = new ConsoleOutput('\x1b[34mT[001]:\x1b[31m', '\x1b[0m');
+    let c2 = new ConsoleOutput('\x1b[31mT[002]:\x1b[34m', '\x1b[0m');
+
+    let t1 = compiler.compile(await parser.parse(thread1) as AST.Program);
+    let t2 = compiler.compile(await parser.parse(thread2) as AST.Program);
 
     await Promise.all([
-        parser.parse(thread1),
-        parser.parse(thread2),
-    ]).then(async (asts) => {
-        let t1 = compiler.compile(asts[0] as AST.Program);
-        let t2 = compiler.compile(asts[1] as AST.Program);
-
-        await Promise.all([
-            interpreter.spawn(t1 as OpTree),
-            interpreter.spawn(t2 as OpTree),
-        ])
-    });
+        interpreter.spawn(t1 as OpTree, c1),
+        interpreter.spawn(t2 as OpTree, c2),
+    ]);
 
 };
 

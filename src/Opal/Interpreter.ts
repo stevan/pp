@@ -1,5 +1,5 @@
 
-import { RuntimeConfig, OutputStream, InputSource, OutputSink, Output } from './Types'
+import { RuntimeConfig, SyncOutputStream, OutputStream, InputSource, OutputSink, Output } from './Types'
 import { OpTreeStream } from './Compiler'
 import { Executor, ThreadID } from './Runtime'
 import { Thread } from './Runtime/Thread'
@@ -18,20 +18,6 @@ export const defaultRuntimeConfig : RuntimeConfig = {
     lib      : './lib/',
     resolver : (config, path) : InputSource => { return new FromFile(config.lib + path) },
 };
-
-export class SyncOutput {
-    constructor(
-        public prefix  : string = '',
-        public postfix : string = '') {}
-
-    async *run (source: Generator<Output, void, void>) : AsyncGenerator<void, void, void> {
-        //console.log(this.prefix, '... running', this.postfix)
-        for (const result of source) {
-            console.log(this.prefix, ...result, this.postfix);
-            yield new Promise<void>((r) => r());
-        }
-    }
-}
 
 export class Interpreter {
     public config  : RuntimeConfig;
@@ -73,18 +59,14 @@ export class Interpreter {
         yield* this.main.run(this.linker.link(tape.run()));
     }
 
-    execute (optree: OpTree) : Generator<Output, void, void> {
+    execute (optree: OpTree) : SyncOutputStream {
         let linked = this.linker.linkOpTree(optree);
         return this.main.execute(linked);
     }
 
-    spawn (optree : OpTree) : Promise<void> {
+    spawn (optree : OpTree, output : OutputSink) : Promise<void> {
         let linked = this.linker.linkOpTree(optree);
         let thread = this.createNewThread();
-        let sync   = new SyncOutput(`${thread.tid}`, ';');
-        return new Promise<void>(async (resolve) => {
-            for await (const unit of sync.run(thread.execute(linked))) {}
-            resolve();
-        });
+        return output.sync(thread.execute(linked));
     }
 }

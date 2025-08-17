@@ -1,7 +1,7 @@
 
 import { inspect } from "node:util"
 
-import { RuntimeConfig, OutputStream, InputSource, Output } from './Types'
+import { RuntimeConfig, SyncOutputStream, OutputStream, InputSource, Output } from './Types'
 import { OpTreeStream } from './Compiler'
 import { StackFrame } from './Runtime/StackFrame'
 import { Tape, Single, Mix } from './Runtime/Tape'
@@ -31,7 +31,7 @@ export interface Executor {
     output : OutputHandle;
 
     run     (source : OpTreeStream) : OutputStream;
-    execute (optree : OpTree)       : Generator<Output, void, void>;
+    execute (optree : OpTree)       : SyncOutputStream;
 
     invokeCV (cv : CV, args : Any[]) : MaybeOP;
     returnFromCV () : MaybeOP;

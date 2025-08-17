@@ -21,11 +21,14 @@ export type LibResolver = (config : RuntimeConfig, path : string) => InputSource
 export type Input = string;
 export type Output = string[];
 
-export type InputStream  = AsyncGenerator<Input,   void, void>;
-export type OutputStream  = AsyncGenerator<Output, void, void>;
+export type SyncOutputStream = Generator<Output, void, void>;
+
+export type InputStream  = AsyncGenerator<Input,  void, void>;
+export type OutputStream = AsyncGenerator<Output, void, void>;
 
 export interface OutputSink {
-    run(source: OutputStream) : Promise<void>;
+    run  (source : OutputStream)     : Promise<void>;
+    sync (source : SyncOutputStream) : Promise<void>;
 }
 
 export interface InputSource {
