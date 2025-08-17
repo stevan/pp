@@ -151,6 +151,87 @@ export class Thread {
         return this.config.resolver(this.config, path);
     }
 
+    async *run (source : OpTreeStream) : OutputStream {
+        for await (const optree of source) {
+            // Run all the PRAGMAs before running
+            // the OpTree itself ...
+            while (optree.pragmas.length) {
+                let pragma   = optree.pragmas.pop() as PRAGMA;
+                let bareword = pragma.config.bareword;
+                switch (true) {
+                case bareword.startsWith('v'):
+                    break;
+                default:
+                    let src    = this.loadCode(`${pragma.config.bareword}.opal.pm`);
+                    let ot     = await pragma.resolver(src);
+                    let tape   = new Single(ot);
+                    yield* this.run(tape.run());
+                }
+            }
+
+            yield this.execute(optree);
+        }
+    }
+
+    execute (optree : OpTree) : Output {
+        let frame = this.frames[0] as StackFrame;
+
+        if (frame == undefined) {
+            frame = this.prepareRootFrame(optree);
+        }
+
+        frame.appendOpTree(optree);
+
+        while (frame.current_op != undefined) {
+
+            let op : MaybeOP = frame.current_op;
+            if (op == undefined)
+                throw new Error(`Expected an OP, and could not find one`);
+
+            let opcode = op.metadata.compiler.opcode;
+            if (opcode == undefined)
+                throw new Error(`Unlinked OP, no opcode (${op.name} = ${JSON.stringify(op.config)})`)
+
+            let next_op = opcode(frame, op);
+
+            if (next_op == undefined) {
+                break;
+            }
+
+            frame = this.frames[0] as StackFrame;
+            frame.current_op = next_op;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Frame handling
+    // -------------------------------------------------------------------------
+
+    private prepareRootFrame (optree : OpTree) : StackFrame {
+        let halt = new OP('halt', {});
+        // XXX: gross ... do better
+        halt.metadata.compiler.opcode = (i : StackFrame, op : OP) => undefined;
+
+        optree.leave.next = halt;
+
+        let frame = new StackFrame(
+            optree,
+            halt,
+            this,
+            undefined
+        );
+
+        optree.enter.config.name = '(main)';
+
+        this.frames.unshift(frame);
+
+        return frame;
+    }
+
+    // -------------------------------------------------------------------------
+    // CV handling
+    // -------------------------------------------------------------------------
+
     invokeCV (cv : CV, args : Any[]) : MaybeOP {
         let parent = this.frames[0] as StackFrame;
         let frame  = new StackFrame(
@@ -182,142 +263,6 @@ export class Thread {
         }
 
         return old.return_to;
-    }
-
-    private prepareRootFrame (optree : OpTree) : StackFrame {
-        let halt = new OP('halt', {});
-        // XXX: gross ... do better
-        halt.metadata.compiler.opcode = (i : StackFrame, op : OP) => undefined;
-
-        optree.leave.next = halt;
-
-        let frame = new StackFrame(
-            optree,
-            halt,
-            this,
-            undefined
-        );
-
-        optree.enter.config.name = '(main)';
-
-        this.frames.unshift(frame);
-
-        return frame;
-    }
-
-    async *run (source : OpTreeStream) : OutputStream {
-        for await (const optree of source) {
-            // Run all the PRAGMAs before running
-            // the OpTree itself ...
-            while (optree.pragmas.length) {
-                let pragma   = optree.pragmas.pop() as PRAGMA;
-                let bareword = pragma.config.bareword;
-                switch (true) {
-                case bareword.startsWith('v'):
-                    break;
-                default:
-                    let src    = this.loadCode(`${pragma.config.bareword}.opal.pm`);
-                    let ot     = await pragma.resolver(src);
-                    let tape   = new Single(ot);
-                    yield* this.run(tape.run());
-                }
-            }
-
-            yield this.execute(optree);
-        }
-
-        if (this.config.DEBUG) {
-            logger.log('HALT!');
-        }
-    }
-
-    execute (optree : OpTree) : Output {
-        let frame = this.frames[0] as StackFrame;
-        if (frame == undefined) {
-            frame = this.prepareRootFrame(optree);
-        }
-
-        frame.appendOpTree(optree);
-
-        let depth = this.frames.length;
-        while (frame.current_op != undefined) {
-
-            let op : MaybeOP = frame.current_op;
-            if (op == undefined) throw new Error(`Expected an OP, and could not find one`);
-
-            let opcode = op.metadata.compiler.opcode;
-            if (opcode == undefined)
-                throw new Error(`Unlinked OP, no opcode (${op.name} = ${JSON.stringify(op.config)})`)
-
-            depth = this.frames.length
-
-            if (this.config.DEBUG) {
-                logger.group(`\x1b[36m${frame.optree.enter.config.name}\x1b[0m ->[\x1b[33m${op.name}\x1b[0m, \x1b[36m${op.metadata.uid}\x1b[0m]`);
-            }
-
-            let next_op = opcode(frame, op);
-
-            if (next_op == undefined) {
-                if (this.config.DEBUG) logger.groupEnd();
-                break;
-            }
-
-            if (this.config.DEBUG) {
-                let avail_width = (process.stdout.columns - (this.frames.length * 2)) - 2;
-
-                if (this.frames.length > depth) {
-                    logger.log('\x1b[32m╭─' + '─'.repeat(avail_width) + '\x1b[0m');
-                    logger.log(
-                        `\x1b[32m│ \x1b[42m\x1b[30m ${this.frames[0]?.optree.enter.config.name} ▼ \x1b[0m`,
-                        this.frames[0]?.stack
-                    );
-                    logger.group('\x1b[32m╰─' + '─'.repeat(avail_width) + '\x1b[0m');
-                }
-                else if (this.frames.length < depth) {
-                    logger.groupEnd();
-                    logger.log('\x1b[33m╭─' + '─'.repeat(avail_width) + '\x1b[0m');
-                    logger.log(
-                        `\x1b[33m│ \x1b[43m\x1b[30m ${this.frames[0]?.optree.enter.config.name} ▲ \x1b[0m`,
-                        this.frames[0]?.stack
-                    );
-                    logger.log('\x1b[33m╰─' + '─'.repeat(avail_width) + '\x1b[0m');
-                } else {
-
-                    logger.log('\x1b[34m├─\x1b[35m stack :\x1b[0m', frame.stack.toReversed());
-                    logger.log('\x1b[34m╰──\x1b[35m pads :\x1b[0m', frame.padlist);
-                }
-                logger.groupEnd();
-            }
-
-            frame = this.frames[0] as StackFrame;
-            frame.current_op = next_op;
-        }
-
-
-        if (this.STD_buffer.length > 0) {
-            return this.STD_buffer.splice(0).map((pv) => pv.value);
-        }
-        else if (this.ERR_buffer.length > 0) {
-            return this.ERR_buffer.splice(0).map((pv) => pv.value);
-        }
-        else {
-            return [] as Output;
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // I/O
-    // -------------------------------------------------------------------------
-
-    public STD_buffer : PV[] = [];
-    public ERR_buffer : PV[] = [];
-
-    toSTDOUT (args : PV[]) : void {
-        this.STD_buffer.push(...args);
-    }
-
-    toSTDERR (args : PV[]) : void {
-        this.ERR_buffer.push(...args);
     }
 
 }

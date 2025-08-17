@@ -1,4 +1,6 @@
 
+import { Process } from 'process'
+
 import { RuntimeConfig, OutputStream, InputSource, OutputSink, Output } from './Types'
 import { OpTreeStream } from './Compiler'
 import { Thread, ThreadID } from './Runtime'
@@ -25,6 +27,7 @@ export class Interpreter {
     public root    : SymbolTable;
     public threads : ThreadMap;
 
+    private process : Process;
     private tid_seq : ThreadID = 0;
 
     constructor (config : RuntimeConfig = defaultRuntimeConfig) {
@@ -33,6 +36,7 @@ export class Interpreter {
         this.root    = new SymbolTable('main');
         this.threads = new ThreadMap();
         this.main    = this.initializeMainThread();
+        this.process = process;
     }
 
     private loadConfig (config : RuntimeConfig) : RuntimeConfig {
@@ -61,9 +65,5 @@ export class Interpreter {
     execute (optree: OpTree) : Output {
         let linked = this.linker.linkOpTree(optree);
         return this.main.execute(linked);
-    }
-
-    get STDOUT() : any[] {
-        return this.main.STD_buffer.map((pv : PV) => pv.value);
     }
 }
