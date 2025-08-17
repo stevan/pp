@@ -1,14 +1,14 @@
 
-import { Source, SourceStream, InputSource } from '../Types'
+import { Input, InputStream, InputSource } from '../Types'
 
 export class FromArray implements InputSource {
-    public sources : Source[];
+    public sources : Input[];
 
-    constructor (srcs : Source[]) {
+    constructor (srcs : Input[]) {
         this.sources = srcs;
     }
 
-    async *run () : SourceStream {
+    async *run () : InputStream {
         for (const source of this.sources) {
             yield source;
         }

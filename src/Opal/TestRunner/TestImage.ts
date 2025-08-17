@@ -2,7 +2,7 @@ import assert from "node:assert"
 
 import { logger } from '../Tools'
 
-import { OutputStream, OutputSink, SourceStream, InputSource, RuntimeConfig } from '../Types'
+import { OutputStream, OutputSink, InputStream, InputSource, RuntimeConfig } from '../Types'
 import { FromArray } from '../Input/FromArray'
 import { FromFile  } from '../Input/FromFile'
 import { Parser, ASTNodeStream }  from '../Parser'
@@ -46,7 +46,7 @@ export class TestImage {
         this.output      = new TestOutput();
     }
 
-    async *executeParser (input : SourceStream) : ASTNodeStream {
+    async *executeParser (input : InputStream) : ASTNodeStream {
         try {
             yield* this.parser.run(input)
         } catch (e) {

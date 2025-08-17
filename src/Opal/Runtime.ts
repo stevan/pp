@@ -13,7 +13,7 @@ import { RuntimeConfig, OutputStream, InputSource, Output } from './Types'
 import { OpTreeStream } from './Compiler'
 import { Tape, Single, Mix } from './Runtime/Tape'
 import {
-    Any, PV, CV, GV,
+    Any, PV, CV, GV, AnytoPV,
     PRAGMA,
     OP, MaybeOP, OpTree,
 } from './Runtime/API'
@@ -134,17 +134,36 @@ export class StackFrame {
 
 // -----------------------------------------------------------------------------
 
+export class OutputHandle {
+    public buffer : Any[] = [];
+
+    write ( args : Any[] ) : void {
+        this.buffer.push(...args);
+    }
+
+    get pending () : boolean { return this.buffer.length < 0 }
+
+    flush () : Output {
+        return this.buffer.splice(0)
+                          .map((sv) => AnytoPV(sv))
+                          .flat(1)
+                          .map((pv) => pv.value);
+    }
+}
+
 export class Thread {
     public config  : RuntimeConfig;
     public tid     : ThreadID;
     public frames  : StackFrame[];
     public root    : SymbolTable;
+    public output  : OutputHandle;
 
     constructor (tid : ThreadID, root : SymbolTable, config : RuntimeConfig) {
         this.config  = config;
         this.tid     = tid;
         this.frames  = [];
         this.root    = root;
+        this.output  = new OutputHandle();
     }
 
     loadCode (path : string) : InputSource {
@@ -200,7 +219,13 @@ export class Thread {
 
             frame = this.frames[0] as StackFrame;
             frame.current_op = next_op;
+
+            if (this.output.pending) {
+                return this.output.flush();
+            }
         }
+
+        return this.output.flush();
     }
 
     // -------------------------------------------------------------------------

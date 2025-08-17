@@ -18,10 +18,10 @@ export type LibResolver = (config : RuntimeConfig, path : string) => InputSource
 // Source & Sink
 // -----------------------------------------------------------------------------
 
-export type Source = string;
+export type Input = string;
 export type Output = string[];
 
-export type SourceStream  = AsyncGenerator<Source,   void, void>;
+export type InputStream  = AsyncGenerator<Input,   void, void>;
 export type OutputStream  = AsyncGenerator<Output, void, void>;
 
 export interface OutputSink {
@@ -29,7 +29,7 @@ export interface OutputSink {
 }
 
 export interface InputSource {
-    run() : SourceStream;
+    run() : InputStream;
 }
 
 // -----------------------------------------------------------------------------

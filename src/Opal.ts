@@ -7,7 +7,7 @@ import {
 } from './Opal/Tools'
 
 import {
-    SourceStream,
+    InputStream,
     OutputStream,
 
     InputSource,
@@ -60,7 +60,7 @@ export class Opal {
                         this.monitorParseTreeStream(this.treeParser.run(
                             this.monitorLexedStream(this.lexer.run(
                                 this.monitorTokenStream(this.tokenizer.run(
-                                    this.monitorSourceStream(this.input.run())
+                                    this.monitorInputStream(this.input.run())
                                 ))
                             ))
                         ))
@@ -136,7 +136,7 @@ export class Opal {
         }
     }
 
-    async *monitorSourceStream (source: SourceStream) : SourceStream {
+    async *monitorInputStream (source: InputStream) : InputStream {
         let label = '*SOURCE*';
         for await (const src of source) {
             monitorLog.group(`<${label}> ▶───╮`);

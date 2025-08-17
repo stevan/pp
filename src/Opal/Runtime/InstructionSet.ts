@@ -86,7 +86,7 @@ export function loadInstructionSet () : InstructionSet {
         // see notes in Tools.ts
         walkTraversalOrder(prettyPrinter, cv.contents.leave);
 
-        i.executor().toSTDOUT( args.map((arg) => AnytoPV(arg)).flat(1) );
+        i.executor().output.write( args );
         return op.next;
     });
 
@@ -232,17 +232,13 @@ export function loadInstructionSet () : InstructionSet {
 
     opcodes.set('print', (i, op) => {
         let args = collectArgumentsFromStack(i);
-        i.executor().toSTDOUT(
-            args.map((arg) => AnytoPV(arg)).flat(1)
-        );
+        i.executor().output.write( args );
         return op.next;
     });
 
     opcodes.set('say', (i, op) => {
         let args = collectArgumentsFromStack(i);
-        i.executor().toSTDOUT(
-            args.map((arg) => AnytoPV(arg)).flat(1),
-        );
+        i.executor().output.write( args );
         return op.next;
     });
 

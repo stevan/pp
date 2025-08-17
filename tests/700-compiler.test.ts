@@ -2,7 +2,7 @@
 import { test } from "node:test"
 import  assert  from "node:assert"
 
-import { InputSource, SourceStream } from '../src/Opal/Types'
+import { InputSource, InputStream } from '../src/Opal/Types'
 import { Parser } from '../src/Opal/Parser'
 import { Compiler } from '../src/Opal/Compiler'
 import { OpTree } from '../src/Opal/Runtime/API'
@@ -12,7 +12,7 @@ import * as AST from '../src/Opal/Parser/AST'
 export class TestInput implements InputSource {
     constructor(public source : string[]) {}
 
-    async *run() : SourceStream {
+    async *run() : InputStream {
         let i = 0;
         while (i < this.source.length) {
             yield this.source[i] as string;

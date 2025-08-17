@@ -1,14 +1,14 @@
 
-import { Source, SourceStream, InputSource } from '../Types'
+import { Input, InputStream, InputSource } from '../Types'
 
 export class FromString implements InputSource {
-    public source : Source;
+    public source : Input;
 
-    constructor (src : Source) {
+    constructor (src : Input) {
         this.source = src;
     }
 
-    async *run () : SourceStream {
+    async *run () : InputStream {
         yield this.source;
     }
 }

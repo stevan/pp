@@ -95,7 +95,7 @@ DistributesASTCache.run(
             // Step 2. tokenize each chunk and streams it to Step 3.
             tokenizer.run(
                 // Step 1. fetches from git server and streams to Step 2.
-                GitService.getSourceStream(
+                GitService.getInputStream(
                     'http://git.foo.com/-/main/lib/Foo.pm',
                     { 
                         // 1a. send 1000 characters at a time ...

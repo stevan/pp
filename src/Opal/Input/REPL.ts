@@ -2,7 +2,7 @@ import * as readline from 'readline';
 
 import {
     InputSource,
-    SourceStream,
+    InputStream,
 } from '../Types'
 
 export class REPL implements InputSource {
@@ -17,7 +17,7 @@ export class REPL implements InputSource {
         });
     }
 
-    async *run() : SourceStream {
+    async *run() : InputStream {
         process.stdout.write([
 "    ▄▄               ▖ ",
 "   ▟▜▜█▖           ▝▟  ",

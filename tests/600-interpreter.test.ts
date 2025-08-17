@@ -9,7 +9,7 @@ import {
 
 import { walkExecOrder, walkTraversalOrder } from '../src/Opal/Compiler/OpTreeWalker'
 
-import { InputSource, SourceStream } from '../src/Opal/Types'
+import { InputSource, InputStream } from '../src/Opal/Types'
 import { Parser } from '../src/Opal/Parser'
 import { Compiler } from '../src/Opal/Compiler'
 import { Interpreter } from '../src/Opal/Interpreter'
@@ -25,7 +25,7 @@ import * as AST from '../src/Opal/Parser/AST'
 export class TestInput implements InputSource {
     constructor(public source : string[]) {}
 
-    async *run() : SourceStream {
+    async *run() : InputStream {
         let i = 0;
         while (i < this.source.length) {
             yield this.source[i] as string;

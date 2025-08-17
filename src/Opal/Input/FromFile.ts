@@ -2,7 +2,7 @@
 import * as readline from 'readline';
 import * as fs       from 'fs';
 
-import { Source, SourceStream, InputSource } from '../Types'
+import { Input, InputStream, InputSource } from '../Types'
 
 export class FromFile implements InputSource {
     public path : string;
@@ -11,8 +11,8 @@ export class FromFile implements InputSource {
         this.path = path;
     }
 
-    async *run () : SourceStream {
-        yield new Promise<Source>((resolve) => {
+    async *run () : InputStream {
+        yield new Promise<Input>((resolve) => {
             fs.readFile(this.path, 'utf8', (err, data) => {
                 if (err) throw new Error(`Got error ${err}`);
                 //console.log("GOT DATA", data);

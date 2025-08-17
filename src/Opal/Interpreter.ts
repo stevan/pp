@@ -1,6 +1,4 @@
 
-import { Process } from 'process'
-
 import { RuntimeConfig, OutputStream, InputSource, OutputSink, Output } from './Types'
 import { OpTreeStream } from './Compiler'
 import { Thread, ThreadID } from './Runtime'
@@ -27,7 +25,7 @@ export class Interpreter {
     public root    : SymbolTable;
     public threads : ThreadMap;
 
-    private process : Process;
+    private process : NodeJS.Process;
     private tid_seq : ThreadID = 0;
 
     constructor (config : RuntimeConfig = defaultRuntimeConfig) {

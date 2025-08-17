@@ -1,5 +1,5 @@
 
-import { SourceStream } from '../Types'
+import { InputStream } from '../Types'
 
 const IS_NUMBER   = /^-?[0-9][0-9_]*(\.[0-9]+)?$/;
 const IS_STRING   = /^"[^"\n]*"|'[^'\n]*'$/;
@@ -20,7 +20,7 @@ export type TokenStream = AsyncGenerator<Token, void, void>;
 
 export class Tokenizer {
 
-    async *run (source : SourceStream) : TokenStream {
+    async *run (source : InputStream) : TokenStream {
 
         const SPLITTER = /\+\{|\+\[|[\;\,\[\]\{\}\(\)]{1}|"([^"])*"|'([^'])*'|[^\;\s\,\[\]\{\}\(\)]+/g;
 

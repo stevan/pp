@@ -1,6 +1,6 @@
 
 import { ParserConfig,
-         InputSource, SourceStream    } from './Types'
+         InputSource, InputStream    } from './Types'
 import { Tokenizer,   TokenStream     } from './Parser/Tokenizer'
 import { Lexer,       LexedStream     } from './Parser/Lexer'
 import { TreeParser,  ParseTreeStream } from './Parser/TreeParser'
@@ -26,7 +26,7 @@ export class Parser {
         this.builder     = new ASTBuilder();
     }
 
-    async *run (source : SourceStream) : ASTNodeStream {
+    async *run (source : InputStream) : ASTNodeStream {
         for await (const node of
             this.builder.run(
             this.treeParser.run(
