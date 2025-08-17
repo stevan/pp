@@ -17,6 +17,8 @@ import { Linker } from '../src/Opal/Runtime/Linker'
 import { Mix } from '../src/Opal/Runtime/Tape'
 import { ConsoleOutput } from '../src/Opal/Output/ConsoleOutput'
 
+import { TestOutput } from '../src/Opal/TestRunner/TestImage'
+
 import {
     PRAGMA, OpTree
 } from '../src/Opal/Runtime/API'
@@ -35,7 +37,7 @@ export class TestInput implements InputSource {
     }
 }
 
-let test001 = async () => {
+test('... testing by-hand interpreter thread usage', async (t) => {
 
     let parser      = new Parser();
     let compiler    = new Compiler();
@@ -61,18 +63,35 @@ let test001 = async () => {
         say 'Thread 2 - Completed';
     `]);
 
-    let c1 = new ConsoleOutput('\x1b[34mT[001]:\x1b[31m', '\x1b[0m');
-    let c2 = new ConsoleOutput('\x1b[31mT[002]:\x1b[34m', '\x1b[0m');
+    let output = new TestOutput();
 
     let t1 = compiler.compile(await parser.parse(thread1) as AST.Program);
     let t2 = compiler.compile(await parser.parse(thread2) as AST.Program);
 
     await Promise.all([
-        interpreter.spawn(t1 as OpTree, c1),
-        interpreter.spawn(t2 as OpTree, c2),
+        interpreter.spawn(t1 as OpTree, output),
+        interpreter.spawn(t2 as OpTree, output),
     ]);
 
-};
+    assert.deepStrictEqual(
+        output.flush(),
+        [
+          'Thread 1 - Starting',  'Thread 2 - Starting',
+          'Thread 1 - Got 10',    'Thread 2 - Got 10',
+          'Thread 1 - Got 9',     'Thread 2 - Got 9',
+          'Thread 1 - Got 8',     'Thread 2 - Got 8',
+          'Thread 1 - Got 7',     'Thread 2 - Got 7',
+          'Thread 1 - Got 6',     'Thread 2 - Got 6',
+          'Thread 1 - Got 5',     'Thread 2 - Got 5',
+          'Thread 1 - Got 4',     'Thread 2 - Got 4',
+          'Thread 1 - Got 3',     'Thread 2 - Got 3',
+          'Thread 1 - Got 2',     'Thread 2 - Got 2',
+          'Thread 1 - Got 1',     'Thread 2 - Got 1',
+          'Thread 1 - Completed', 'Thread 2 - Completed'
+        ],
+        '... got the output ordered as expected'
+    );
 
-test001();
+});
+
 
