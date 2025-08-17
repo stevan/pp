@@ -7,7 +7,7 @@
 
 import { prettyPrinter } from '../Tools'
 import { walkTraversalOrder } from '../Compiler/OpTreeWalker'
-import { Opcode, StackFrame } from '../Runtime'
+import { StackFrame } from '../Runtime/StackFrame'
 import {
     Any, IV, NV, PV, CV,
 
@@ -33,6 +33,10 @@ import {
 // -----------------------------------------------------------------------------
 // the instruction set ...
 // -----------------------------------------------------------------------------
+
+export type Opcode = (i : StackFrame, op : OP) => MaybeOP
+
+export type MaybeOpcode = Opcode | undefined
 
 export class InstructionSet extends Map<string, Opcode> {}
 

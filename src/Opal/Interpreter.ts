@@ -1,7 +1,8 @@
 
 import { RuntimeConfig, OutputStream, InputSource, OutputSink, Output } from './Types'
 import { OpTreeStream } from './Compiler'
-import { Thread, ThreadID } from './Runtime'
+import { Executor, ThreadID } from './Runtime'
+import { Thread } from './Runtime/Thread'
 import { SymbolTable } from './Runtime/SymbolTable'
 import { OpTree, PV } from './Runtime/API'
 import { FromFile } from './Input/FromFile'

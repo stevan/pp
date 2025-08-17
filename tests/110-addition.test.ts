@@ -6,7 +6,7 @@ import {
     TestImage, TestResult, TestInput,
 } from '../src/Opal/TestRunner/TestImage'
 
-import { Pad, StackFrame }    from '../src/Opal/Runtime'
+import { Pad, StackFrame }    from '../src/Opal/Runtime/StackFrame'
 import { IV }                 from '../src/Opal/Runtime/API'
 
 test("... addition test", async (t) => {
