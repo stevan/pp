@@ -38,6 +38,25 @@ export class Pad extends Map<string, Any> {
 
 // -----------------------------------------------------------------------------
 
+export class OutputHandle {
+    public buffer : Any[] = [];
+
+    write ( args : Any[] ) : void {
+        this.buffer.push(...args);
+    }
+
+    get pending () : boolean { return this.buffer.length < 0 }
+
+    flush () : Output {
+        return this.buffer.splice(0)
+                          .map((sv) => AnytoPV(sv))
+                          .flat(1)
+                          .map((pv) => pv.value);
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 export class StackFrame {
     public stack      : Any[];
     public padlist    : Pad[];
@@ -133,23 +152,6 @@ export class StackFrame {
 }
 
 // -----------------------------------------------------------------------------
-
-export class OutputHandle {
-    public buffer : Any[] = [];
-
-    write ( args : Any[] ) : void {
-        this.buffer.push(...args);
-    }
-
-    get pending () : boolean { return this.buffer.length < 0 }
-
-    flush () : Output {
-        return this.buffer.splice(0)
-                          .map((sv) => AnytoPV(sv))
-                          .flat(1)
-                          .map((pv) => pv.value);
-    }
-}
 
 export class Thread {
     public config  : RuntimeConfig;
