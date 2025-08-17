@@ -33,6 +33,9 @@ test("... who tests the tester", async (t) => {
                 "ok 5 ... pass",
                 "ok 6 ... pass",
                 "not ok 7 ... fail",
+                "# Failed test ... fail",
+                "#        got: 200",
+                "#   expected: 100",
                 "ok 8 ... pass",
             ],
             '... got the correct output'

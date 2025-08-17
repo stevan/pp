@@ -4,9 +4,9 @@
     "typescript": "^5.5.2"
   },
   "scripts": {
-    "build": "rm -rf ./js && tsc",
-    "repl" : "tsc && node js/bin/repl.js",
-    "test" : "tsc && node --test js/tests/*.test.js",
-    "prove" : "tsc && node js/bin/prove.js"
+    "repl"  : "tsc && node js/bin/repl.js",
+    "build" : "rm -rf ./js && tsc",
+    "test"  : "rm -rf ./js && tsc && node --test js/tests/*.test.js",
+    "prove" : "rm -rf ./js && tsc && node js/bin/prove.js"
   }
 }

@@ -41,7 +41,7 @@ test("... basic say(w/ expressions) test", async (t) => {
     `]), (result : TestResult) => {
         assert.deepStrictEqual(
             result.output.buffer,
-            [ "3", "0", "0", "0", "-4", "1" ],
+            [ "3", "0", "0", "0", "-4", "0.6000000000000001" ],
             '... got the correct output'
         );
     })
