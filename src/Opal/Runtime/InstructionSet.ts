@@ -432,6 +432,8 @@ export function loadInstructionSet () : InstructionSet {
         return op.next;
     });
 
+    opcodes.set('!', opcodes.get('not') as Opcode);
+
     opcodes.set('defined', (i, op) => {
         let rhs = i.stack.pop() as Any;
         i.stack.push( isUndef(rhs) ? SV_False : SV_True );
