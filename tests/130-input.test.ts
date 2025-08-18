@@ -30,8 +30,7 @@ export class TestInput implements InputSource {
     }
 }
 
-
-const test001 = async () => {
+test('... testing standard input, needs to be tested by hand', async (t) => {
 
     let parser      = new Parser();
     let compiler    = new Compiler();
@@ -45,24 +44,22 @@ const test001 = async () => {
 
     parser.parse(source).then(async (ast) => {
         assert.ok(ast instanceof AST.Program, '... it is an AST.Program');
-        console.log('(main) AST', JSON.stringify(ast, null, 2));
+        //console.log('(main) AST', JSON.stringify(ast, null, 2));
 
         let optree = compiler.compile(ast);
-        console.log('(main) OpTree', optree);
+        //console.log('(main) OpTree', optree);
 
-        console.log('(main):');
-        console.log('EXEC:');
-        walkExecOrder(prettyPrinter, optree.enter);
-        console.log('TREE:');
-        walkTraversalOrder(prettyPrinter, optree.leave);
+        //console.log('(main):');
+        //console.log('EXEC:');
+        //walkExecOrder(prettyPrinter, optree.enter);
+        //console.log('TREE:');
+        //walkTraversalOrder(prettyPrinter, optree.leave);
 
-        for await (const out of interpreter.play(new Single(optree))) {
-            console.log('MAIN - GOT', out);
-        }
-
+        //for await (const out of interpreter.play(new Single(optree))) {
+        //    console.log('GOT', out);
+        //}
 
     });
-};
+});
 
-test001();
 

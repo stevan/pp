@@ -1,5 +1,5 @@
 
-import { RuntimeConfig, OutputStream, InputSource, OutputSink, Output, IOControlStream } from './Types'
+import { RuntimeConfig, OutputStream, InputSource, OutputSink, Output } from './Types'
 import { OpTreeStream } from './Compiler'
 import { Executor, ThreadID } from './Runtime'
 import { Thread } from './Runtime/Thread'

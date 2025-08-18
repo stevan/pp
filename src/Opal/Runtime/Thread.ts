@@ -36,7 +36,6 @@ export class BasicInput implements InputHandle {
                         break;
                     }
                 }
-
                 this.buffer.push(newPV(Buffer.concat(chunks).toString('utf8')));
                 resolve();
             });
