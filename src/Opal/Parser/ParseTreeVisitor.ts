@@ -1,4 +1,9 @@
 
+import {
+    logger,
+    prettyPrinter,
+} from '../Tools'
+
 import { ParseTree } from './TreeParser'
 
 import { Node } from './AST'
@@ -6,6 +11,7 @@ import { Node } from './AST'
 export type ParseTreeVisitor = (tree: ParseTree, children: Node[], depth : number) => Node;
 
 export function visitParseTree (tree: ParseTree, visitor: ParseTreeVisitor, depth : number = 0) : Node {
+    //logger.log(tree);
     switch (tree.type) {
     case 'TERM':
         return visitor(tree, [], depth);

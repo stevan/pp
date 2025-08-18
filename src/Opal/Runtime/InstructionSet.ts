@@ -234,6 +234,12 @@ export function loadInstructionSet () : InstructionSet {
     // Builtins
     // ---------------------------------------------------------------------
 
+    opcodes.set('readline', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+        i.executor().input.read();
+        return op.next;
+    });
+
     opcodes.set('print', (i, op) => {
         let args = collectArgumentsFromStack(i);
         i.executor().output.write( args );

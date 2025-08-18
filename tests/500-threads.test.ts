@@ -7,16 +7,10 @@ import {
     prettyPrinter,
 } from '../src/Opal/Tools'
 
-import { walkExecOrder, walkTraversalOrder } from '../src/Opal/Compiler/OpTreeWalker'
-
 import { InputSource, InputStream } from '../src/Opal/Types'
 import { Parser } from '../src/Opal/Parser'
 import { Compiler } from '../src/Opal/Compiler'
 import { Interpreter } from '../src/Opal/Interpreter'
-import { Linker } from '../src/Opal/Runtime/Linker'
-import { Mix } from '../src/Opal/Runtime/Tape'
-import { ConsoleOutput } from '../src/Opal/Output/ConsoleOutput'
-
 import { TestOutput } from '../src/Opal/TestRunner/TestImage'
 
 import {
@@ -69,8 +63,8 @@ test('... testing by-hand interpreter thread usage', async (t) => {
     let t2 = compiler.compile(await parser.parse(thread2) as AST.Program);
 
     await Promise.all([
-        interpreter.spawn(t1 as OpTree, output),
-        interpreter.spawn(t2 as OpTree, output),
+        output.run(interpreter.spawn(t1 as OpTree)),
+        output.run(interpreter.spawn(t2 as OpTree)),
     ]);
 
     assert.deepStrictEqual(

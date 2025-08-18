@@ -2,7 +2,7 @@ import assert from "node:assert"
 
 import { logger } from '../Tools'
 
-import { SyncOutputStream, OutputStream, OutputSink, InputStream, InputSource, RuntimeConfig } from '../Types'
+import { OutputStream, OutputSink, InputStream, InputSource, RuntimeConfig } from '../Types'
 import { FromArray } from '../Input/FromArray'
 import { FromFile  } from '../Input/FromFile'
 import { Parser, ASTNodeStream }  from '../Parser'
@@ -20,17 +20,6 @@ export class TestOutput implements OutputSink {
         for await (const result of source) {
             this.buffer.push(...result);
         }
-    }
-
-    async *syncronize (source: SyncOutputStream) : AsyncGenerator<void, void, void> {
-        for (const result of source) {
-            this.buffer.push(...result);
-            yield new Promise<void>((r) => r());
-        }
-    }
-
-    async sync (source: SyncOutputStream) : Promise<void> {
-        for await (const nil of this.syncronize(source)) {}
     }
 }
 

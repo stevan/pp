@@ -1,5 +1,5 @@
 
-import { RuntimeConfig, SyncOutputStream, OutputStream, InputSource, OutputSink, Output } from './Types'
+import { RuntimeConfig, OutputStream, InputSource, OutputSink, Output, IOControlStream } from './Types'
 import { OpTreeStream } from './Compiler'
 import { Executor, ThreadID } from './Runtime'
 import { Thread } from './Runtime/Thread'
@@ -59,14 +59,9 @@ export class Interpreter {
         yield* this.main.run(this.linker.link(tape.run()));
     }
 
-    execute (optree: OpTree) : SyncOutputStream {
-        let linked = this.linker.linkOpTree(optree);
-        return this.main.execute(linked);
-    }
-
-    spawn (optree : OpTree, output : OutputSink) : Promise<void> {
+    spawn (optree : OpTree) : OutputStream {
         let linked = this.linker.linkOpTree(optree);
         let thread = this.createNewThread();
-        return output.sync(thread.execute(linked));
+        return thread.process(thread.execute(linked));
     }
 }

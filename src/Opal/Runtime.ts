@@ -1,7 +1,7 @@
 
 import { inspect } from "node:util"
 
-import { RuntimeConfig, SyncOutputStream, OutputStream, InputSource, Output } from './Types'
+import { RuntimeConfig, IOControlStream, OutputStream, InputSource, Output } from './Types'
 import { OpTreeStream } from './Compiler'
 import { StackFrame } from './Runtime/StackFrame'
 import { Tape, Single, Mix } from './Runtime/Tape'
@@ -23,15 +23,24 @@ export interface OutputHandle {
     flush () : Output;
 }
 
+export interface InputHandle {
+    pending    : boolean;
+    read    () : void;
+    capture () : Promise<void>;
+    drain   () : PV[];
+}
+
 export interface Executor {
     config : RuntimeConfig;
     tid    : ThreadID;
     frames : StackFrame[];
     root   : SymbolTable;
+
+    input  : InputHandle;
     output : OutputHandle;
 
     run     (source : OpTreeStream) : OutputStream;
-    execute (optree : OpTree)       : SyncOutputStream;
+    execute (optree : OpTree)       : IOControlStream;
 
     invokeCV (cv : CV, args : Any[]) : MaybeOP;
     returnFromCV () : MaybeOP;

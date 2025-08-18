@@ -102,6 +102,7 @@ export class TreeParser {
         while (expr.opers.length > 0) {
             let op = expr.opers.pop() as Operation;
             if (op.operator.type == 'BINOP') {
+                //logger.log("PROCEEING BINOP!", op, expr.stack);
                 let rhs = expr.stack.pop() as Term;
                 let lhs = expr.stack.pop() as Term;
                 op.operands.push(lhs, rhs);
@@ -110,7 +111,8 @@ export class TreeParser {
                 op.operands.push(expr.stack.pop() as Term);
             }
             else if (op.operator.type == 'LISTOP') {
-                op.operands.push(...(expr.stack.splice(0) as Term[]));
+                //logger.log("PROCEEING LISTOP!", op, expr.stack);
+                op.operands.push(expr.stack.pop() as Term);
             }
             else {
                 throw new Error('NEVER HAPPENS!');

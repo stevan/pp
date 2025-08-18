@@ -3,17 +3,51 @@ import { inspect } from "node:util"
 
 import { logger } from '../Tools'
 
-import { RuntimeConfig, SyncOutputStream, OutputStream, InputSource, Output } from '../Types'
+import { RuntimeConfig, OutputStream, InputSource, Output, IOControlStream } from '../Types'
 import { OpTreeStream } from '../Compiler'
 import { StackFrame } from './StackFrame'
 import { Tape, Single, Mix } from './Tape'
 import {
-    Any, PV, CV, GV, AnytoPV,
+    Any, PV, CV, GV, AnytoPV, newPV,
     PRAGMA,
     OP, MaybeOP, OpTree,
 } from './API'
 import { SymbolTable } from './SymbolTable'
-import { Executor, ThreadID, OutputHandle } from '../Runtime'
+import { Executor, ThreadID, OutputHandle, InputHandle } from '../Runtime'
+
+export class BasicInput implements InputHandle {
+    public buffer  : PV[] = [];
+    public pending : boolean = false; // make this length ...
+
+    read () : void {
+        this.pending = true;
+    }
+
+    capture () : Promise<void> {
+        return new Promise<void>((resolve) => {
+            let chunks : Buffer[] = [];
+
+            process.stdin.on('readable', () => {
+                let chunk;
+                while (null !== (chunk = process.stdin.read())) {
+                    chunks.push(chunk);
+                    if (chunk.indexOf('\n') != -1) {
+                        //console.log('Got EOL');
+                        break;
+                    }
+                }
+
+                this.buffer.push(newPV(Buffer.concat(chunks).toString('utf8')));
+                resolve();
+            });
+        });
+    }
+
+    drain () : PV[] {
+        this.pending = false;
+        return this.buffer.splice(0);
+    }
+}
 
 export class BasicOutput implements OutputHandle {
     public buffer : Any[] = [];
@@ -37,6 +71,7 @@ export class Thread implements Executor {
     public tid     : ThreadID;
     public frames  : StackFrame[];
     public root    : SymbolTable;
+    public input   : InputHandle;
     public output  : OutputHandle;
 
     constructor (tid : ThreadID, root : SymbolTable, config : RuntimeConfig) {
@@ -44,6 +79,7 @@ export class Thread implements Executor {
         this.tid     = tid;
         this.frames  = [];
         this.root    = root;
+        this.input   = new BasicInput();
         this.output  = new BasicOutput();
     }
 
@@ -58,18 +94,33 @@ export class Thread implements Executor {
                 case bareword.startsWith('v'):
                     break;
                 default:
-                    let src    = this.loadCode(`${pragma.config.bareword}.opal.pm`);
-                    let ot     = await pragma.resolver(src);
-                    let tape   = new Single(ot);
+                    let src  = this.loadCode(`${pragma.config.bareword}.opal.pm`);
+                    let ot   = await pragma.resolver(src);
+                    let tape = new Single(ot);
                     yield* this.run(tape.run());
                 }
             }
 
-            yield* this.execute(optree);
+            yield* this.process(this.execute(optree));
         }
     }
 
-    *execute (optree : OpTree) : SyncOutputStream {
+    async *process (control : IOControlStream) : OutputStream {
+        for (const ctrl of control) {
+            switch (ctrl.type) {
+            case 'INPUT':
+                await this.input.capture();
+                break;
+            case 'OUTPUT':
+                yield this.output.flush();
+                break;
+            default:
+                throw new Error('ONLY I and O WHATR YOU THINKING MAN!')
+            }
+        }
+    }
+
+    *execute (optree : OpTree) : IOControlStream {
         let frame = this.frames[0] as StackFrame;
 
         if (frame == undefined) {
@@ -99,13 +150,20 @@ export class Thread implements Executor {
             frame.current_op = next_op;
 
             if (this.output.pending) {
-                //console.log(`PENDING I/O FOR ${this.tid}`);
-                yield this.output.flush() as Output;
+                //console.log(`PENDING I/O (w) FOR ${this.tid}`);
+                yield { type : 'OUTPUT' };
+            }
+
+            if (this.input.pending) {
+                //console.log(`PENDING I/O (r) FOR ${this.tid}`);
+                yield { type : 'INPUT' };
+                //console.log(`GOT PENDING I/O (r)`, this.input);
+                frame.stack.push(...this.input.drain());
             }
         }
 
         if (this.output.pending) {
-            yield this.output.flush() as Output;
+            yield { type : 'OUTPUT' };
         }
     }
 

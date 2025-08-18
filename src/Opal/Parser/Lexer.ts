@@ -7,6 +7,7 @@ export type LexedType =
     | 'LITERAL'
     | 'BINOP'
     | 'UNOP'
+    | 'OP'
     | 'LISTOP'
     | 'KEYWORD'
     | 'PRAGMA'
@@ -185,10 +186,11 @@ export class Lexer {
                     case 'exists' :
 
                     // I/O
-                    case 'say'   :
-                    case 'print' :
-                    case 'warn'  :
-                    case 'die'   :
+                    case 'say'      :
+                    case 'print'    :
+                    case 'warn'     :
+                    case 'die'      :
+                    case 'readline' :
                         yield { type : 'LISTOP', token : token }
                         break;
 
