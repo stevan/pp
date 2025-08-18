@@ -22,7 +22,7 @@ export class Tokenizer {
 
     async *run (source : InputStream) : TokenStream {
 
-        const SPLITTER = /\+\{|\+\[|[\;\,\[\]\{\}\(\)]{1}|"([^"])*"|'([^'])*'|[^\;\s\,\[\]\{\}\(\)]+/g;
+        const SPLITTER = /\+\{|\+\[|\!\=|[\!\;\,\[\]\{\}\(\)]{1}|"([^"])*"|'([^'])*'|[^\;\s\,\[\]\{\}\(\)]+/g;
 
         const newToken = (tokenType : TokenType, src : string) : Token => {
             return {

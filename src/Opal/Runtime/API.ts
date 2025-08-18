@@ -340,9 +340,9 @@ export function SVtoBool (sv : SV) : Bool {
     case isBool(sv):
         return sv;
     case isIV(sv) || isNV(sv):
-        return sv.value == 0 ? SV_True : SV_False;
+        return sv.value > 0 ? SV_True : SV_False;
     case isPV(sv):
-        return sv.value == '' ? SV_True : SV_False;
+        return sv.value != '' ? SV_True : SV_False;
     case isRV(sv):
         return SV_True;
     default:

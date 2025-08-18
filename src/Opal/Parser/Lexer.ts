@@ -101,7 +101,7 @@ export class Lexer {
                     // =========================================================
 
                     // Logical
-                    case '!'   :
+                    case '!'   : // done
                     case 'not' : // done
                         yield { type : 'UNOP', token : token }
                         break;

@@ -15,7 +15,7 @@ import {
 
     newCV, newIV, newPV, newNV, newAV,
 
-    isSV, isAV, isCV,
+    isSV, isAV, isCV, isBool,
 
     assertIsSV, assertIsPV, assertIsCV, assertIsAV,
     assertIsGlob, assertIsBool,
@@ -118,7 +118,11 @@ export function loadInstructionSet () : InstructionSet {
 
     opcodes.set('cond_expr', (i, op) => {
         let bool = i.stack.pop() as Any;
-        assertIsBool(bool);
+        assertIsSV(bool); // FIXME - should work for other types too
+        if (!isBool(bool)) {
+            bool = SVtoBool(bool);
+        }
+
         if (isTrue(bool) && op instanceof LOGOP) {
             return op.other;
         } else {

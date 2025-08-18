@@ -13,4 +13,8 @@ ok(defined(false), '... false is defined');
 
 ok(not(defined(undef)), '... undef is not defined');
 
+ok(!undef, '... not undef is true');
+ok(!(undef), '... not undef is true');
+ok(!(undef != undef), '... not not undef is true');
+
 done();
