@@ -43,7 +43,7 @@ test('... testing by-hand compiler usage', async (t) => {
     let source = new TestInput([`
         use Fact;
 
-        print fact(10);
+        print(fact(10));
     `]);
 
     parser.parse(source).then(async (ast) => {

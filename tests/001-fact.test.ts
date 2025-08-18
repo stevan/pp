@@ -19,8 +19,7 @@ test("... factorial function test", async (t) => {
             }
         }
 
-
-        say fact(10);
+        say(fact(10));
     `]), (result : TestResult) => {
 
         assert.strictEqual(

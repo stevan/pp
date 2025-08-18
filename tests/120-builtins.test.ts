@@ -14,7 +14,7 @@ test("... basic say(LIST) test", async (t) => {
     await img.run(new TestInput([`
 
         my $x = 1;
-        say 1, (1 + $x), ($x + (1 + $x));
+        say(1, (1 + $x), ($x + (1 + $x)));
 
 
     `]), (result : TestResult) => {
@@ -34,12 +34,12 @@ test("... basic say(w/ expressions) test", async (t) => {
     await img.run(new TestInput([`
 
         sub sayit () {
-            say 1 + 2;
-            say 1 + 2 - 3;
-            say 1 + (2 - 3);
-            say (1 + 2) - 3;
-            say (1 + 2) - (3 + 4);
-            say ((1 + 2) - ((3 * 4) / 5));
+            say(1 + 2);
+            say(1 + 2 - 3);
+            say(1 + (2 - 3));
+            say((1 + 2) - 3);
+            say((1 + 2) - (3 + 4));
+            say(((1 + 2) - ((3 * 4) / 5)));
         }
 
         sayit();
@@ -80,7 +80,7 @@ test("... basic say(join(LIST) test", async (t) => {
     await img.run(new TestInput([`
 
         my $x = 1;
-        say join ', ', 1, (1 + $x), ($x + (1 + $x));
+        say(join(', ', 1, (1 + $x), ($x + (1 + $x))));
 
     `]), (result : TestResult) => {
         assert.deepStrictEqual(

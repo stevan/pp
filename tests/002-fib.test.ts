@@ -20,7 +20,7 @@ test("... fibonacci function test", async (t) => {
             }
         }
 
-        say fib(25);
+        say(fib(25));
 
     `]), (result : TestResult) => {
 

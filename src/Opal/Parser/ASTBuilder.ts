@@ -328,8 +328,6 @@ export class ASTBuilder {
                 } else {
                     return new AST.ListExpression(children);
                 }
-            case ExpressionKind.LIST:
-                return new AST.ListExpression(children);
             case ExpressionKind.CURLY:
                 return new AST.Block(children as AST.Statement[]);
             case ExpressionKind.SQUARE:

@@ -1,4 +1,4 @@
-
+import { logger } from './Tools'
 
 import { CompilerConfig } from './Types'
 
@@ -24,6 +24,7 @@ export class Compiler {
 
     async *run (source : ASTNodeStream) : OpTreeStream {
         for await (const node of source) {
+            //console.log(node);
             switch (true) {
             case (node instanceof AST.Statement):
                 yield this.compileStream(new AST.Fragment([node]));

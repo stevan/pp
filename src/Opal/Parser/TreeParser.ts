@@ -10,7 +10,6 @@ import { Lexed, LexedStream } from './Lexer'
 export enum ExpressionKind {
     // implicit
     BARE      = 'BARE',
-    LIST      = 'LIST',
     STATEMENT = 'STATEMENT',
     CONTROL   = 'CONTROL',
     DEFINE    = 'DEFINE',
@@ -130,9 +129,8 @@ export class TreeParser {
 
         while (stack.length > 1) {
             let from = stack.at(-1) as Expression;
-            if (from.kind == ExpressionKind.LIST
-            ||  from.kind == ExpressionKind.PRAGMA) {
-                //logger.log('... found LIST', from);
+            if (from.kind == ExpressionKind.PRAGMA) {
+                //logger.log('... found PRAGMA', from);
                 //logger.log('... PRE OPERATOR SPILL', stack);
                 let list = stack.pop() as Expression;
                 this.endExpression(list);
@@ -172,8 +170,6 @@ export class TreeParser {
             } as Expression
         ];
 
-        const shouldYieldStatement = () : boolean => STACK.length == 1;
-
         for await (const lexed of source) {
             if (this.config.verbose) {
                 logger.log('== BEFORE ===========================================');
@@ -190,7 +186,7 @@ export class TreeParser {
                 // =====================================================
                 if (TOP.defer.length > 0) {
                     let deferred = TOP.defer.pop() as Expression;
-                    if (shouldYieldStatement()) {
+                    if (STACK.length == 1) {
                         yield deferred;
                     } else {
                         TOP.stack.push(deferred);
@@ -238,7 +234,7 @@ export class TreeParser {
             // stack to be operated on ...
             case 'LISTOP':
                 TOP.opers.push(newOperation(lexed));
-                STACK.push(newExpression(ExpressionKind.LIST, lexed));
+                //STACK.push(newExpression(ExpressionKind.LIST, lexed));
                 break;
 
             // -----------------------------------------------------------------
@@ -258,17 +254,18 @@ export class TreeParser {
                 // EXIT POINT
                 // =====================================================
 
-                // if we have a LIST, that means it does not
-                // have an accompanying CLOSE, and while we
-                // handle this in the endStatement method,
-                // we also make a note to let us know that
-                // this was where the expression ended
-                if (TOP.kind == ExpressionKind.LIST) {
-                    TOP.lexed.push(lexed);
-                }
+                //// if we have a LIST, that means it does not
+                //// have an accompanying CLOSE, and while we
+                //// handle this in the endStatement method,
+                //// we also make a note to let us know that
+                //// this was where the expression ended
+                //if (TOP.kind == ExpressionKind.LIST) {
+                //    console.log("FFFFUFJEKEKELE");
+                //    TOP.lexed.push(lexed);
+                //}
 
                 let statement = this.endStatement(STACK, lexed);
-                if (shouldYieldStatement()) {
+                if (STACK.length == 1) {
                     yield statement;
                 } else {
                     (STACK.at(-1) as Expression).stack.push(statement);
@@ -344,7 +341,7 @@ export class TreeParser {
                         // now decide if we should yield
                         // or if this needs to put pushed
                         // to the TOP variable's stack?
-                        if (shouldYieldStatement()) {
+                        if (STACK.length == 1) {
                             yield control;
                         } else {
                             TOP.stack.push(control);
@@ -371,10 +368,11 @@ export class TreeParser {
                         // code can likely just go away or be replaced by the
                         // appropriate error.
 
-                        if (shouldYieldStatement()) {
-                            yield expr;
-                            break;
-                        }
+                        //if (STACK.length == 1) {
+                        //    console.log("FUCUCUSUSUSUSU");
+                        //    yield expr;
+                        //    break;
+                        //}
                     }
                     // if we have something else on the
                     // TOP stack, then we check it ...

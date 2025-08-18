@@ -28,8 +28,8 @@ test("... even/odd recusive predicate function test", async (t) => {
             }
         }
 
-        say is_even(10);
-        say is_odd(12);
+        say(is_even(10));
+        say(is_odd(12));
 
     `]), (result : TestResult) => {
 

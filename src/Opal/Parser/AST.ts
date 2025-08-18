@@ -142,6 +142,8 @@ export class ParenExpression extends ExpressionNode {
         public item : Node
     ) { super() }
 
+    get items () : Node[] { return [ this.item ] }
+
     deparse(depth : number = 0) : string {
         return `(${this.item.deparse()})`;
     }

@@ -20,7 +20,7 @@ while ($num > 0) {
         $s = 's';
     }
 
-    say $num . " bottle" . $s . " of beer on the wall, " . $num . " bottle" . $s . " of beer";
+    say($num . " bottle" . $s . " of beer on the wall, " . $num . " bottle" . $s . " of beer");
 
     $num = $num - 1;
 
@@ -29,14 +29,14 @@ while ($num > 0) {
     }
 
     if ($num == 0) {
-        say "No more";
+        say("No more");
     } else {
-        say "Take one down, pass it around, " . $num . " bottle" . $s . " of beer on the wall";
+        say("Take one down, pass it around, " . $num . " bottle" . $s . " of beer on the wall");
     }
 }
 
-say "No more bottles of beer on the wall, no more bottles of beer.";
-say "Go to the store and buy some more, 99 bottles of beer on the wall.";
+say("No more bottles of beer on the wall, no more bottles of beer.");
+say("Go to the store and buy some more, 99 bottles of beer on the wall.");
 
 
     `]), (result : TestResult) => {

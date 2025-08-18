@@ -20,7 +20,7 @@ test("... greatest common divisor function test", async (t) => {
             }
         }
 
-        say gcd(75025, 46368);
+        say(gcd(75025, 46368));
 
     `]), (result : TestResult) => {
 

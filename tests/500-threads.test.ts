@@ -39,22 +39,22 @@ test('... testing by-hand interpreter thread usage', async (t) => {
 
     let thread1 = new TestInput([`
         my $x = 10;
-        say 'Thread 1 - Starting';
+        say('Thread 1 - Starting');
         while ($x > 0) {
-            say 'Thread 1 - Got ' . $x;
+            say('Thread 1 - Got ' . $x);
             $x = $x - 1;
         }
-        say 'Thread 1 - Completed';
+        say('Thread 1 - Completed');
     `]);
 
     let thread2 = new TestInput([`
         my $x = 10;
-        say 'Thread 2 - Starting';
+        say('Thread 2 - Starting');
         while ($x > 0) {
-            say 'Thread 2 - Got ' . $x;
+            say('Thread 2 - Got ' . $x);
             $x = $x - 1;
         }
-        say 'Thread 2 - Completed';
+        say('Thread 2 - Completed');
     `]);
 
     let output = new TestOutput();

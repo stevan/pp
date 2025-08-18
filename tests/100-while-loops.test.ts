@@ -15,7 +15,7 @@ test("... simple while loop test", async (t) => {
         my $x = 10;
         while ($x > 0) {
             $x = $x - 1;
-            print $x;
+            print($x);
         }
 
     `]), (result : TestResult) => {

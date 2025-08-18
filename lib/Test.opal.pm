@@ -9,16 +9,16 @@ sub todo ($msg) {
 }
 
 sub diag ($msg) {
-    say '# ' . $msg;
+    say('# ' . $msg);
 }
 
 sub pass ($msg) {
-    say join ' ', 'ok', $count, $msg;
+    say(join(' ', 'ok', $count, $msg));
     $count = $count + 1;
 }
 
 sub fail ($msg) {
-    say join ' ', 'not ok', $count, $msg;
+    say(join(' ', 'not ok', $count, $msg));
     $count = $count + 1;
     $fails = $fails + 1;
 }
@@ -45,7 +45,7 @@ sub isnt ($got, $expected, $msg) {
 }
 
 sub done () {
-    say '1..' . $count;
+    say('1..' . $count);
     if ($fails > 0) {
         diag('looks like you failed ' . $fails . ' test(s) of ' . $count);
     }
