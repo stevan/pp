@@ -21,7 +21,7 @@ import {
     assertIsGlob, assertIsBool,
     assertIsComparable, assertIsNumeric, assertIsStringy,
 
-    SVtoPV, AnytoPV, isTrue, isFalse,
+    SVtoPV, SVtoBool, AnytoPV, isTrue, isFalse, isUndef,
     setGlobScalar, setGlobCode, getGlobSlot,
 
     Stash,
@@ -231,46 +231,6 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     // ---------------------------------------------------------------------
-    // Builtins
-    // ---------------------------------------------------------------------
-
-    opcodes.set('readline', (i, op) => {
-        let args = collectArgumentsFromStack(i);
-        i.executor().input.read();
-        return op.next;
-    });
-
-    opcodes.set('print', (i, op) => {
-        let args = collectArgumentsFromStack(i);
-        i.executor().output.write( args );
-        return op.next;
-    });
-
-    opcodes.set('say', (i, op) => {
-        let args = collectArgumentsFromStack(i);
-        i.executor().output.write( args );
-        return op.next;
-    });
-
-    opcodes.set('join', (i, op) => {
-        let args = collectArgumentsFromStack(i);
-
-        let sep = args.shift();
-        if (sep == undefined) throw new Error('Expected seperator arg for join');
-        assertIsPV(sep);
-        i.stack.push(
-            newPV(
-                args.map((sv) => AnytoPV(sv))
-                    .flat(1)
-                    .map((pv) => pv.value)
-                    .join(sep.value)
-            )
-        );
-
-        return op.next;
-    });
-
-    // ---------------------------------------------------------------------
     // Constants
     // ---------------------------------------------------------------------
 
@@ -417,7 +377,69 @@ export function loadInstructionSet () : InstructionSet {
     });
 
     // ---------------------------------------------------------------------
-    // Operators
+    // Builtins
+    // ---------------------------------------------------------------------
+
+    // I/O
+
+    opcodes.set('readline', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+        i.executor().input.read();
+        return op.next;
+    });
+
+    opcodes.set('print', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+        i.executor().output.write( args );
+        return op.next;
+    });
+
+    opcodes.set('say', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+        i.executor().output.write( args );
+        return op.next;
+    });
+
+
+    // strings
+
+    opcodes.set('join', (i, op) => {
+        let args = collectArgumentsFromStack(i);
+
+        let sep = args.shift();
+        if (sep == undefined) throw new Error('Expected seperator arg for join');
+        assertIsPV(sep);
+        i.stack.push(
+            newPV(
+                args.map((sv) => AnytoPV(sv))
+                    .flat(1)
+                    .map((pv) => pv.value)
+                    .join(sep.value)
+            )
+        );
+
+        return op.next;
+    });
+
+    // ---------------------------------------------------------------------
+    // Booleans
+    // ---------------------------------------------------------------------
+
+    opcodes.set('not', (i, op) => {
+        let rhs  = i.stack.pop() as Any;
+        assertIsSV(rhs);
+        i.stack.push( isTrue(SVtoBool(rhs)) ? SV_False : SV_True );
+        return op.next;
+    });
+
+    opcodes.set('defined', (i, op) => {
+        let rhs = i.stack.pop() as Any;
+        i.stack.push( isUndef(rhs) ? SV_False : SV_True );
+        return op.next;
+    });
+
+    // ---------------------------------------------------------------------
+    // Strings
     // ---------------------------------------------------------------------
 
     opcodes.set('lc', LiftStringyUnOp((s) => s.toLowerCase()));

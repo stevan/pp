@@ -102,7 +102,7 @@ export class Lexer {
 
                     // Logical
                     case '!'   :
-                    case 'not' :
+                    case 'not' : // done
                         yield { type : 'UNOP', token : token }
                         break;
 
@@ -110,22 +110,22 @@ export class Lexer {
                     case '&&'  : case '||' : case '//':
                     case 'and' : case 'or' : case 'xor':
                     // Equality
-                    case '==' : case '!=' :
-                    case 'eq' : case 'ne' :
+                    case '==' : case '!=' : // done
+                    case 'eq' : case 'ne' : // done
                     // Ordering
-                    case '<'  : case '<=' : case '>'  : case '>=' :
-                    case 'lt' : case 'le' : case 'gt' : case 'ge' :
+                    case '<'  : case '<=' : case '>'  : case '>=' : // done
+                    case 'lt' : case 'le' : case 'gt' : case 'ge' : // done
                     case '<=>': case 'cmp':
 
                     // Maths
-                    case '+'  : case '-'  : case '*'  : case '/'  : case '%':
+                    case '+'  : case '-'  : case '*'  : case '/'  : case '%': // done
 
                     // String
-                    case '.' :
+                    case '.' : // done
                     case 'x' :
 
                     // Assignment
-                    case '='  :
+                    case '='  : // done
                         yield { type : 'BINOP', token : token }
                         break;
 
@@ -138,7 +138,7 @@ export class Lexer {
                     // ---------------------------------------------------------
 
                     // polymorphic
-                    case 'defined' :
+                    case 'defined' : // done
                     case 'reverse' :
                     case 'length'  :
 
@@ -163,18 +163,18 @@ export class Lexer {
                     case 'rand'  :
 
                     // strings
-                    case 'lc'      :
+                    case 'lc'      : // done
                     case 'lcfirst' :
-                    case 'uc'      :
+                    case 'uc'      : // done
                     case 'ucfirst' :
 
                     // subroutines
-                    case 'return'  :
+                    case 'return'  : // done
                         yield { type : 'UNOP', token : token }
                         break;
 
                     // strings
-                    case 'join'  :
+                    case 'join'  : // done
                     case 'split' :
 
                     // arrays
@@ -186,11 +186,11 @@ export class Lexer {
                     case 'exists' :
 
                     // I/O
-                    case 'say'      :
-                    case 'print'    :
+                    case 'say'      : // done
+                    case 'print'    : // done
                     case 'warn'     :
                     case 'die'      :
-                    case 'readline' :
+                    case 'readline' : // done
                         yield { type : 'LISTOP', token : token }
                         break;
 
@@ -199,7 +199,7 @@ export class Lexer {
                     // =========================================================
                     // We are starting with just
 
-                    case 'use' :
+                    case 'use' : // done
                         yield { type : 'PRAGMA', token : token }
                         break;
 
@@ -209,7 +209,7 @@ export class Lexer {
                     // these are also resolved at compile time for the most part
                     // and affect where a variable gets read/written from.
 
-                    case 'my'     :
+                    case 'my'     : // done
                     case 'our'    :
                     case 'state'  :
                     case 'local'  :
@@ -222,13 +222,13 @@ export class Lexer {
                     // These are resolved at compile time to structure the
                     // opcode tree and code flow
                     // ---------------------------------------------------------
-                    case 'if'      :
-                    case 'unless'  :
+                    case 'if'      : // done
+                    case 'unless'  : // done
                     case 'elsif'   :
-                    case 'else'    :
+                    case 'else'    : // done
 
-                    case 'while'   :
-                    case 'until'   :
+                    case 'while'   : // done
+                    case 'until'   : // done
 
                     case 'for'     :
                     case 'foreach' :
@@ -253,7 +253,7 @@ export class Lexer {
                     // Keywords are resolved at compile time and will construct
                     // the symbol table for runtime
                     // ---------------------------------------------------------
-                    case 'sub'     :
+                    case 'sub'     : // done
                     case 'package' :
                     case 'class'   :
                     case 'role'    :

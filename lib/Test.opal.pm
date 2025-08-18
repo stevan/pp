@@ -24,7 +24,7 @@ sub fail ($msg) {
 }
 
 sub ok ($test, $msg) {
-    if ($test == true) {
+    if ($test) {
         pass($msg);
     } else {
         fail($msg);

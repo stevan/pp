@@ -5,6 +5,10 @@ diag('Equality tests');
 
 ok(true, '... true is');
 
+ok(undef == undef, '... undef is undef');
+ok(undef != true, '... undef is not true');
+ok(undef != false, '... undef is not false');
+
 ok(true  == true,  '... true is true');
 ok(false == false, '... false is false');
 ok(true  != false, '... true is not false');
