@@ -15,7 +15,7 @@ import {
 
     newCV, newIV, newPV, newNV, newAV,
 
-    isSV, isAV, isCV, isBool,
+    isSV, isAV, isCV, isBool, isStringy,
 
     assertIsSV, assertIsPV, assertIsCV, assertIsAV,
     assertIsGlob, assertIsBool,
@@ -441,6 +441,21 @@ export function loadInstructionSet () : InstructionSet {
     opcodes.set('defined', (i, op) => {
         let rhs = i.stack.pop() as Any;
         i.stack.push( isUndef(rhs) ? SV_False : SV_True );
+        return op.next;
+    });
+
+    opcodes.set('length', (i, op) => {
+        let rhs = i.stack.pop() as Any;
+        let len = 0;
+        if (isSV(rhs)) {
+            if (!isStringy(rhs)) {
+                rhs = SVtoPV(rhs);
+            }
+            len = rhs.value.length;
+        } else {
+            throw new Error("TODO - handle non SVs in length");
+        }
+        i.stack.push(newIV(len));
         return op.next;
     });
 

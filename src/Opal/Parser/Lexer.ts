@@ -90,9 +90,9 @@ export class Lexer {
                     // =========================================================
 
                     // literals ...
-                    case 'undef':
-                    case 'true':
-                    case 'false':
+                    case 'undef': // done
+                    case 'true' : // done
+                    case 'false': // done
                         yield { type : 'LITERAL', token : token };
                         break;
 
