@@ -52,17 +52,17 @@ say "Go to the store and buy some more, 99 bottles of beer on the wall.";
 
         let offset = strings.length - 3;
         assert.strictEqual(
-            strings[offset],
+            strings[offset]?.trim(),
             "No more"
         );
         offset++;
         assert.strictEqual(
-            strings[offset],
+            strings[offset]?.trim(),
             "No more bottles of beer on the wall, no more bottles of beer."
         );
         offset++;
         assert.strictEqual(
-            strings[offset],
+            strings[offset]?.trim(),
             "Go to the store and buy some more, 99 bottles of beer on the wall."
         );
 

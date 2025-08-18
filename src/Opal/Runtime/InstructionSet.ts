@@ -394,13 +394,27 @@ export function loadInstructionSet () : InstructionSet {
 
     opcodes.set('print', (i, op) => {
         let args = collectArgumentsFromStack(i);
-        i.executor().output.write( args );
+        i.executor().output.write([
+            newPV(
+                args.map((sv) => AnytoPV(sv))
+                    .flat(1)
+                    .map((pv) => pv.value)
+                    .join('')
+            )
+        ]);
         return op.next;
     });
 
     opcodes.set('say', (i, op) => {
         let args = collectArgumentsFromStack(i);
-        i.executor().output.write( args );
+        i.executor().output.write([
+            newPV(
+                args.map((sv) => AnytoPV(sv))
+                    .flat(1)
+                    .map((pv) => pv.value)
+                    .join('') + "\n"
+            ),
+        ]);
         return op.next;
     });
 

@@ -12,7 +12,7 @@ async function main(filesToRun : string[]) {
         console.log(`# -- running file(${file}) --`)
         await img.run(new FromFile(file), (result : TestResult) => {
             for (const out of result.output.flush()) {
-                console.log(out);
+                console.log(out.trim());
             }
         });
         console.log('');

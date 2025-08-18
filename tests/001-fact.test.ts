@@ -24,7 +24,7 @@ test("... factorial function test", async (t) => {
     `]), (result : TestResult) => {
 
         assert.strictEqual(
-            result.output.buffer[0],
+            result.output.buffer[0]?.trim(),
             "3628800",
             '... got the correct value for fact(10)'
         )

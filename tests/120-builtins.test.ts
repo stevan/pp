@@ -19,8 +19,8 @@ test("... basic say(LIST) test", async (t) => {
 
     `]), (result : TestResult) => {
         assert.deepStrictEqual(
-            result.output.buffer,
-            [ '1', '2' , '3'],
+            result.output.buffer.map((s) => s.trim()),
+            [ '123'],
             '... got the correct output'
         );
     })
@@ -46,7 +46,7 @@ test("... basic say(w/ expressions) test", async (t) => {
 
     `]), (result : TestResult) => {
         assert.deepStrictEqual(
-            result.output.buffer,
+            result.output.buffer.map((s) => s.trim()),
             [ "3", "0", "0", "0", "-4", "0.6000000000000001" ],
             '... got the correct output'
         );
@@ -66,8 +66,8 @@ test("... basic say(LIST w/ expressions) test", async (t) => {
 
     `]), (result : TestResult) => {
         assert.deepStrictEqual(
-            result.output.buffer,
-            ["1","4","3","1","4","3","1","4","-3"],
+            result.output.buffer.map((s) => s.trim()),
+            ["143","143","14-3"],
             '... got the correct output'
         );
     })
@@ -84,7 +84,7 @@ test("... basic say(join(LIST) test", async (t) => {
 
     `]), (result : TestResult) => {
         assert.deepStrictEqual(
-            result.output.buffer,
+            result.output.buffer.map((s) => s.trim()),
             ["1, 2, 3"],
             '... got the correct output'
         );

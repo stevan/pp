@@ -34,13 +34,13 @@ test("... even/odd recusive predicate function test", async (t) => {
     `]), (result : TestResult) => {
 
         assert.strictEqual(
-            result.output.buffer[0],
+            result.output.buffer[0]?.trim(),
             "1",
             '... got the correct is_even(10)'
         );
 
         assert.strictEqual(
-            result.output.buffer[1],
+            result.output.buffer[1]?.trim(),
             "",
             '... got the correct is_odd(12)'
         );

@@ -68,7 +68,7 @@ test('... testing by-hand interpreter thread usage', async (t) => {
     ]);
 
     assert.deepStrictEqual(
-        output.flush(),
+        output.flush().map((s) => s.trim()),
         [
           'Thread 1 - Starting',  'Thread 2 - Starting',
           'Thread 1 - Got 10',    'Thread 2 - Got 10',

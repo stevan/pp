@@ -25,7 +25,7 @@ test("... greatest common divisor function test", async (t) => {
     `]), (result : TestResult) => {
 
         assert.strictEqual(
-            result.output.buffer[0],
+            result.output.buffer[0]?.trim(),
             "1",
             '... got the correct gcd for 75025 and 46368'
         )

@@ -24,7 +24,7 @@ test("... who tests the tester", async (t) => {
     `]), (result : TestResult) => {
 
         assert.deepStrictEqual(
-            result.output.buffer,
+            result.output.buffer.map((s) => s.trim()),
             [
                 "ok 1 ... pass",
                 "not ok 2 ... fail",

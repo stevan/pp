@@ -15,7 +15,7 @@ test("... simple until loop test", async (t) => {
         my $x = 10;
         until ($x == 0) {
             $x = $x - 1;
-            say $x;
+            print $x;
         }
 
     `]), (result : TestResult) => {

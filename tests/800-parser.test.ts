@@ -33,7 +33,7 @@ test('... testing by-hand parser usage', async (t) => {
             }
         }
 
-        say fact(10);
+        print fact(10);
 
     `]);
 

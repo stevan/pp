@@ -25,7 +25,7 @@ test("... fibonacci function test", async (t) => {
     `]), (result : TestResult) => {
 
         assert.strictEqual(
-            result.output.buffer[0],
+            result.output.buffer[0]?.trim(),
             "75025",
             '... got the correct value for fib(25)'
         )
