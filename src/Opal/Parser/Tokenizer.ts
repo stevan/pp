@@ -11,6 +11,7 @@ const IS_STRING   = /^"[^"\n]*"|'[^'\n]*'$/;
 const IS_BRACKET  = /^\+\{|\+\[|\[|\]|\{|\}|\(|\)$/;
 
 export type TokenType =
+    // TODO - add VSTRING here ...
     | 'STRING'    // single and double quoted strings
     | 'NUMBER'    // basic int & float parsing only
     | 'BRACKET'   // [] {} () +[] +{}

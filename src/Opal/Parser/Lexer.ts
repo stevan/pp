@@ -65,6 +65,7 @@ export class Lexer {
                 }
                 else {
                     switch (src) {
+
                     // Statement Divider
                     case ';' :
                         yield { type : 'TERMINATOR', token : token }
@@ -72,17 +73,6 @@ export class Lexer {
                     // Expression Seperator
                     case ','  :
                         yield { type : 'SEPERATOR', token : token }
-                        break;
-
-                    // =========================================================
-                    // Debugging
-                    // =========================================================
-                    // these are basically treated like builtins
-                    // but will do things that mess with the
-                    // guts of the system to help in debugging
-
-                    case 'concise' :
-                        yield { type : 'LISTOP', token : token }
                         break;
 
                     // =========================================================
@@ -94,6 +84,87 @@ export class Lexer {
                     case 'true' : // done
                     case 'false': // done
                         yield { type : 'LITERAL', token : token };
+                        break;
+
+
+                    // =========================================================
+                    // Code Loading
+                    // =========================================================
+                    // We are starting with just
+
+                    case 'use' : // done
+                        yield { type : 'PRAGMA', token : token }
+                        break;
+
+                    // =========================================================
+                    // Variables and Scoping
+                    // =========================================================
+                    // these are also resolved at compile time for the most part
+                    // and affect where a variable gets read/written from.
+
+                    // Assignment
+                    case '='  : // done
+                        yield { type : 'BINOP', token : token }
+                        break;
+
+
+                    case 'my'     : // done
+                    case 'our'    :
+                    case 'state'  :
+                    case 'local'  :
+                        yield { type : 'UNOP', token : token }
+                        break;
+
+                    // =========================================================
+                    // Control structures
+                    // =========================================================
+                    // These are resolved at compile time to structure the
+                    // opcode tree and code flow
+                    // ---------------------------------------------------------
+
+                    case 'if'      : // done
+                    case 'unless'  : // done
+                    case 'elsif'   :
+                    case 'else'    : // done
+
+                    case 'while'   : // done
+                    case 'until'   : // done
+
+                    case 'for'     :
+                    case 'foreach' :
+
+                    case 'try'     :
+                    case 'catch'   :
+                    case 'finally' :
+
+                    case 'do'      :
+
+                    case 'continue' :
+                    case 'break'    :
+                    case 'last'     :
+                    case 'next'     :
+                    case 'redo'     :
+                        yield { type : 'CONTROL', token : token }
+                        break;
+
+                    // subroutines
+                    case 'return'  : // done
+                        yield { type : 'UNOP', token : token }
+                        break;
+
+                    // =========================================================
+                    // Declaration Keywords
+                    // =========================================================
+                    // Keywords are resolved at compile time and will construct
+                    // the symbol table for runtime
+                    // ---------------------------------------------------------
+                    case 'sub'     : // done
+                    case 'package' :
+                    case 'class'   :
+                    case 'role'    :
+                    case 'method'  :
+                    case 'field'   :
+                        yield { type : 'KEYWORD', token : token }
                         break;
 
                     // =========================================================
@@ -123,9 +194,6 @@ export class Lexer {
                     // String
                     case '.' : // done
                     case 'x' :
-
-                    // Assignment
-                    case '='  : // done
                         yield { type : 'BINOP', token : token }
                         break;
 
@@ -167,9 +235,6 @@ export class Lexer {
                     case 'lcfirst' :
                     case 'uc'      : // done
                     case 'ucfirst' :
-
-                    // subroutines
-                    case 'return'  : // done
                         yield { type : 'UNOP', token : token }
                         break;
 
@@ -195,72 +260,16 @@ export class Lexer {
                         break;
 
                     // =========================================================
-                    // Code Loading
+                    // Debugging
                     // =========================================================
-                    // We are starting with just
+                    // these are basically treated like builtins
+                    // but will do things that mess with the
+                    // guts of the system to help in debugging
 
-                    case 'use' : // done
-                        yield { type : 'PRAGMA', token : token }
+                    case 'concise' :
+                        yield { type : 'LISTOP', token : token }
                         break;
 
-                    // =========================================================
-                    // Variable Scoping
-                    // =========================================================
-                    // these are also resolved at compile time for the most part
-                    // and affect where a variable gets read/written from.
-
-                    case 'my'     : // done
-                    case 'our'    :
-                    case 'state'  :
-                    case 'local'  :
-                        yield { type : 'UNOP', token : token }
-                        break;
-
-                    // =========================================================
-                    // Control structures
-                    // =========================================================
-                    // These are resolved at compile time to structure the
-                    // opcode tree and code flow
-                    // ---------------------------------------------------------
-                    case 'if'      : // done
-                    case 'unless'  : // done
-                    case 'elsif'   :
-                    case 'else'    : // done
-
-                    case 'while'   : // done
-                    case 'until'   : // done
-
-                    case 'for'     :
-                    case 'foreach' :
-
-                    case 'try'     :
-                    case 'catch'   :
-                    case 'finally' :
-
-                    case 'do'      :
-
-                    case 'continue' :
-                    case 'break'    :
-                    case 'last'     :
-                    case 'next'     :
-                    case 'redo'     :
-                        yield { type : 'CONTROL', token : token }
-                        break;
-
-                    // =========================================================
-                    // Declaration Keywords
-                    // =========================================================
-                    // Keywords are resolved at compile time and will construct
-                    // the symbol table for runtime
-                    // ---------------------------------------------------------
-                    case 'sub'     : // done
-                    case 'package' :
-                    case 'class'   :
-                    case 'role'    :
-                    case 'method'  :
-                    case 'field'   :
-                        yield { type : 'KEYWORD', token : token }
-                        break;
                     // =========================================================
                     // No idea, so it is a Bareword ;)
                     // =========================================================
