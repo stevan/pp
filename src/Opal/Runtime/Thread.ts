@@ -87,7 +87,8 @@ export class Thread implements Executor {
             // Run all the PRAGMAs before running
             // the OpTree itself ...
             while (optree.pragmas.length) {
-                let pragma   = optree.pragmas.pop() as PRAGMA;
+                let pragma   = optree.pragmas.pop();
+                if (!(pragma instanceof PRAGMA)) throw new Error('WHY NO PRAGMA!');
                 let bareword = pragma.config.bareword;
                 switch (true) {
                 case bareword.startsWith('v'):

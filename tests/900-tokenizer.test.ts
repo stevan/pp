@@ -29,7 +29,7 @@ test('... tokenizeing empty string w/ comment', async (t) => {
 });
 
 test('... tokenizeing single number w/ comment', async (t) => {
-    let input  = new TestInput([ '1 # with comment' ]);
+    let input  = new TestInput([ '1 # number with comment' ]);
     let tokens = await captureTokenizerOuput(tokenizer.run(input.run()));
     assert.strictEqual(tokens.length, 1, '... got one token');
     assert.strictEqual(tokens[0]?.source, '1', '... got right token');
@@ -42,15 +42,17 @@ test('... tokenizeing single number statement w/ comment', async (t) => {
         # comment after
         20;
 
-        # the end
+        100;#the end
 ` ]);
     let tokens = await captureTokenizerOuput(tokenizer.run(input.run()));
     //console.log(tokens);
-    assert.strictEqual(tokens.length, 4, '... got one token');
+    assert.strictEqual(tokens.length, 6, '... got one token');
     assert.strictEqual(tokens[0]?.source, '1', '... got right token');
     assert.strictEqual(tokens[1]?.source, ';', '... got right token');
     assert.strictEqual(tokens[2]?.source, '20', '... got right token');
     assert.strictEqual(tokens[3]?.source, ';', '... got right token');
+    assert.strictEqual(tokens[4]?.source, '100', '... got right token');
+    assert.strictEqual(tokens[5]?.source, ';', '... got right token');
 });
 
 test('... tokenizeing numbers', async (t) => {
@@ -76,6 +78,7 @@ test('... tokenizeing numbers', async (t) => {
             tokens.filter((t) => t.type == 'NUMBER').length,
             8,
         '... all tokens were numbers');
+
         assert.deepStrictEqual(
             tokens.map((t) => t.source),
             [
@@ -114,6 +117,33 @@ test('... tokenizeing strings', async (t) => {
                 '100',
                 'single "quoted" string',
                 'foo\\n'
+            ],
+        '... got expected tokens');
+    }
+})
+
+test('... tokenizeing strings', async (t) => {
+    let source = [
+        'v5.40',
+        'Test001',
+    ];
+
+    for (const input of [
+        new TestInput([ ...source ]),
+        new TestInput([ source.join(' ')  ]),
+        new TestInput([ source.join('\n') ]),
+    ]) {
+        let tokens = await captureTokenizerOuput(tokenizer.run(input.run()));
+        assert.strictEqual(tokens.length, 2, '... got expected amount of tokens');
+        assert.strictEqual(
+            tokens.filter((t) => t.type == 'ATOM').length,
+            2,
+        '... all tokens were atoms');
+        assert.deepStrictEqual(
+            tokens.map((t) => t.source),
+            [
+                'v5.40',
+                'Test001',
             ],
         '... got expected tokens');
     }
