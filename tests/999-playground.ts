@@ -61,9 +61,8 @@ export function Conflict (a: Token, b: Token) : Perhaps {
 // -----------------------------------------------------------------------------
 
 export type Expression =
-    | { type : 'TERM',  value : Token }
-    | { type : 'UNOP',  operator : Token, operand : Expression }
-    | { type : 'BINOP', operator : Token, lhs : Expression, rhs : Expression }
+    | { type : 'TERM', value : Token }
+    | { type : 'OPERATOR', operator : Token, operands : Expression[] }
 
 // -----------------------------------------------------------------------------
 
@@ -74,31 +73,9 @@ export abstract class ExpressionLattice {
     abstract isKnown    () : boolean;
     abstract isConflict () : boolean;
 
-    abstract merge (possibility: Perhaps) : void;
+    //abstract merge (possibility: Perhaps) : void;
 
     abstract resolve () : Expression;
-
-    join (a : Perhaps, b : Perhaps) : Perhaps {
-        if (isConflict(a) || isConflict(b)) return isConflict(a) ? a : b;
-        if (isUnknown(a)) return b;
-        if (isUnknown(b)) return a;
-        if (isKnown(a) && isKnown(b)) {
-            if (a.value === b.value) return a;
-            return Conflict(a.value, b.value);
-        }
-        throw new Error("Invalid lattice elements");
-    }
-
-    equals (a : Perhaps, b : Perhaps) : boolean {
-        if (isConflict(a) && isConflict(b)) {
-            // Order of values doesn't matter for equality
-            return (a.values[0] === b.values[0] && a.values[1] === b.values[1]) ||
-                   (a.values[0] === b.values[1] && a.values[1] === b.values[0]);
-        }
-        if (isUnknown(a) && isUnknown(b)) return true;
-        if (isKnown(a)   && isKnown(b))   return a.value === b.value;
-        return false;
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -110,14 +87,6 @@ export class TermLattice extends ExpressionLattice {
     isKnown    () : boolean { return     isKnown(this.term) }
     isConflict () : boolean { return  isConflict(this.term) }
 
-    merge (possibility: Perhaps) : void {
-        const result = this.join(this.term, possibility);
-        if (!this.equals(result, this.term)) {
-            this.term = result;
-            this.version++;
-        }
-    }
-
     resolve () : Expression {
         if (isKnown(this.term)) {
             return { type : 'TERM', value : this.term.value }
@@ -128,97 +97,37 @@ export class TermLattice extends ExpressionLattice {
 
 // -----------------------------------------------------------------------------
 
-export class UnaryOpLattice extends ExpressionLattice {
+export class OperatorLattice extends ExpressionLattice {
     constructor(
+        public arity    : number,
         public operator : Perhaps,
-        public operand  : ExpressionLattice
+        public operands : ExpressionLattice[] = [],
     ) { super() }
 
-    isUnknown  () : boolean { return   isUnknown(this.operator) || this.operand.isUnknown()  }
-    isKnown    () : boolean { return     isKnown(this.operator) && this.operand.isKnown()    }
-    isConflict () : boolean { return  isConflict(this.operator) || this.operand.isConflict() }
-
-    mergeOperator (possibility: Perhaps) : void {
-        const result = this.join(this.operator, possibility);
-        if (!this.equals(result, this.operator)) {
-            this.operator = result;
-            this.version++;
-        }
+    isUnknown () : boolean {
+        return isUnknown(this.operator)
+            || this.operands.findIndex((l) => l.isUnknown()) != -1;
     }
 
-    mergeOperand (possibility: Perhaps) : void {
-        this.operand.merge(possibility);
+    isKnown () : boolean {
+        return isKnown(this.operator)
+            && this.operands.every((l) => l.isKnown());
     }
 
-    merge (possibility: Perhaps) : void {
-        if (isUnknown(this.operator)) {
-            this.mergeOperator(possibility)
-        } else {
-            this.mergeOperand(possibility)
-        }
+    isConflict () : boolean {
+        return isConflict(this.operator)
+            || this.operands.findIndex((l) => l.isConflict()) != -1
     }
 
     resolve () : Expression {
         if (isKnown(this.operator)) {
             return {
-                type     : 'UNOP',
+                type     : 'OPERATOR',
                 operator : this.operator.value,
-                operand  : this.operand.resolve(),
+                operands : this.operands.map((o) => o.resolve()),
             }
         }
         throw new Error('Unable to resolve UnaryOpLattice');
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-export class BinaryOpLattice extends ExpressionLattice {
-    constructor(
-        public operator : Perhaps,
-        public lhs      : ExpressionLattice,
-        public rhs      : ExpressionLattice
-    ) { super() }
-
-    isUnknown  () : boolean { return   isUnknown(this.operator) || this.lhs.isUnknown()  || this.rhs.isUnknown()  }
-    isKnown    () : boolean { return     isKnown(this.operator) && this.lhs.isKnown()    && this.rhs.isKnown()    }
-    isConflict () : boolean { return  isConflict(this.operator) || this.lhs.isConflict() || this.rhs.isConflict() }
-
-    mergeOperator (possibility: Perhaps) : void {
-        const result = this.join(this.operator, possibility);
-        if (!this.equals(result, this.operator)) {
-            this.operator = result;
-            this.version++;
-        }
-    }
-
-    mergeLeftHandSide (possibility: Perhaps) : void {
-        this.lhs.merge(possibility);
-    }
-
-    mergeRightHandSide (possibility: Perhaps) : void {
-        this.rhs.merge(possibility);
-    }
-
-    merge (possibility: Perhaps) : void {
-        if (isUnknown(this.operator)) {
-            this.mergeOperator(possibility)
-        } else if (this.lhs.isUnknown()) {
-            this.mergeLeftHandSide(possibility)
-        } else {
-            this.mergeRightHandSide(possibility)
-        }
-    }
-
-    resolve () : Expression {
-        if (isKnown(this.operator)) {
-            return {
-                type     : 'BINOP',
-                operator : this.operator.value,
-                lhs      : this.lhs.resolve(),
-                rhs      : this.rhs.resolve(),
-            }
-        }
-        throw new Error('Unable to resolve BinaryOpLattice');
     }
 }
 
@@ -230,54 +139,103 @@ const test001 = async () => {
 
     let source = new TestInput([`
 
-        use v5.40;
-        use Test;
+        binop 10 20;
+        unop unop 20;
 
-        lc "foo";
+        binop 10 unop 20;
+        binop unop 20 10;
 
-        add 10 20;
+        ternop 10 20 30;
+
+        ternop binop 10 unop 20 30;
 
     `]);
 
-
-    let result : Expression[] = [];
+    let result : ExpressionLattice[] = [];
     let stack  : ExpressionLattice[] = [];
+    let opers  : OperatorLattice[]   = [];
     for await (const token of tokenizer.run(source.run())) {
+        logger.log('---------------------------------------------------------');
         logger.log('GOT', token);
+        logger.log('STACK(before)', stack);
+        logger.log('OPERS(before)', opers);
         switch (token.type) {
         case 'STRING':
         case 'NUMBER':
+            logger.log(`... got (${token.source}) ${token.type}`);
+            let term = new TermLattice(Known(token));
+            if (opers.length > 0) {
+                logger.log('...adding term to the top of OPER stack');
+                let op   = opers.at(-1) as OperatorLattice;
+                if (op == undefined) throw new Error('Execpted operation!');
+                op.operands.push(term);
+                if (op.operands.length == op.arity) {
+                    opers.pop();
+                }
+            } else {
+                logger.log('...adding term to top of stack');
+                stack.push(term);
+            }
+            break;
         case 'ATOM':
             switch (token.source) {
             case ';':
                 logger.log('... got statement terminator');
-                result.push((stack.pop() as ExpressionLattice).resolve());
+                result.push(stack.pop() as ExpressionLattice);
                 break;
-            case 'use':
-                logger.log('... got `use` UNOP');
-                stack.push(new UnaryOpLattice(
-                    Known(token),
-                    new TermLattice(Unknown())
-                ));
+            case 'ternop':
+                logger.log(`... got (${token.source}) TERNOP`);
+                let ternop = new OperatorLattice(3, Known(token));
+                if (opers.length > 0) {
+                    logger.log('...adding ternop to the top of OPER stack');
+                    let op   = opers.at(-1) as OperatorLattice;
+                    if (op == undefined) throw new Error('Execpted operation!');
+                    op.operands.push(ternop);
+                    if (op.operands.length == op.arity) {
+                        opers.pop();
+                    }
+                } else {
+                    logger.log('...adding ternop to the top of stack');
+                    stack.push(ternop);
+                }
+                opers.push(ternop);
                 break;
-            case 'lc':
-                logger.log('... got `lc` UNOP');
-                stack.push(new UnaryOpLattice(
-                    Known(token),
-                    new TermLattice(Unknown())
-                ));
+            case 'binop':
+                logger.log(`... got (${token.source}) BINOP`);
+                let binop = new OperatorLattice(2, Known(token));
+                if (opers.length > 0) {
+                    logger.log('...adding binop to the top of OPER stack');
+                    let op   = opers.at(-1) as OperatorLattice;
+                    if (op == undefined) throw new Error('Execpted operation!');
+                    op.operands.push(binop);
+                    if (op.operands.length == op.arity) {
+                        opers.pop();
+                    }
+                } else {
+                    logger.log('...adding binop to the top of stack');
+                    stack.push(binop);
+                }
+                opers.push(binop);
                 break;
-            case 'add':
-                logger.log('... got `add` UNOP');
-                stack.push(new BinaryOpLattice(
-                    Known(token),
-                    new TermLattice(Unknown()),
-                    new TermLattice(Unknown()),
-                ));
+            case 'unop':
+                logger.log(`... got (${token.source}) UNOP`);
+                let unop = new OperatorLattice(1, Known(token));
+                if (opers.length > 0) {
+                    logger.log('...adding unop to the top of OPER stack');
+                    let op   = opers.at(-1) as OperatorLattice;
+                    if (op == undefined) throw new Error('Execpted operation!');
+                    op.operands.push(unop);
+                    if (op.operands.length == op.arity) {
+                        opers.pop();
+                    }
+                } else {
+                    logger.log('...adding unop to the top of stack');
+                    stack.push(unop);
+                }
+                opers.push(unop);
                 break;
             default:
-                logger.log('... got token');
-                (stack.at(-1) as ExpressionLattice).merge(Known(token));
+                throw new Error(`Unknown Atom (${token.source})`);
             }
             break;
         case 'EOF':
@@ -286,10 +244,14 @@ const test001 = async () => {
         default:
             throw new Error(`Unhandled token type(${token.type})`);
         }
+        logger.log('OPERS(after)', opers);
+        logger.log('STACK(after)', stack);
+        logger.log('---------------------------------------------------------');
     }
 
 
-    logger.log('STACK', stack);
+    logger.log('OPERS(end)', opers);
+    logger.log('STACK(end)', stack);
     logger.log('RESULT', result);
 
 };
