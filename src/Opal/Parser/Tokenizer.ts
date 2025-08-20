@@ -16,10 +16,15 @@ export type TokenType =
     | 'NUMBER'    // basic int & float parsing only
     | 'BRACKET'   // [] {} () +[] +{}
     | 'ATOM'      // ... everything else
+    | 'EOF'
 
 export interface Token {
     type   : TokenType,
     source : string,
+}
+
+export function newToken (type: TokenType, source: string) : Token {
+    return { type, source }
 }
 
 export type TokenStream = AsyncGenerator<Token, void, void>;
@@ -52,11 +57,11 @@ export class Tokenizer {
                     }
                     else if (chunk == '(' || chunk == ')') {
                         // console.log('YIELD BRACKET (usually parens)', chunk);
-                        yield { type : 'BRACKET', source : chunk };
+                        yield newToken('ATOM', chunk);
                     }
                     else if (chunk.startsWith('"') || chunk.startsWith("'")) {
                         // console.log('YIELD STRING', chunk);
-                        yield { type : 'STRING', source : chunk.slice(1, -1) };
+                        yield newToken('STRING', chunk.slice(1, -1));
                     }
                     else {
                         let maybeMoreComment = false;
@@ -76,11 +81,11 @@ export class Tokenizer {
 
                             if (IS_VSTRING.test(maybeNumber)) {
                                 // console.log('YIELD ATOM (vstring)', maybeNumber);
-                                yield { type : 'ATOM', source : maybeNumber };
+                                yield newToken('ATOM', maybeNumber);
                             }
                             else if (IS_NUMBER.test(maybeNumber)) {
                                 // console.log('YIELD NUMBER', maybeNumber);
-                                yield { type : 'NUMBER', source : maybeNumber };
+                                yield newToken('NUMBER', maybeNumber);
                             }
                             else {
                                 let finalSplit = maybeNumber.split(OPERATORS).filter((t) => t.length > 0);
@@ -93,15 +98,15 @@ export class Tokenizer {
                                     switch (true) {
                                     case IS_NUMBER.test(token):
                                         // console.log('YIELD NUMBER (hmmm)', token);
-                                        yield { type : 'NUMBER', source : token };
+                                        yield newToken('NUMBER', token);
                                         break;
                                     case IS_BRACKET.test(token):
                                         // console.log('YIELD BRACKET', token);
-                                        yield { type : 'BRACKET', source : token }
+                                        yield newToken('ATOM', token);
                                         break;
                                     default:
                                         // console.log('YIELD ATOM', token);
-                                        yield { type : 'ATOM', source : token };
+                                        yield newToken('ATOM', token);
                                     }
                                 }
                             }
@@ -116,6 +121,8 @@ export class Tokenizer {
                 }
             }
         }
+
+        yield newToken('EOF', 'EOF');
     }
 }
 
